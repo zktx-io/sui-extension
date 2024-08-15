@@ -117,6 +117,9 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               this.unitTest(data);
             }
             break;
+          case COMMENDS.MsgError:
+            vscode.window.showErrorMessage(data);
+            break;
           default:
             vscode.window.showErrorMessage(
               `Unknown command received :, ${command}`,
