@@ -68,7 +68,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
     );
 
     webviewView.webview.onDidReceiveMessage(
-      async ({ command, data }: { command: COMMENDS; data: string }) => {
+      async ({ command, data }: { command: COMMENDS; data: any }) => {
         switch (command) {
           case COMMENDS.Env:
             const proof = proofLoad(this._context);
@@ -90,7 +90,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               clientId: string;
               state: string;
               codeVerifier: string;
-            } = JSON.parse(data);
+            } = data;
             const result = await vscode.env.openExternal(vscode.Uri.parse(url));
             result &&
               exchangeToken(clientId, state, codeVerifier, (accessToken) => {
