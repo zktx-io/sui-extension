@@ -78,6 +78,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
                 ? { hasTerminal: hasTerminal() }
                 : { hasTerminal: hasTerminal(), proof },
             });
+            await this._fileWatcher?.initializePackageList();
             break;
           case COMMENDS.Login:
             const {
@@ -100,9 +101,6 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.StoreToken:
             await proofStore(this._context, data);
-            break;
-          case COMMENDS.PackageList:
-            await this._fileWatcher?.initializePackageList();
             break;
           case COMMENDS.PackageSelect:
             {

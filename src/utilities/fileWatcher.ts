@@ -124,7 +124,7 @@ export class FileWathcer {
   private updateWebview() {
     this._view.webview.postMessage({
       command: COMMENDS.PackageList,
-      files: this._packages.map(({ path, content }) => {
+      data: this._packages.map(({ path, content }) => {
         return {
           path,
           content,
