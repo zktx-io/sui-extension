@@ -3,15 +3,12 @@ import SHA256 from 'crypto-js/sha256';
 import Base64 from 'crypto-js/enc-base64';
 import * as querystring from 'querystring';
 import { vscode } from './vscode';
-import { COMMENDS, PkceUrl } from './commends';
-
-const clientId =
-  '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';
+import { ClientId, COMMENDS, PkceUrl } from './commends';
 
 const generateLoginUrl = (state: string, codeChallenge: string): string => {
   return `https://accounts.google.com/o/oauth2/auth?${querystring.stringify({
     response_type: 'code',
-    client_id: clientId,
+    client_id: ClientId,
     redirect_uri: `${PkceUrl}/callback`,
     scope: 'openid profile email',
     state,
@@ -32,7 +29,6 @@ export const googleLogin = async () => {
     command: COMMENDS.Login,
     data: {
       url: generateLoginUrl(state, codeChallenge),
-      clientId,
       state,
       codeVerifier,
     },

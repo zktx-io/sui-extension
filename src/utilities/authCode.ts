@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
-import { COMMENDS, PkceUrl } from '../webview/src/utilities/commends';
+import {
+  ClientId,
+  ClientSecret,
+  PkceUrl,
+} from '../webview/src/utilities/commends';
 
 const exchangeAuthCodeForToken = async (
-  clientId: string,
   authCode: string,
   codeVerifier: string,
 ): Promise<string | null> => {
@@ -14,7 +17,8 @@ const exchangeAuthCodeForToken = async (
       },
       body: new URLSearchParams({
         code: authCode,
-        client_id: clientId,
+        client_id: ClientId,
+        client_secret: ClientSecret,
         redirect_uri: `${PkceUrl}/callback`,
         grant_type: 'authorization_code',
         code_verifier: codeVerifier,
@@ -35,7 +39,6 @@ const exchangeAuthCodeForToken = async (
 };
 
 export const exchangeToken = (
-  clientId: string,
   state: string,
   codeVerifier: string,
   getAccessToken: (token: string) => void,
@@ -50,7 +53,6 @@ export const exchangeToken = (
       if (authCode) {
         clearInterval(intervalId);
         const accessToken = await exchangeAuthCodeForToken(
-          clientId,
           authCode,
           codeVerifier,
         );
@@ -59,5 +61,5 @@ export const exchangeToken = (
     } catch (error) {
       vscode.window.showErrorMessage(`Error retrieving authCode: ${error}`);
     }
-  }, 5000);
+  }, 10000);
 };

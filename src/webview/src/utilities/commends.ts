@@ -12,3 +12,8 @@ export enum COMMENDS {
 
 export const PkceUrl =
   'https://us-central1-proof-key-exchange.cloudfunctions.net';
+
+export const ClientId =
+  '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';
+
+export const ClientSecret = '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';

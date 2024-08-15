@@ -82,18 +82,16 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
           case COMMENDS.Login:
             const {
               url,
-              clientId,
               state,
               codeVerifier,
             }: {
               url: string;
-              clientId: string;
               state: string;
               codeVerifier: string;
             } = data;
             const result = await vscode.env.openExternal(vscode.Uri.parse(url));
             result &&
-              exchangeToken(clientId, state, codeVerifier, (accessToken) => {
+              exchangeToken(state, codeVerifier, (accessToken) => {
                 this._view?.webview.postMessage({
                   command: COMMENDS.LoginToken,
                   data: accessToken,
