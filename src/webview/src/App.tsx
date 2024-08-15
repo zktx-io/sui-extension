@@ -23,7 +23,7 @@ function App() {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.Env:
-          const { hasTerminal: terminal } = JSON.parse(message.data);
+          const { hasTerminal: terminal } = message.data;
           setHasTerminal(terminal);
           vscode.postMessage({ command: COMMENDS.PackageList, data: '' });
           break;
