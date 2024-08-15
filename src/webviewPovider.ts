@@ -4,11 +4,9 @@ import { getNonce } from './utilities/getNonce';
 import { hasTerminal } from './utilities/hasTerminal';
 import { COMMENDS } from './webview/src/utilities/commends';
 import { FileWathcer } from './utilities/fileWatcher';
-import { tokenLoad, tokenStore } from './utilities/proof';
-
-const COMPILER = 'sui';
-const MoveToml = 'Move.toml';
-const ByteDump = 'bytecode.dump.json';
+import { proofLoad, proofStore } from './utilities/proof';
+import { exchangeToken } from './utilities/authCode';
+import { ByteDump, COMPILER, COMPILER_URL, MoveToml } from './config';
 
 export class WebviewViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'webviewViewProvider';
@@ -26,7 +24,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
   private runTerminal(runCommand: string) {
     const checkCommand =
       process.platform === 'win32' ? `where ${COMPILER}` : `which ${COMPILER}`;
-    const helpMessage = `echo -e \"\\e[31mThe program '${COMPILER}' is not installed.\nPlease install it first. (https://docs.sui.io/references/cli/client)\\e[0m\"`;
+    const helpMessage = `echo -e \"\\e[31mThe program '${COMPILER}' is not installed.\nPlease install it first. (${COMPILER_URL})\\e[0m\"`;
 
     let terminal = vscode.window.terminals.find(
       (t) => t.name === `${COMPILER} compiler`,
@@ -73,19 +71,37 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
       async ({ command, data }: { command: COMMENDS; data: string }) => {
         switch (command) {
           case COMMENDS.Env:
-            const proof = tokenLoad(this._context);
+            const proof = proofLoad(this._context);
             this._view?.webview.postMessage({
               command,
-              env: !proof
+              data: !proof
                 ? { hasTerminal: hasTerminal() }
                 : { hasTerminal: hasTerminal(), proof },
             });
             break;
           case COMMENDS.Login:
-            vscode.env.openExternal(vscode.Uri.parse(data));
+            const {
+              url,
+              clientId,
+              state,
+              codeVerifier,
+            }: {
+              url: string;
+              clientId: string;
+              state: string;
+              codeVerifier: string;
+            } = JSON.parse(data);
+            const result = await vscode.env.openExternal(vscode.Uri.parse(url));
+            result &&
+              exchangeToken(clientId, state, codeVerifier, (accessToken) => {
+                this._view?.webview.postMessage({
+                  command: COMMENDS.LoginToken,
+                  data: accessToken,
+                });
+              });
             break;
           case COMMENDS.StoreToken:
-            await tokenStore(this._context, data);
+            await proofStore(this._context, data);
             break;
           case COMMENDS.PackageList:
             await this._fileWatcher?.initializePackageList();
@@ -95,7 +111,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               const upgradeToml = await this._fileWatcher?.getUpgradeToml(data);
               this._view?.webview.postMessage({
                 command: COMMENDS.PackageSelect,
-                package: { path: data, upgradeToml },
+                data: { path: data, upgradeToml },
               });
             }
             break;

@@ -27,6 +27,10 @@ function App() {
           setHasTerminal(terminal);
           vscode.postMessage({ command: COMMENDS.PackageList, data: '' });
           break;
+        case COMMENDS.LoginToken:
+          // TODO
+          console.log(message.data);
+          break;
         default:
           break;
       }

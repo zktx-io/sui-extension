@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export const tokenStore = async (
+export const proofStore = async (
   context: vscode.ExtensionContext,
   token: string,
 ) => {
@@ -13,7 +13,7 @@ export const tokenStore = async (
   }
 };
 
-export const tokenLoad = (
+export const proofLoad = (
   context: vscode.ExtensionContext,
 ): string | undefined => {
   return context.globalState.get<string>('proof');
