@@ -51,10 +51,12 @@ function App() {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.Env:
-          const { hasTerminal: terminal, proof } = message.data;
-          setHasTerminal(terminal);
-          proof && setState(proof);
-          vscode.postMessage({ command: COMMENDS.PackageList, data: '' });
+          {
+            const { hasTerminal: terminal, proof } = message.data;
+            setHasTerminal(terminal);
+            proof && setState(proof);
+            vscode.postMessage({ command: COMMENDS.PackageList, data: '' });
+          }
           break;
         case COMMENDS.LoginToken:
           if (state && message.data) {
