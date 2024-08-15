@@ -5,7 +5,7 @@ import {
   PkceUrl,
 } from '../webview/src/utilities/commends';
 
-const exchangeAuthCodeForToken = async (
+const exchangeAuthCodeForJwt = async (
   authCode: string,
   codeVerifier: string,
 ): Promise<string | null> => {
@@ -27,8 +27,7 @@ const exchangeAuthCodeForToken = async (
 
     if (tokenResponse.ok) {
       const tokenData = await tokenResponse.json();
-      const accessToken = tokenData.access_token;
-      return accessToken;
+      return tokenData.id_token;
     } else {
       vscode.window.showErrorMessage('Failed to exchange auth code for token.');
       return null;
@@ -41,7 +40,7 @@ const exchangeAuthCodeForToken = async (
 export const exchangeToken = (
   state: string,
   codeVerifier: string,
-  getAccessToken: (token: string) => void,
+  getJwt: (token: string) => void,
 ) => {
   const intervalId = setInterval(async () => {
     try {
@@ -52,11 +51,8 @@ export const exchangeToken = (
 
       if (authCode) {
         clearInterval(intervalId);
-        const accessToken = await exchangeAuthCodeForToken(
-          authCode,
-          codeVerifier,
-        );
-        accessToken && getAccessToken(accessToken);
+        const jwt = await exchangeAuthCodeForJwt(authCode, codeVerifier);
+        jwt && getJwt(jwt);
       }
     } catch (error) {
       vscode.window.showErrorMessage(`Error retrieving authCode: ${error}`);

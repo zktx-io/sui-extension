@@ -1,15 +1,23 @@
 import { atom } from 'recoil';
 
-export type CRYPTO = 'ed25519';
-export type NETWORK = 'mainnet' | 'testnet' | 'devnet';
+export enum NETWORK {
+  MainNet = 'mainnet',
+  TestNet = 'testnet',
+  DevNet = 'devnet',
+}
+
+export const NETWORKS: NETWORK[] = [
+  NETWORK.DevNet,
+  NETWORK.TestNet,
+  // NETWORK.MainNet,
+];
 
 export interface INonce {
-  crypto: CRYPTO;
   expiration: number;
   randomness: string;
   network: NETWORK;
   publicKey: string;
-  privateKey?: string; // TODO: fix webauthn
+  secretKey?: string; // TODO: fix webauthn
 }
 
 interface IAccount {
