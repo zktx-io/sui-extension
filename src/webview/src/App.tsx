@@ -69,16 +69,16 @@ function App() {
     setAccount(undefined);
   };
 
-  const updateBalance = async () => {
-    try {
-      const value = account && (await getBalance(account));
-      setBalance(value || 'n/a');
-    } catch (error) {
-      setBalance('n/a');
-    }
-  };
-
   useEffect(() => {
+    const updateBalance = async () => {
+      try {
+        const value = account && (await getBalance(account));
+        setBalance(value || 'n/a');
+      } catch (error) {
+        setBalance('n/a');
+      }
+    };
+
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
@@ -204,7 +204,7 @@ function App() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [account, selectedPath, setAccount, updateBalance, upgradeToml]);
+  }, [account, selectedPath, setAccount, upgradeToml]);
 
   return (
     <>
