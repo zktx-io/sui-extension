@@ -48,7 +48,7 @@ export class FileWathcer {
           this._packages.push({
             uri,
             path: path.replace(
-              new RegExp(`(.*)\\b${MoveToml}\\b(?!.*\\b${MoveToml}\\b)`),
+              new RegExp(`(.*)(/\\b${MoveToml}\\b)(?!.*(/\\b${MoveToml}\\b))`),
               `$1`,
             ),
             content: new TextDecoder().decode(content),
@@ -63,7 +63,7 @@ export class FileWathcer {
 
   public async getUpgradeToml(path: string): Promise<string> {
     try {
-      const uri = this.getUriFromRelativePath(`${path}${UpgradeToml}`);
+      const uri = this.getUriFromRelativePath(`${path}/${UpgradeToml}`);
       if (uri) {
         const content = await this.readFileContent(uri);
         return new TextDecoder().decode(content);
@@ -76,7 +76,7 @@ export class FileWathcer {
 
   public async getByteCodeDump(path: string): Promise<string> {
     try {
-      const uri = this.getUriFromRelativePath(`${path}${ByteDump}`);
+      const uri = this.getUriFromRelativePath(`${path}/${ByteDump}`);
       if (uri) {
         const content = await this.readFileContent(uri);
         return new TextDecoder().decode(content);
