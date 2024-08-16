@@ -1,6 +1,5 @@
 import { getExtendedEphemeralPublicKey, jwtToAddress } from '@mysten/zklogin';
 import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
-import Base64 from 'crypto-js/enc-base64';
 import Hex from 'crypto-js/enc-hex';
 import SHA256 from 'crypto-js/sha256';
 import { INonce, NETWORK } from '../recoil';
