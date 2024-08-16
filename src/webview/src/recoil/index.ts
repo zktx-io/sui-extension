@@ -17,7 +17,7 @@ export interface INonce {
   randomness: string;
   network: NETWORK;
   publicKey: string;
-  secretKey?: string; // TODO: fix webauthn
+  privateKey?: string; // TODO: fix webauthn
 }
 
 export interface IAccount {

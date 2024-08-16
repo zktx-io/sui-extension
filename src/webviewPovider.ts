@@ -115,7 +115,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               const upgradeToml = await this._fileWatcher?.getUpgradeToml(data);
               this._view?.webview.postMessage({
                 command: COMMENDS.PackageSelect,
-                data: { path: data, upgradeToml },
+                data: { path: data, data: upgradeToml || '' },
               });
             }
             break;
@@ -142,7 +142,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               const dumpByte = await this._fileWatcher?.getByteCodeDump(data);
               this._view?.webview.postMessage({
                 command: COMMENDS.Deploy,
-                data: { path: data, dumpByte: dumpByte || '' },
+                data: dumpByte || '',
               });
             }
             break;
@@ -154,7 +154,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           default:
             vscode.window.showErrorMessage(
-              `Unknown command received :, ${command}`,
+              `Unknown command received : ${command}`,
             );
             break;
         }

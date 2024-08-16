@@ -23,8 +23,8 @@ export const createProof = async (
   jwt: string,
 ): Promise<{ address: string; proof: string; salt: string }> => {
   const path = getPath(network);
-  const salt = SHA256(path).toString(Hex).slice(0, 32);
-  const address = jwtToAddress(jwt, BigInt(`0x${salt}`));
+  const salt = `0x${SHA256(path).toString(Hex).slice(0, 32)}`;
+  const address = jwtToAddress(jwt, BigInt(salt));
 
   const res = await fetch(getProverUrl(network), {
     method: 'POST',
@@ -38,7 +38,7 @@ export const createProof = async (
       ),
       maxEpoch: expiration,
       jwtRandomness: randomness,
-      salt: Base64.stringify(Hex.parse(salt)),
+      salt,
       keyClaimName: 'sub',
     }),
   });

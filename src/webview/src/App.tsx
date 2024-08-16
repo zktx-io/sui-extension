@@ -9,6 +9,8 @@ import {
 import { useRecoilState } from 'recoil';
 import { parse } from 'smol-toml';
 
+import './App.css';
+
 import { ACCOUNT, NETWORK, NETWORKS } from './recoil';
 import { vscode } from './utilities/vscode';
 import { COMMENDS } from './utilities/commends';
@@ -16,7 +18,6 @@ import { googleLogin } from './utilities/googleLogin';
 import { createNonce } from './utilities/createNonce';
 import { createProof } from './utilities/createProof';
 
-import './App.css';
 import { packagePublish } from './utilities/packagePublish';
 import { packageUpgrade } from './utilities/packageUpgrade';
 
@@ -44,7 +45,7 @@ function App() {
       nonce,
       expiration,
       randomness,
-      ephemeralKeyPair: { publicKey, secretKey },
+      ephemeralKeyPair: { publicKey, privateKey },
     } = await createNonce(network);
     setAccount({
       nonce: {
@@ -52,7 +53,7 @@ function App() {
         randomness,
         network,
         publicKey,
-        secretKey,
+        privateKey,
       },
     });
     await googleLogin(nonce);
@@ -142,18 +143,38 @@ function App() {
           break;
         case COMMENDS.PackageSelect:
           {
-            const { path, upgradeToml: temp } = message.data;
+            const { path, data } = message.data;
             setSelectedPath(path);
-            setUpgradeToml(temp);
+            setUpgradeToml(data);
           }
           break;
         case COMMENDS.Deploy:
-          if (!upgradeToml && !!account?.zkAddress) {
-            await packagePublish(account, message.data);
-          } else if (!!account?.zkAddress) {
-            await packageUpgrade(account, message.data, upgradeToml);
+          try {
+            if (!upgradeToml && !!account?.zkAddress) {
+              const res = await packagePublish(account, message.data);
+              vscode.postMessage({
+                command: COMMENDS.MsgInfo,
+                data: `success: ${account.nonce.network}:${res.digest}`,
+              });
+            } else if (!!account?.zkAddress) {
+              const res = await packageUpgrade(
+                account,
+                message.data,
+                upgradeToml,
+              );
+              vscode.postMessage({
+                command: COMMENDS.MsgInfo,
+                data: `success: ${account.nonce.network}:${res.digest}`,
+              });
+            }
+          } catch (error) {
+            vscode.postMessage({
+              command: COMMENDS.MsgError,
+              data: `${error}`,
+            });
+          } finally {
+            setLoading(false);
           }
-          setLoading(false);
           break;
         default:
           break;
