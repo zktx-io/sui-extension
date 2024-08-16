@@ -1,12 +1,13 @@
 export enum COMMENDS {
   Env = 'env',
   Login = 'google:login',
-  LoginToken = 'google:token',
-  StoreToken = 'storeToken',
+  LoginJwt = 'google:jwt',
+  StoreAccount = 'storeAccount',
   PackageList = 'package:list',
   PackageSelect = 'package:select',
   Compile = 'package:compile',
   UintTest = 'package:unitTest',
+  Deploy = 'package:deploy',
   MsgError = 'message:error',
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   VSCodeButton,
   VSCodeDivider,
@@ -9,7 +9,7 @@ import {
 import { useRecoilState } from 'recoil';
 import { parse } from 'smol-toml';
 
-import { NETWORK, NETWORKS, STATE } from './recoil';
+import { ACCOUNT, NETWORK, NETWORKS } from './recoil';
 import { vscode } from './utilities/vscode';
 import { COMMENDS } from './utilities/commends';
 import { googleLogin } from './utilities/googleLogin';
@@ -17,15 +17,18 @@ import { createNonce } from './utilities/createNonce';
 import { createProof } from './utilities/createProof';
 
 import './App.css';
+import { packagePublish } from './utilities/packagePublish';
+import { packageUpgrade } from './utilities/packageUpgrade';
 
 function App() {
-  const [state, setState] = useRecoilState(STATE);
+  const initialized = useRef<boolean>(false);
+
+  const [account, setAccount] = useRecoilState(ACCOUNT);
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
 
   const [login, setLogin] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasTerminal, setHasTerminal] = useState<boolean>(false);
-  const [address, setAddress] = useState<string | undefined>(undefined);
 
   const [selectedPath, setSelectedPath] = useState<string | undefined>(
     undefined,
@@ -35,11 +38,7 @@ function App() {
   >([]);
   const [upgradeToml, setUpgradeToml] = useState<string>('');
 
-  const refAddress = useRef(address);
-  const refNetwork = useRef(network);
-  const refUpgradeToml = useRef(upgradeToml);
-
-  const handleGoogleLogin = async () => {
+  const handleLogin = async () => {
     setLogin(true);
     const {
       nonce,
@@ -47,7 +46,7 @@ function App() {
       randomness,
       ephemeralKeyPair: { publicKey, secretKey },
     } = await createNonce(network);
-    setState({
+    setAccount({
       nonce: {
         expiration,
         randomness,
@@ -59,27 +58,36 @@ function App() {
     await googleLogin(nonce);
   };
 
+  const handleLogout = async () => {
+    vscode.postMessage({
+      command: COMMENDS.StoreAccount,
+      data: undefined,
+    });
+    setAccount(undefined);
+  };
+
   useEffect(() => {
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.Env:
           {
-            const { hasTerminal: terminal, proof } = message.data;
+            const { hasTerminal: terminal, account: loadedAccpimt } =
+              message.data;
             setHasTerminal(terminal);
-            proof && setState(proof);
+            if (loadedAccpimt) {
+              setAccount(loadedAccpimt);
+            }
           }
           break;
-        case COMMENDS.LoginToken:
-          if (state && message.data) {
-            setLogin(false);
+        case COMMENDS.LoginJwt:
+          if (account && message.data) {
             const { proof, address, salt } = await createProof(
-              state.nonce,
+              account.nonce,
               message.data,
             );
-            setAddress(address);
-            setState({
-              ...state,
+            setAccount({
+              ...account,
               zkAddress: {
                 address,
                 proof,
@@ -87,6 +95,21 @@ function App() {
                 jwt: message.data,
               },
             });
+            vscode.postMessage({
+              command: COMMENDS.StoreAccount,
+              data: {
+                ...account,
+                zkAddress: {
+                  address,
+                  proof,
+                  salt,
+                  jwt: message.data,
+                },
+              },
+            });
+            setLogin(false);
+          } else {
+            setLogin(false);
           }
           break;
         case COMMENDS.PackageList:
@@ -120,18 +143,30 @@ function App() {
           setSelectedPath(path);
           setUpgradeToml(upgradeToml);
           break;
+        case COMMENDS.Deploy:
+          if (!upgradeToml && !!account && !!account.zkAddress) {
+            await packagePublish(account, message.data);
+          } else if (!!account && !!account.zkAddress) {
+            await packageUpgrade(account, message.data, upgradeToml);
+          }
+          setLoading(false);
+          break;
         default:
           break;
       }
     };
 
     window.addEventListener('message', handleMessage);
-    vscode.postMessage({ command: COMMENDS.Env });
+
+    if (!initialized.current) {
+      initialized.current = true;
+      vscode.postMessage({ command: COMMENDS.Env });
+    }
 
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [selectedPath, setState, state]);
+  }, [account, selectedPath, setAccount]);
 
   return (
     <>
@@ -139,14 +174,14 @@ function App() {
       <VSCodeTextField
         style={{ width: '100%', marginBottom: '8px' }}
         readOnly
-        value={address || ''}
+        value={account?.zkAddress?.address || ''}
       />
 
       <label style={{ fontSize: '11px', color: 'GrayText' }}>NETWORK</label>
       <VSCodeDropdown
         style={{ width: '100%', marginBottom: '8px' }}
         value={network}
-        disabled={!!state || !!address}
+        disabled={!!account?.zkAddress?.address || login}
         onChange={(e) => {
           e.target && setNetwork((e.target as any).value);
         }}
@@ -157,13 +192,46 @@ function App() {
           </VSCodeOption>
         ))}
       </VSCodeDropdown>
-      <VSCodeButton
-        style={{ width: '100%' }}
-        disabled={login}
-        onClick={handleGoogleLogin}
-      >
-        Google Login
-      </VSCodeButton>
+      {!account?.zkAddress ? (
+        <VSCodeButton
+          style={{ width: '100%' }}
+          disabled={login}
+          onClick={handleLogin}
+        >
+          {!login ? (
+            'Google Login'
+          ) : (
+            <svg
+              id="loading-spinner"
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+            >
+              <g fill="none">
+                <path
+                  id="track"
+                  fill="#C6CCD2"
+                  d="M24,48 C10.745166,48 0,37.254834 0,24 C0,10.745166 10.745166,0 24,0 C37.254834,0 48,10.745166 48,24 C48,37.254834 37.254834,48 24,48 Z M24,44 C35.045695,44 44,35.045695 44,24 C44,12.954305 35.045695,4 24,4 C12.954305,4 4,12.954305 4,24 C4,35.045695 12.954305,44 24,44 Z"
+                />
+                <path
+                  id="section"
+                  fill="#3F4850"
+                  d="M24,0 C37.254834,0 48,10.745166 48,24 L44,24 C44,12.954305 35.045695,4 24,4 L24,0 Z"
+                />
+              </g>
+            </svg>
+          )}
+        </VSCodeButton>
+      ) : (
+        <VSCodeButton
+          style={{ width: '100%' }}
+          disabled={login}
+          onClick={handleLogout}
+        >
+          Logout
+        </VSCodeButton>
+      )}
       <VSCodeDivider style={{ marginTop: '10px', marginBottom: '8px' }} />
 
       <label style={{ fontSize: '11px', color: 'GrayText' }}>PACKAGE</label>
@@ -216,6 +284,28 @@ function App() {
         }}
       >
         Unit Test
+      </VSCodeButton>
+
+      <VSCodeButton
+        style={{ width: '100%', marginBottom: '8px' }}
+        disabled={
+          !hasTerminal ||
+          !selectedPath ||
+          !account?.zkAddress?.address ||
+          loading
+        }
+        onClick={() => {
+          const selected = fileList.find((item) => item.path === selectedPath);
+          if (selected) {
+            setLoading(true);
+            vscode.postMessage({
+              command: COMMENDS.Deploy,
+              data: selected.path,
+            });
+          }
+        }}
+      >
+        {!upgradeToml ? 'Deploy' : 'Upgrade'}
       </VSCodeButton>
     </>
   );

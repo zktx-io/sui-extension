@@ -20,7 +20,7 @@ export interface INonce {
   secretKey?: string; // TODO: fix webauthn
 }
 
-interface IAccount {
+export interface IAccount {
   nonce: INonce;
   zkAddress?: {
     address: string;
@@ -30,7 +30,7 @@ interface IAccount {
   };
 }
 
-export const STATE = atom<IAccount | undefined>({
+export const ACCOUNT = atom<IAccount | undefined>({
   key: 'Account',
   default: undefined,
 });

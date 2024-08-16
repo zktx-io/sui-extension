@@ -4,9 +4,15 @@ import { getNonce } from './utilities/getNonce';
 import { hasTerminal } from './utilities/hasTerminal';
 import { COMMENDS } from './webview/src/utilities/commends';
 import { FileWathcer } from './utilities/fileWatcher';
-import { proofLoad, proofStore } from './utilities/proof';
+import { accountLoad, accountStore } from './utilities/account';
 import { exchangeToken } from './utilities/authCode';
-import { ByteDump, COMPILER, COMPILER_URL, MoveToml } from './config';
+import {
+  COMPILER,
+  COMPILER_URL,
+  MoveToml,
+  runCompile,
+  runTest,
+} from './config';
 
 export class WebviewViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'webviewViewProvider';
@@ -38,16 +44,6 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  protected compile(path: string): void {
-    this.runTerminal(
-      `${COMPILER} move build --dump-bytecode-as-base64 --path ${path} > ${path}/${ByteDump}`,
-    );
-  }
-
-  protected unitTest(path: string): void {
-    this.runTerminal(`${COMPILER} move test --path ${path}`);
-  }
-
   resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -71,12 +67,12 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
       async ({ command, data }: { command: COMMENDS; data: any }) => {
         switch (command) {
           case COMMENDS.Env:
-            const proof = proofLoad(this._context);
+            const account = accountLoad(this._context);
             this._view?.webview.postMessage({
               command,
-              data: !proof
+              data: !account
                 ? { hasTerminal: hasTerminal() }
-                : { hasTerminal: hasTerminal(), proof },
+                : { hasTerminal: hasTerminal(), account },
             });
             await this._fileWatcher?.initializePackageList();
             break;
@@ -91,16 +87,22 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
               codeVerifier: string;
             } = data;
             const result = await vscode.env.openExternal(vscode.Uri.parse(url));
-            result &&
+            if (result) {
               exchangeToken(state, codeVerifier, (data) => {
                 this._view?.webview.postMessage({
-                  command: COMMENDS.LoginToken,
+                  command: COMMENDS.LoginJwt,
                   data,
                 });
               });
+            } else {
+              this._view?.webview.postMessage({
+                command: COMMENDS.LoginJwt,
+                data: '',
+              });
+            }
             break;
-          case COMMENDS.StoreToken:
-            await proofStore(this._context, data);
+          case COMMENDS.StoreAccount:
+            await accountStore(this._context, data);
             break;
           case COMMENDS.PackageSelect:
             {
@@ -117,7 +119,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
                 'This environment does not support terminal operations.',
               );
             } else {
-              this.compile(data);
+              this.runTerminal(runCompile(data));
             }
             break;
           case COMMENDS.UintTest:
@@ -126,7 +128,16 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
                 'This environment does not support terminal operations.',
               );
             } else {
-              this.unitTest(data);
+              this.runTerminal(runTest(data));
+            }
+            break;
+          case COMMENDS.Deploy:
+            {
+              const dumpByte = await this._fileWatcher?.getByteCodeDump(data);
+              this._view?.webview.postMessage({
+                command: COMMENDS.Deploy,
+                data: { path: data, dumpByte: dumpByte || '' },
+              });
             }
             break;
           case COMMENDS.MsgError:

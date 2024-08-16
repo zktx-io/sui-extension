@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { COMMENDS } from '../webview/src/utilities/commends';
+import { ByteDump } from '../config';
 
 const MoveToml = 'Move.toml';
 const UpgradeToml = 'Upgrade.toml';
@@ -64,7 +65,20 @@ export class FileWathcer {
     try {
       const uri = this.getUriFromRelativePath(`${path}${UpgradeToml}`);
       if (uri) {
-        const content = await vscode.workspace.fs.readFile(uri);
+        const content = await this.readFileContent(uri);
+        return new TextDecoder().decode(content);
+      }
+      return '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  public async getByteCodeDump(path: string): Promise<string> {
+    try {
+      const uri = this.getUriFromRelativePath(`${path}${ByteDump}`);
+      if (uri) {
+        const content = await this.readFileContent(uri);
         return new TextDecoder().decode(content);
       }
       return '';
@@ -116,7 +130,8 @@ export class FileWathcer {
       const fileContent = await vscode.workspace.fs.readFile(uri);
       return fileContent;
     } catch (error) {
-      vscode.window.showErrorMessage(`Error reading file: ${error}`);
+      uri.path.split('/').pop() !== UpgradeToml &&
+        vscode.window.showErrorMessage(`Error reading file: ${error}`);
       return new Uint8Array();
     }
   }
