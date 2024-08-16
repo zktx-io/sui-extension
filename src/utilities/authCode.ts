@@ -41,7 +41,11 @@ export const exchangeToken = (
   state: string,
   codeVerifier: string,
   getJwt: (token: string) => void,
+  done: () => void,
+  maxRetries: number = 6,
 ) => {
+  let retryCount = 0;
+
   const intervalId = setInterval(async () => {
     try {
       const tokenResponse = await fetch(
@@ -53,9 +57,20 @@ export const exchangeToken = (
         clearInterval(intervalId);
         const jwt = await exchangeAuthCodeForJwt(authCode, codeVerifier);
         jwt && getJwt(jwt);
+      } else {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          clearInterval(intervalId);
+          vscode.window.showErrorMessage('Maximum retry attempts reached');
+        }
       }
     } catch (error) {
-      vscode.window.showErrorMessage(`Error retrieving authCode: ${error}`);
+      retryCount++;
+      if (retryCount >= maxRetries) {
+        clearInterval(intervalId);
+        vscode.window.showErrorMessage('Maximum retry attempts reached');
+        done();
+      }
     }
-  }, 10000);
+  }, 5000);
 };

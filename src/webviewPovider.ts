@@ -93,12 +93,22 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
                 vscode.Uri.parse(url),
               );
               if (result) {
-                exchangeToken(state, codeVerifier, (data) => {
-                  this._view?.webview.postMessage({
-                    command: COMMENDS.LoginJwt,
-                    data,
-                  });
-                });
+                exchangeToken(
+                  state,
+                  codeVerifier,
+                  (data) => {
+                    this._view?.webview.postMessage({
+                      command: COMMENDS.LoginJwt,
+                      data,
+                    });
+                  },
+                  () => {
+                    this._view?.webview.postMessage({
+                      command: COMMENDS.LoginJwt,
+                      data: '',
+                    });
+                  },
+                );
               } else {
                 this._view?.webview.postMessage({
                   command: COMMENDS.LoginJwt,
