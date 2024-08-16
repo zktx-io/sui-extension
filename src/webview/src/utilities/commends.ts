@@ -8,6 +8,7 @@ export enum COMMENDS {
   Compile = 'package:compile',
   UintTest = 'package:unitTest',
   Deploy = 'package:deploy',
+  MsgInfo = 'message:info',
   MsgError = 'message:error',
 }
 

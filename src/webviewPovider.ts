@@ -67,38 +67,44 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
       async ({ command, data }: { command: COMMENDS; data: any }) => {
         switch (command) {
           case COMMENDS.Env:
-            const account = accountLoad(this._context);
-            this._view?.webview.postMessage({
-              command,
-              data: !account
-                ? { hasTerminal: hasTerminal() }
-                : { hasTerminal: hasTerminal(), account },
-            });
-            await this._fileWatcher?.initializePackageList();
+            {
+              const account = accountLoad(this._context);
+              this._view?.webview.postMessage({
+                command,
+                data: !account
+                  ? { hasTerminal: hasTerminal() }
+                  : { hasTerminal: hasTerminal(), account },
+              });
+              await this._fileWatcher?.initializePackageList();
+            }
             break;
           case COMMENDS.Login:
-            const {
-              url,
-              state,
-              codeVerifier,
-            }: {
-              url: string;
-              state: string;
-              codeVerifier: string;
-            } = data;
-            const result = await vscode.env.openExternal(vscode.Uri.parse(url));
-            if (result) {
-              exchangeToken(state, codeVerifier, (data) => {
+            {
+              const {
+                url,
+                state,
+                codeVerifier,
+              }: {
+                url: string;
+                state: string;
+                codeVerifier: string;
+              } = data;
+              const result = await vscode.env.openExternal(
+                vscode.Uri.parse(url),
+              );
+              if (result) {
+                exchangeToken(state, codeVerifier, (data) => {
+                  this._view?.webview.postMessage({
+                    command: COMMENDS.LoginJwt,
+                    data,
+                  });
+                });
+              } else {
                 this._view?.webview.postMessage({
                   command: COMMENDS.LoginJwt,
-                  data,
+                  data: '',
                 });
-              });
-            } else {
-              this._view?.webview.postMessage({
-                command: COMMENDS.LoginJwt,
-                data: '',
-              });
+              }
             }
             break;
           case COMMENDS.StoreAccount:
@@ -139,6 +145,9 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
                 data: { path: data, dumpByte: dumpByte || '' },
               });
             }
+            break;
+          case COMMENDS.MsgInfo:
+            vscode.window.showInformationMessage(data);
             break;
           case COMMENDS.MsgError:
             vscode.window.showErrorMessage(data);

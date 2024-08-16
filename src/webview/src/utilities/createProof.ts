@@ -21,7 +21,7 @@ const getPath = (network: NETWORK, index?: number): string => {
 export const createProof = async (
   { network, expiration, randomness, publicKey }: INonce,
   jwt: string,
-): Promise<{ proof: string; address: string; salt: string }> => {
+): Promise<{ address: string; proof: string; salt: string }> => {
   const path = getPath(network);
   const salt = SHA256(path).toString(Hex).slice(0, 32);
   const address = jwtToAddress(jwt, BigInt(`0x${salt}`));
@@ -44,5 +44,5 @@ export const createProof = async (
   });
 
   const data = await res.json();
-  return { proof: JSON.stringify(data), address, salt };
+  return { address, proof: JSON.stringify(data), salt };
 };
