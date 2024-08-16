@@ -20,12 +20,14 @@ import { createProof } from './utilities/createProof';
 
 import { packagePublish } from './utilities/packagePublish';
 import { packageUpgrade } from './utilities/packageUpgrade';
+import { getBalance } from './utilities/getBalance';
 
 function App() {
   const initialized = useRef<boolean>(false);
 
   const [account, setAccount] = useRecoilState(ACCOUNT);
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
+  const [balance, setBalance] = useState<string>('n/a');
 
   const [login, setLogin] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -65,6 +67,15 @@ function App() {
       data: undefined,
     });
     setAccount(undefined);
+  };
+
+  const updateBalance = async () => {
+    try {
+      const value = account && (await getBalance(account));
+      setBalance(value || 'n/a');
+    } catch (error) {
+      setBalance('n/a');
+    }
   };
 
   useEffect(() => {
@@ -188,19 +199,29 @@ function App() {
       vscode.postMessage({ command: COMMENDS.Env });
     }
 
+    updateBalance();
+
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [account, selectedPath, setAccount, upgradeToml]);
+  }, [account, selectedPath, setAccount, updateBalance, upgradeToml]);
 
   return (
     <>
       <label style={{ fontSize: '11px', color: 'GrayText' }}>ACCOUNT</label>
       <VSCodeTextField
-        style={{ width: '100%', marginBottom: '8px' }}
+        style={{ width: '100%' }}
         readOnly
         value={account?.zkAddress?.address || ''}
       />
+      <div
+        style={{
+          fontSize: '11px',
+          color: 'GrayText',
+          marginBottom: '8px',
+          textAlign: 'right',
+        }}
+      >{`Balance: ${balance}`}</div>
 
       <label style={{ fontSize: '11px', color: 'GrayText' }}>NETWORK</label>
       <VSCodeDropdown
