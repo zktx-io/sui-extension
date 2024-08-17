@@ -12,6 +12,7 @@ import { parse } from 'smol-toml';
 import './App.css';
 
 import { ACCOUNT, NETWORK, NETWORKS } from './recoil';
+import { SpinButton } from './components/SpinButton';
 import { vscode } from './utilities/vscode';
 import { COMMENDS } from './utilities/commends';
 import { googleLogin } from './utilities/googleLogin';
@@ -250,36 +251,13 @@ function App() {
         ))}
       </VSCodeDropdown>
       {!account?.zkAddress ? (
-        <VSCodeButton
-          style={{ width: '100%' }}
+        <SpinButton
+          title="Google Login"
+          spin={login}
           disabled={login}
+          width="100%"
           onClick={handleLogin}
-        >
-          {!login ? (
-            'Google Login'
-          ) : (
-            <svg
-              id="loading-spinner"
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 48 48"
-            >
-              <g fill="none">
-                <path
-                  id="track"
-                  fill="#C6CCD2"
-                  d="M24,48 C10.745166,48 0,37.254834 0,24 C0,10.745166 10.745166,0 24,0 C37.254834,0 48,10.745166 48,24 C48,37.254834 37.254834,48 24,48 Z M24,44 C35.045695,44 44,35.045695 44,24 C44,12.954305 35.045695,4 24,4 C12.954305,4 4,12.954305 4,24 C4,35.045695 12.954305,44 24,44 Z"
-                />
-                <path
-                  id="section"
-                  fill="#3F4850"
-                  d="M24,0 C37.254834,0 48,10.745166 48,24 L44,24 C44,12.954305 35.045695,4 24,4 L24,0 Z"
-                />
-              </g>
-            </svg>
-          )}
-        </VSCodeButton>
+        />
       ) : (
         <VSCodeButton
           style={{ width: '100%' }}
@@ -343,14 +321,16 @@ function App() {
         Unit Test
       </VSCodeButton>
 
-      <VSCodeButton
-        style={{ width: '100%' }}
+      <SpinButton
+        title={!upgradeToml ? 'Deploy' : 'Upgrade'}
+        spin={loading}
         disabled={
           !hasTerminal ||
           !selectedPath ||
           !account?.zkAddress?.address ||
           loading
         }
+        width="100%"
         onClick={() => {
           const selected = fileList.find((item) => item.path === selectedPath);
           if (selected) {
@@ -361,9 +341,7 @@ function App() {
             });
           }
         }}
-      >
-        {!upgradeToml ? 'Deploy' : 'Upgrade'}
-      </VSCodeButton>
+      />
       <PackageManager ref={ref} />
     </>
   );
