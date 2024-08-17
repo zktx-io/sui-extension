@@ -87,7 +87,10 @@ export const packageUpgrade = async (
       if (errors && errors.length > 0) {
         throw new Error(`${JSON.stringify(errors)}`);
       } else {
-        const res = await client.waitForTransaction({ digest });
+        const res = await client.waitForTransaction({
+          digest,
+          options: { showObjectChanges: true },
+        });
         if (res.errors && res.errors.length > 0) {
           throw new Error(`${JSON.stringify(errors)}`);
         }
