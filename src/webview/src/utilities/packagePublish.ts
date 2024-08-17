@@ -1,8 +1,4 @@
-import {
-  getFullnodeUrl,
-  SuiClient,
-  SuiTransactionBlockResponse,
-} from '@mysten/sui/client';
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromB64 } from '@mysten/sui/utils';
 import { Transaction as TransactionBlock } from '@mysten/sui/transactions';
@@ -13,7 +9,7 @@ import { IAccount } from '../recoil';
 export const packagePublish = async (
   account: IAccount,
   dumpByte: string,
-): Promise<SuiTransactionBlockResponse> => {
+): Promise<{ digest: string; packageId: string }> => {
   if (account.nonce.privateKey && account.zkAddress) {
     try {
       const client = new SuiClient({
@@ -70,7 +66,16 @@ export const packagePublish = async (
         if (res.errors && res.errors.length > 0) {
           throw new Error(`${JSON.stringify(errors)}`);
         }
-        return res;
+        const published = (res.objectChanges || []).filter(
+          (item) => item.type === 'published',
+        );
+        if (published[0]) {
+          return {
+            digest: res.digest,
+            packageId: (published[0] as any).packageId,
+          };
+        }
+        throw new Error('publish error');
       }
     } catch (error) {
       throw new Error(`${error}`);

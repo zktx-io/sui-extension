@@ -21,9 +21,14 @@ import { createProof } from './utilities/createProof';
 import { packagePublish } from './utilities/packagePublish';
 import { packageUpgrade } from './utilities/packageUpgrade';
 import { getBalance } from './utilities/getBalance';
+import {
+  PackageManager,
+  PackageManagerHandles,
+} from './components/PackageManager';
 
 function App() {
   const initialized = useRef<boolean>(false);
+  const ref = useRef<PackageManagerHandles>(null);
 
   const [account, setAccount] = useRecoilState(ACCOUNT);
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
@@ -167,6 +172,9 @@ function App() {
                 command: COMMENDS.MsgInfo,
                 data: `success: ${account.nonce.network}:${res.digest}`,
               });
+              const value = account && (await getBalance(account));
+              setBalance(value || 'n/a');
+              ref.current?.update(res.packageId);
             } else if (!!account?.zkAddress) {
               const res = await packageUpgrade(
                 account,
@@ -177,6 +185,9 @@ function App() {
                 command: COMMENDS.MsgInfo,
                 data: `success: ${account.nonce.network}:${res.digest}`,
               });
+              const value = account && (await getBalance(account));
+              setBalance(value || 'n/a');
+              ref.current?.update(res.packageId);
             }
           } catch (error) {
             vscode.postMessage({
@@ -333,7 +344,7 @@ function App() {
       </VSCodeButton>
 
       <VSCodeButton
-        style={{ width: '100%', marginBottom: '8px' }}
+        style={{ width: '100%' }}
         disabled={
           !hasTerminal ||
           !selectedPath ||
@@ -353,6 +364,7 @@ function App() {
       >
         {!upgradeToml ? 'Deploy' : 'Upgrade'}
       </VSCodeButton>
+      <PackageManager ref={ref} />
     </>
   );
 }
