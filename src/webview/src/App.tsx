@@ -241,7 +241,7 @@ function App() {
         value={network}
         disabled={!!account?.zkAddress?.address || login}
         onChange={(e) => {
-          e.target && setNetwork((e.target as any).value);
+          e.target && setNetwork((e.target as HTMLInputElement).value as NETWORK);
         }}
       >
         {NETWORKS.map((network, index) => (
@@ -275,7 +275,7 @@ function App() {
         value={selectedPath}
         onChange={(e) => {
           if (e.target) {
-            const path = (e.target as any).value;
+            const path = (e.target as HTMLInputElement).value;
             path &&
               vscode.postMessage({
                 command: COMMENDS.PackageSelect,
