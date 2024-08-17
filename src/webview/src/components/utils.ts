@@ -1,31 +1,101 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
 
-export const getPlaceholder = (type: SuiMoveNormalizedType): string => {
+const shortenAddress = (address: string): string => {
+  return `${address.slice(0, 6)}...`;
+};
+
+export const isComplexType = (type: SuiMoveNormalizedType) => {
+  return (
+    typeof type === 'object' &&
+    ('Struct' in type ||
+      'Vector' in type ||
+      'Reference' in type ||
+      'MutableReference' in type)
+  );
+};
+
+export const getTypeName = (
+  selfAddress: string,
+  type: SuiMoveNormalizedType,
+): string => {
   if (typeof type === 'string') {
     return type;
   }
 
-  const temp = type as any;
-
-  if (temp.TypeParameter) {
-    return typeof temp.TypeParameter;
+  if ('Struct' in type) {
+    const struct = type.Struct;
+    const addressPart =
+      struct.address === selfAddress
+        ? '0xSelf'
+        : shortenAddress(struct.address);
+    const typeArgs = struct.typeArguments
+      .map((arg) => getTypeName(selfAddress, arg))
+      .join(', ');
+    return `Struct ${addressPart}::${struct.module}::${struct.name}<${typeArgs}>`;
   }
 
-  if (temp.Struct) {
-    return `<package_id>::${temp.Struct.module}::${temp.Struct.name}`;
+  if ('Vector' in type) {
+    return `Vector<${getTypeName(selfAddress, type.Vector)}>`;
   }
 
-  if (temp.Reference) {
-    return getPlaceholder(temp.Reference);
+  if ('TypeParameter' in type) {
+    return `TypeParameter ${type.TypeParameter}`;
   }
 
-  if (temp.MutableReference) {
-    return getPlaceholder(temp.MutableReference);
+  if ('Reference' in type) {
+    return `Reference<${getTypeName(selfAddress, type.Reference)}>`;
   }
 
-  if (temp.Vector) {
-    return `Vector<${getPlaceholder(temp.MutableReference)}>`;
+  if ('MutableReference' in type) {
+    return `MutableReference<${getTypeName(selfAddress, type.MutableReference)}>`;
   }
 
-  return 'unknown type';
+  return 'Unknown Type';
+};
+
+export const validateInput = (
+  value: string,
+  expectedType: SuiMoveNormalizedType,
+): boolean => {
+  // 먼저 expectedType이 기본 타입인지 확인
+  if (typeof expectedType === 'string') {
+    switch (expectedType) {
+      case 'U8':
+      case 'U16':
+      case 'U32':
+      case 'U64':
+      case 'U128':
+      case 'U256':
+        return /^\d+$/.test(value);
+      case 'Bool':
+        return /^(true|false)$/.test(value.toLowerCase());
+      case 'Address':
+        return /^0x[a-fA-F0-9]{64}$/.test(value);
+      default:
+        return true;
+    }
+  }
+
+  if ('Struct' in expectedType) {
+    return (
+      value.includes(expectedType.Struct.module) &&
+      value.includes(expectedType.Struct.name)
+    );
+  } else if ('Vector' in expectedType) {
+    const elements = value.split(',').map((el) => el.trim());
+    return elements.every((el) => validateInput(el, expectedType.Vector));
+  } else if (
+    'Reference' in expectedType ||
+    'MutableReference' in expectedType
+  ) {
+    const referencedType =
+      'Reference' in expectedType
+        ? expectedType.Reference
+        : expectedType.MutableReference;
+    return validateInput(value, referencedType);
+  } else if ('TypeParameter' in expectedType) {
+    return /^\d+$/.test(value);
+  }
+
+  return false;
 };
