@@ -30,8 +30,26 @@
         {
           "type": "webview",
           "id": "webviewViewProvider",
-          "name": "Sui Extension",
-          "icon": "media/icon.png"
+          "name": "Sui Extension"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.openDocs",
+        "title": "docs",
+        "icon": {
+          "dark": "media/docs-dark.svg",
+          "light": "media/docs-light.svg"
+        }
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "extension.openDocs",
+          "when": "view == webviewViewProvider",
+          "group": "navigation"
         }
       ]
     }
