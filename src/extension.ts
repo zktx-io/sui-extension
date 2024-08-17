@@ -10,6 +10,11 @@ export function activate(context: ExtensionContext) {
       provider,
     ),
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('extension.openDocs', () => {
+      vscode.env.openExternal(vscode.Uri.parse('https://docs.zktx.io'));
+    }),
+  );
 }
 
 // This method is called when your extension is deactivated
