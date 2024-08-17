@@ -118,6 +118,7 @@ export const Package = ({
               <Function
                 key={key}
                 name={name}
+                packageId={packageId}
                 func={expose[name]}
                 isDisable={excute}
                 onExcute={() => {

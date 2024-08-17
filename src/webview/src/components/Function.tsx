@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import {
   VSCodeButton,
+  VSCodeTextArea,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
-import { SuiMoveNormalizedFunction } from '@mysten/sui/client';
-import { getPlaceholder } from './utils';
+import {
+  SuiMoveNormalizedFunction,
+  SuiMoveNormalizedType,
+} from '@mysten/sui/client';
+import { getTypeName, isComplexType, validateInput } from './utils';
 
 const styles = {
   card: {
@@ -22,7 +26,7 @@ const styles = {
     height: 'auto',
     display: 'flex',
     alignItems: 'center',
-    padding: '8px 12px'
+    padding: '8px 12px',
   },
   title: {
     marginTop: '0px',
@@ -49,19 +53,51 @@ const styles = {
 
 export const Function = ({
   name,
+  packageId,
   func,
   isDisable,
   onExcute,
 }: {
   name: string;
+  packageId: string;
   func: SuiMoveNormalizedFunction;
   isDisable: boolean;
   onExcute: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValues, setInputValues] = useState<string[]>(
+    new Array(func.parameters.length).fill(''),
+  );
+  const [inputErrors, setInputErrors] = useState<boolean[]>(
+    new Array(func.parameters.length).fill(false),
+  );
+
+  const allFieldsValid =
+    inputErrors.every((error) => !error) &&
+    inputValues.every((value) => value.trim() !== '');
 
   const toggleCard = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleInputChange = (
+    index: number,
+    value: string,
+    expectedType: SuiMoveNormalizedType,
+  ) => {
+    const newInputValues = [...inputValues];
+    const newInputErrors = [...inputErrors];
+
+    newInputValues[index] = value;
+
+    if (value.trim()) {
+      newInputErrors[index] = !validateInput(value, expectedType);
+    } else {
+      newInputErrors[index] = false;
+    }
+
+    setInputValues(newInputValues);
+    setInputErrors(newInputErrors);
   };
 
   return (
@@ -96,10 +132,39 @@ export const Function = ({
                     <label style={{ fontSize: '11px', color: 'GrayText' }}>
                       {`Arg ${key}`}
                     </label>
-                    <VSCodeTextField
-                      style={{ width: '100%' }}
-                      placeholder={getPlaceholder(item)}
-                    />
+                    {isComplexType(item) ? (
+                      <VSCodeTextArea
+                        rows={3}
+                        style={{ width: '100%' }}
+                        placeholder={getTypeName(packageId, item)}
+                        value={inputValues[key]}
+                        onInput={(e) =>
+                          handleInputChange(
+                            key,
+                            (e.target as HTMLTextAreaElement).value,
+                            item,
+                          )
+                        }
+                      />
+                    ) : (
+                      <VSCodeTextField
+                        style={{ width: '100%' }}
+                        placeholder={getTypeName(packageId, item)}
+                        value={inputValues[key]}
+                        onInput={(e) =>
+                          handleInputChange(
+                            key,
+                            (e.target as HTMLInputElement).value,
+                            item,
+                          )
+                        }
+                      />
+                    )}
+                    {inputErrors[key] && (
+                      <span style={{ color: 'red', fontSize: '11px' }}>
+                        Invalid value for type {getTypeName(packageId, item)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </>
@@ -111,8 +176,11 @@ export const Function = ({
                 marginTop: '8px',
               }}
             >
-              <VSCodeButton disabled={isDisable} onClick={onExcute}>
-                Excute
+              <VSCodeButton
+                disabled={isDisable || !allFieldsValid}
+                onClick={onExcute}
+              >
+                Execute
               </VSCodeButton>
             </div>
           </div>
