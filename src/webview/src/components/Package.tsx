@@ -17,15 +17,12 @@ export type Client = SuiClient;
 export type Receipt = SuiTransactionBlockResponse;
 
 export const Package = ({
-  client,
   packageId,
+  data,
 }: {
-  client: Client;
   packageId: string;
+  data: { [module: string]: SuiMoveNormalizedModule };
 }) => {
-  const [functions, setFunctions] = useState<{
-    [module: string]: SuiMoveNormalizedModule;
-  }>({});
   const [modules, setModules] = useState<string[]>([]);
   const [module, setModule] = useState<string | undefined>(undefined);
   const [expose, setExpose] = useState<
@@ -37,37 +34,28 @@ export const Package = ({
   const [excute, setExcute] = useState<boolean>(false);
 
   useEffect(() => {
-    const updateFunctions = async () => {
-      const res: { [module: string]: SuiMoveNormalizedModule } =
-        await client.getNormalizedMoveModulesByPackage({
-          package: packageId,
-        });
-      setFunctions(res);
-      const temp = Object.keys(res).sort();
-      if (temp.length > 0) {
-        setModules(temp);
-        setModule(temp[0]);
-        const entryFunctions = Object.fromEntries(
-          Object.entries(res[temp[0]].exposedFunctions).filter(
-            ([, value]) => value.isEntry,
-          ),
-        );
-        setExpose(
-          Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
-        );
-      } else {
-        setModules([]);
-        setModule(undefined);
-        setExpose(undefined);
-      }
-    };
-    updateFunctions();
-  }, [client, packageId]);
+    const temp = Object.keys(data).sort();
+    if (temp.length > 0) {
+      setModules(temp);
+      setModule(temp[0]);
+      const entryFunctions = Object.fromEntries(
+        Object.entries(data[temp[0]].exposedFunctions).filter(
+          ([, value]) => value.isEntry,
+        ),
+      );
+      setExpose(
+        Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
+      );
+    } else {
+      setModules([]);
+      setModule(undefined);
+      setExpose(undefined);
+    }
+  }, [data]);
 
   return (
     <>
-      <VSCodeDivider style={{ marginBottom: '6px', marginTop: '18px' }} />
-
+      <VSCodeDivider style={{ marginTop: '10px', marginBottom: '8px' }} />
       <div
         style={{
           width: '100%',
@@ -88,10 +76,10 @@ export const Package = ({
           value={module}
           onChange={(e) => {
             if (e.target) {
-              const key = (e.target as any).value;
+              const key = (e.target as HTMLInputElement).value;
               setModule(key);
               const entryFunctions = Object.fromEntries(
-                Object.entries(functions[key].exposedFunctions).filter(
+                Object.entries(data[key].exposedFunctions).filter(
                   ([, value]) => value.isEntry,
                 ),
               );

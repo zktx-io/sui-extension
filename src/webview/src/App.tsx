@@ -175,7 +175,7 @@ function App() {
               });
               const value = account && (await getBalance(account));
               setBalance(value || 'n/a');
-              ref.current?.update(res.packageId);
+              ref.current?.addPackage(res.packageId);
             } else if (!!account?.zkAddress) {
               const res = await packageUpgrade(
                 account,
@@ -188,7 +188,7 @@ function App() {
               });
               const value = account && (await getBalance(account));
               setBalance(value || 'n/a');
-              ref.current?.update(res.packageId);
+              ref.current?.addPackage(res.packageId);
             }
           } catch (error) {
             vscode.postMessage({
@@ -241,7 +241,8 @@ function App() {
         value={network}
         disabled={!!account?.zkAddress?.address || login}
         onChange={(e) => {
-          e.target && setNetwork((e.target as HTMLInputElement).value as NETWORK);
+          e.target &&
+            setNetwork((e.target as HTMLInputElement).value as NETWORK);
         }}
       >
         {NETWORKS.map((network, index) => (
