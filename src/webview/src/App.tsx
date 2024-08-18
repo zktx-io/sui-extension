@@ -4,41 +4,31 @@ import {
   VSCodeDivider,
   VSCodeDropdown,
   VSCodeOption,
-  VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import { useRecoilState } from 'recoil';
 import { parse } from 'smol-toml';
 
 import './App.css';
 
-import { ACCOUNT, NETWORK, NETWORKS } from './recoil';
+import { ACCOUNT } from './recoil';
 import { SpinButton } from './components/SpinButton';
 import { vscode } from './utilities/vscode';
 import { COMMENDS } from './utilities/commends';
-import { googleLogin } from './utilities/googleLogin';
-import { createNonce } from './utilities/createNonce';
-import { createProof } from './utilities/createProof';
 
+import { Account, AccountHandles } from './components/Account';
 import { packagePublish } from './utilities/packagePublish';
 import { packageUpgrade } from './utilities/packageUpgrade';
-import { getBalance } from './utilities/getBalance';
 import {
   PackageManager,
   PackageManagerHandles,
 } from './components/PackageManager';
 
 function App() {
-  const initialized = useRef<boolean>(false);
-  const ref = useRef<PackageManagerHandles>(null);
+  const refAccount = useRef<AccountHandles>(null);
+  const refPackageManager = useRef<PackageManagerHandles>(null);
 
-  const [account, setAccount] = useRecoilState(ACCOUNT);
-  const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
-  const [balance, setBalance] = useState<string>('n/a');
-
-  const [isLogin, setIsLogin] = useState<boolean>(false);
+  const [account] = useRecoilState(ACCOUNT);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [hasTerminal, setHasTerminal] = useState<boolean>(false);
-
   const [selectedPath, setSelectedPath] = useState<string | undefined>(
     undefined,
   );
@@ -47,105 +37,10 @@ function App() {
   >([]);
   const [upgradeToml, setUpgradeToml] = useState<string>('');
 
-  const handleLogin = async () => {
-    setIsLogin(true);
-    const {
-      nonce,
-      expiration,
-      randomness,
-      ephemeralKeyPair: { publicKey, privateKey },
-    } = await createNonce(network);
-    setAccount({
-      nonce: {
-        expiration,
-        randomness,
-        network,
-        publicKey,
-        privateKey,
-      },
-    });
-    await googleLogin(nonce);
-  };
-
-  const handleLogout = async () => {
-    vscode.postMessage({
-      command: COMMENDS.StoreAccount,
-      data: undefined,
-    });
-    setAccount(undefined);
-  };
-
   useEffect(() => {
-    const updateBalance = async () => {
-      try {
-        const value = account && (await getBalance(account));
-        setBalance(value || 'n/a');
-      } catch (error) {
-        setBalance('n/a');
-      }
-    };
-
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.Env:
-          {
-            const {
-              hasTerminal: terminal,
-              account: loaddedAccount,
-              state,
-            } = message.data;
-            setHasTerminal(terminal);
-            loaddedAccount && setAccount(loaddedAccount);
-            if (state) {
-              const { path: tempPath } = JSON.parse(state);
-              vscode.postMessage({
-                command: COMMENDS.PackageSelect,
-                data: tempPath,
-              });
-            }
-          }
-          break;
-        case COMMENDS.LoginJwt:
-          if (account && message.data) {
-            try {
-              const { address, proof, salt } = await createProof(
-                account.nonce,
-                message.data,
-              );
-              setAccount({
-                ...account,
-                zkAddress: {
-                  address,
-                  proof,
-                  salt,
-                  jwt: message.data,
-                },
-              });
-              vscode.postMessage({
-                command: COMMENDS.StoreAccount,
-                data: {
-                  ...account,
-                  zkAddress: {
-                    address,
-                    proof,
-                    salt,
-                    jwt: message.data,
-                  },
-                },
-              });
-            } catch (error) {
-              vscode.postMessage({
-                command: COMMENDS.MsgError,
-                data: `${error}`,
-              });
-            } finally {
-              setIsLogin(false);
-            }
-          } else {
-            setIsLogin(false);
-          }
-          break;
         case COMMENDS.PackageList:
           {
             const temp = (
@@ -189,9 +84,8 @@ function App() {
                 command: COMMENDS.MsgInfo,
                 data: `success: ${account.nonce.network}:${res.digest}`,
               });
-              const value = account && (await getBalance(account));
-              setBalance(value || 'n/a');
-              ref.current?.addPackage(res.packageId);
+              refAccount.current?.updateBalance();
+              refPackageManager.current?.addPackage(res.packageId);
             } else if (!!account?.zkAddress) {
               const res = await packageUpgrade(
                 account,
@@ -202,9 +96,8 @@ function App() {
                 command: COMMENDS.MsgInfo,
                 data: `success: ${account.nonce.network}:${res.digest}`,
               });
-              const value = account && (await getBalance(account));
-              setBalance(value || 'n/a');
-              ref.current?.addPackage(res.packageId);
+              refAccount.current?.updateBalance();
+              refPackageManager.current?.addPackage(res.packageId);
             }
           } catch (error) {
             vscode.postMessage({
@@ -222,68 +115,15 @@ function App() {
 
     window.addEventListener('message', handleMessage);
 
-    if (!initialized.current) {
-      initialized.current = true;
-      vscode.postMessage({ command: COMMENDS.Env });
-    }
-
-    updateBalance();
-
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [account, selectedPath, setAccount, upgradeToml]);
+  }, [account, selectedPath, upgradeToml]);
 
   return (
     <>
-      <label style={{ fontSize: '11px', color: 'GrayText' }}>ACCOUNT</label>
-      <VSCodeTextField
-        style={{ width: '100%' }}
-        readOnly
-        value={account?.zkAddress?.address || ''}
-      />
-      <div
-        style={{
-          fontSize: '11px',
-          color: 'GrayText',
-          marginBottom: '8px',
-          textAlign: 'right',
-        }}
-      >{`Balance: ${balance}`}</div>
+      <Account ref={refAccount} />
 
-      <label style={{ fontSize: '11px', color: 'GrayText' }}>NETWORK</label>
-      <VSCodeDropdown
-        style={{ width: '100%', marginBottom: '8px' }}
-        value={network}
-        disabled={!!account?.zkAddress?.address || isLogin}
-        onChange={(e) => {
-          e.target &&
-            setNetwork((e.target as HTMLInputElement).value as NETWORK);
-        }}
-      >
-        {NETWORKS.map((network, index) => (
-          <VSCodeOption key={index} value={network}>
-            {network}
-          </VSCodeOption>
-        ))}
-      </VSCodeDropdown>
-      {!account?.zkAddress ? (
-        <SpinButton
-          title="Google Login"
-          spin={isLogin}
-          disabled={isLogin}
-          width="100%"
-          onClick={handleLogin}
-        />
-      ) : (
-        <VSCodeButton
-          style={{ width: '100%' }}
-          disabled={isLogin}
-          onClick={handleLogout}
-        >
-          Logout
-        </VSCodeButton>
-      )}
       <VSCodeDivider style={{ marginTop: '10px', marginBottom: '8px' }} />
 
       <label style={{ fontSize: '11px', color: 'GrayText' }}>PACKAGE</label>
@@ -310,7 +150,7 @@ function App() {
 
       <VSCodeButton
         style={{ width: '100%', marginBottom: '8px' }}
-        disabled={!hasTerminal || !selectedPath}
+        disabled={!refAccount.current?.hasTerminal || !selectedPath}
         onClick={() => {
           vscode.postMessage({
             command: COMMENDS.Compile,
@@ -327,7 +167,7 @@ function App() {
           marginBottom: '8px',
           backgroundColor: '#ff9800',
         }}
-        disabled={!hasTerminal || !selectedPath}
+        disabled={!refAccount.current?.hasTerminal || !selectedPath}
         onClick={() => {
           vscode.postMessage({
             command: COMMENDS.UintTest,
@@ -342,7 +182,7 @@ function App() {
         title={!upgradeToml ? 'Deploy' : 'Upgrade'}
         spin={isLoading}
         disabled={
-          !hasTerminal ||
+          !refAccount.current?.hasTerminal ||
           !selectedPath ||
           !account?.zkAddress?.address ||
           isLoading
@@ -359,7 +199,7 @@ function App() {
           }
         }}
       />
-      <PackageManager ref={ref} />
+      <PackageManager ref={refPackageManager} />
     </>
   );
 }
