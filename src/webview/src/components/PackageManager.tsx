@@ -30,7 +30,7 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
     }>({});
 
     const [packageId, setPackageId] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const updateFunctions = async (objectId: string) => {
       if (client && !packages[objectId]) {
@@ -57,9 +57,9 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
     }));
 
     const handleLoading = async () => {
-      setLoading(true);
+      setIsLoading(true);
       await updateFunctions(packageId);
-      setLoading(false);
+      setIsLoading(false);
     };
 
     useEffect(() => {
@@ -82,14 +82,14 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
           <VSCodeTextField
             style={{ width: '100%', marginBottom: '8px' }}
             placeholder="Package Id"
-            disabled={loading}
+            disabled={isLoading}
             value={packageId}
             onInput={(e) => setPackageId((e.target as HTMLInputElement).value)}
           />
           <SpinButton
             title="Load"
-            spin={loading}
-            disabled={loading}
+            spin={isLoading}
+            disabled={isLoading}
             width="100%"
             onClick={handleLoading}
           />
