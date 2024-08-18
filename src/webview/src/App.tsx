@@ -100,22 +100,12 @@ function App() {
           break;
         case COMMENDS.LoginJwt:
           if (account && message.data) {
-            const { address, proof, salt } = await createProof(
-              account.nonce,
-              message.data,
-            );
-            setAccount({
-              ...account,
-              zkAddress: {
-                address,
-                proof,
-                salt,
-                jwt: message.data,
-              },
-            });
-            vscode.postMessage({
-              command: COMMENDS.StoreAccount,
-              data: {
+            try {
+              const { address, proof, salt } = await createProof(
+                account.nonce,
+                message.data,
+              );
+              setAccount({
                 ...account,
                 zkAddress: {
                   address,
@@ -123,9 +113,27 @@ function App() {
                   salt,
                   jwt: message.data,
                 },
-              },
-            });
-            setLogin(false);
+              });
+              vscode.postMessage({
+                command: COMMENDS.StoreAccount,
+                data: {
+                  ...account,
+                  zkAddress: {
+                    address,
+                    proof,
+                    salt,
+                    jwt: message.data,
+                  },
+                },
+              });
+            } catch (error) {
+              vscode.postMessage({
+                command: COMMENDS.MsgError,
+                data: `${error}`,
+              });
+            } finally {
+              setLogin(false);
+            }
           } else {
             setLogin(false);
           }
