@@ -8,7 +8,7 @@ export enum NETWORK {
 
 export const NETWORKS: NETWORK[] = [
   NETWORK.DevNet,
-  NETWORK.TestNet,
+  // NETWORK.TestNet,
   // NETWORK.MainNet,
 ];
 
