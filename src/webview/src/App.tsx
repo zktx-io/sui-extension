@@ -35,8 +35,8 @@ function App() {
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
   const [balance, setBalance] = useState<string>('n/a');
 
-  const [login, setLogin] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLogin, setIsLogin] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasTerminal, setHasTerminal] = useState<boolean>(false);
 
   const [selectedPath, setSelectedPath] = useState<string | undefined>(
@@ -48,7 +48,7 @@ function App() {
   const [upgradeToml, setUpgradeToml] = useState<string>('');
 
   const handleLogin = async () => {
-    setLogin(true);
+    setIsLogin(true);
     const {
       nonce,
       expiration,
@@ -132,10 +132,10 @@ function App() {
                 data: `${error}`,
               });
             } finally {
-              setLogin(false);
+              setIsLogin(false);
             }
           } else {
-            setLogin(false);
+            setIsLogin(false);
           }
           break;
         case COMMENDS.PackageList:
@@ -204,7 +204,7 @@ function App() {
               data: `${error}`,
             });
           } finally {
-            setLoading(false);
+            setIsLoading(false);
           }
           break;
         default:
@@ -247,7 +247,7 @@ function App() {
       <VSCodeDropdown
         style={{ width: '100%', marginBottom: '8px' }}
         value={network}
-        disabled={!!account?.zkAddress?.address || login}
+        disabled={!!account?.zkAddress?.address || isLogin}
         onChange={(e) => {
           e.target &&
             setNetwork((e.target as HTMLInputElement).value as NETWORK);
@@ -262,15 +262,15 @@ function App() {
       {!account?.zkAddress ? (
         <SpinButton
           title="Google Login"
-          spin={login}
-          disabled={login}
+          spin={isLogin}
+          disabled={isLogin}
           width="100%"
           onClick={handleLogin}
         />
       ) : (
         <VSCodeButton
           style={{ width: '100%' }}
-          disabled={login}
+          disabled={isLogin}
           onClick={handleLogout}
         >
           Logout
@@ -332,18 +332,18 @@ function App() {
 
       <SpinButton
         title={!upgradeToml ? 'Deploy' : 'Upgrade'}
-        spin={loading}
+        spin={isLoading}
         disabled={
           !hasTerminal ||
           !selectedPath ||
           !account?.zkAddress?.address ||
-          loading
+          isLoading
         }
         width="100%"
         onClick={() => {
           const selected = fileList.find((item) => item.path === selectedPath);
           if (selected) {
-            setLoading(true);
+            setIsLoading(true);
             vscode.postMessage({
               command: COMMENDS.Deploy,
               data: selected.path,
