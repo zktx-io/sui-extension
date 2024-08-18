@@ -42,6 +42,10 @@ export const createProof = async (
     }),
   });
 
-  const data = await res.json();
-  return { address, proof: JSON.stringify(data), salt };
+  if (res.ok) {
+    const data = await res.json();
+    return { address, proof: JSON.stringify(data), salt };
+  } else {
+    throw new Error('Login Fail - create proof error');
+  }
 };
