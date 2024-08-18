@@ -56,12 +56,14 @@ const styles = {
 };
 
 export const Function = ({
+  isWrire,
   name,
   packageId,
   func,
   isDisable,
   onExcute,
 }: {
+  isWrire: boolean;
   name: string;
   packageId: string;
   func: SuiMoveNormalizedFunction;
@@ -202,7 +204,7 @@ export const Function = ({
                 disabled={isDisable || !allFieldsValid}
                 onClick={onExcute}
               >
-                Execute
+                {isWrire ? 'Write' : 'Read'}
               </VSCodeButton>
             </div>
           </div>

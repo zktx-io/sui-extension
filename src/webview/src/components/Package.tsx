@@ -25,7 +25,7 @@ export const Package = ({
 }) => {
   const [modules, setModules] = useState<string[]>([]);
   const [module, setModule] = useState<string | undefined>(undefined);
-  const [expose, setExpose] = useState<
+  const [funcWrite, setFuncWrite] = useState<
     | {
         [name: string]: SuiMoveNormalizedFunction;
       }
@@ -43,13 +43,13 @@ export const Package = ({
           ([, value]) => value.isEntry,
         ),
       );
-      setExpose(
+      setFuncWrite(
         Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
       );
     } else {
       setModules([]);
       setModule(undefined);
-      setExpose(undefined);
+      setFuncWrite(undefined);
     }
   }, [data]);
 
@@ -83,14 +83,14 @@ export const Package = ({
                   ([, value]) => value.isEntry,
                 ),
               );
-              setExpose(
+              setFuncWrite(
                 Object.keys(entryFunctions).length > 0
                   ? entryFunctions
                   : undefined,
               );
             } else {
               setModule(undefined);
-              setExpose(undefined);
+              setFuncWrite(undefined);
             }
           }}
         >
@@ -101,15 +101,17 @@ export const Package = ({
           ))}
         </VSCodeDropdown>
         <div style={{ marginTop: '16px' }}>
-          {expose ? (
-            Object.keys(expose).map((name, key) => (
+          {funcWrite ? (
+            Object.keys(funcWrite).map((name, key) => (
               <Function
                 key={key}
+                isWrire={true}
                 name={name}
                 packageId={packageId}
-                func={expose[name]}
+                func={funcWrite[name]}
                 isDisable={excute}
                 onExcute={() => {
+                  // TODO
                   setExcute(true);
                 }}
               />
