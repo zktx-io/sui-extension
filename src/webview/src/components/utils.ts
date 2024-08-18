@@ -1,9 +1,5 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
 
-const shortenAddress = (address: string): string => {
-  return `${address.slice(0, 6)}...`;
-};
-
 export const isComplexType = (type: SuiMoveNormalizedType) => {
   return (
     typeof type === 'object' &&
@@ -14,28 +10,21 @@ export const isComplexType = (type: SuiMoveNormalizedType) => {
   );
 };
 
-export const getTypeName = (
-  selfAddress: string,
-  type: SuiMoveNormalizedType,
-): string => {
+export const getTypeName = (type: SuiMoveNormalizedType): string => {
   if (typeof type === 'string') {
     return type;
   }
 
   if ('Struct' in type) {
     const struct = type.Struct;
-    const addressPart =
-      struct.address === selfAddress
-        ? '0xSelf'
-        : shortenAddress(struct.address);
     const typeArgs = struct.typeArguments
-      .map((arg) => getTypeName(selfAddress, arg))
+      .map((arg) => getTypeName(arg))
       .join(', ');
-    return `Struct ${addressPart}::${struct.module}::${struct.name}<${typeArgs}>`;
+    return `${struct.address}::${struct.module}::${struct.name}${typeArgs && `<${typeArgs}>`}`;
   }
 
   if ('Vector' in type) {
-    return `Vector<${getTypeName(selfAddress, type.Vector)}>`;
+    return `Vector<${getTypeName(type.Vector)}>`;
   }
 
   if ('TypeParameter' in type) {
@@ -43,11 +32,11 @@ export const getTypeName = (
   }
 
   if ('Reference' in type) {
-    return `Reference<${getTypeName(selfAddress, type.Reference)}>`;
+    return `${getTypeName(type.Reference)}`;
   }
 
   if ('MutableReference' in type) {
-    return `MutableReference<${getTypeName(selfAddress, type.MutableReference)}>`;
+    return `${getTypeName(type.MutableReference)}`;
   }
 
   return 'Unknown Type';
