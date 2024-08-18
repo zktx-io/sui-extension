@@ -90,11 +90,19 @@ function App() {
       switch (message.command) {
         case COMMENDS.Env:
           {
-            const { hasTerminal: terminal, account: loadedAccpimt } =
-              message.data;
+            const {
+              hasTerminal: terminal,
+              account: loaddedAccount,
+              state,
+            } = message.data;
             setHasTerminal(terminal);
-            if (loadedAccpimt) {
-              setAccount(loadedAccpimt);
+            loaddedAccount && setAccount(loaddedAccount);
+            if (state) {
+              const { path: tempPath } = JSON.parse(state);
+              vscode.postMessage({
+                command: COMMENDS.PackageSelect,
+                data: tempPath,
+              });
             }
           }
           break;
