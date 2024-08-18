@@ -16,6 +16,10 @@ import { Function } from './Function';
 export type Client = SuiClient;
 export type Receipt = SuiTransactionBlockResponse;
 
+type IFunctions = {
+  [name: string]: SuiMoveNormalizedFunction;
+};
+
 export const Package = ({
   packageId,
   data,
@@ -25,13 +29,8 @@ export const Package = ({
 }) => {
   const [modules, setModules] = useState<string[]>([]);
   const [module, setModule] = useState<string | undefined>(undefined);
-  const [funcWrite, setFuncWrite] = useState<
-    | {
-        [name: string]: SuiMoveNormalizedFunction;
-      }
-    | undefined
-  >(undefined);
   const [excute, setExcute] = useState<boolean>(false);
+  const [funcWrite, setFuncWrite] = useState<IFunctions | undefined>(undefined);
 
   useEffect(() => {
     const temp = Object.keys(data).sort();
@@ -107,7 +106,6 @@ export const Package = ({
                 key={key}
                 isWrire={true}
                 name={name}
-                packageId={packageId}
                 func={funcWrite[name]}
                 isDisable={excute}
                 onExcute={() => {

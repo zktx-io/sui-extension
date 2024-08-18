@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   VSCodeButton,
   VSCodeTextArea,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import {
+  SuiMoveAbilitySet,
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedType,
 } from '@mysten/sui/client';
@@ -58,33 +59,25 @@ const styles = {
 export const Function = ({
   isWrire,
   name,
-  packageId,
   func,
   isDisable,
   onExcute,
 }: {
   isWrire: boolean;
   name: string;
-  packageId: string;
   func: SuiMoveNormalizedFunction;
   isDisable: boolean;
   onExcute: () => void;
 }) => {
+  const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValues, setInputValues] = useState<string[]>(
-    new Array(func.parameters.length).fill(''),
-  );
-  const [inputErrors, setInputErrors] = useState<boolean[]>(
-    new Array(func.parameters.length).fill(false),
-  );
+  const [inputValues, setInputValues] = useState<string[]>([]);
+  const [inputErrors, setInputErrors] = useState<boolean[]>([]);
 
   const allFieldsValid =
     inputErrors.every((error) => !error) &&
     inputValues.every((value) => value.trim() !== '');
-
-  const toggleCard = () => {
-    setIsOpen(!isOpen);
-  };
 
   const handleInputChange = (
     index: number,
@@ -106,10 +99,37 @@ export const Function = ({
     setInputErrors(newInputErrors);
   };
 
+  useEffect(() => {
+    const temp = func.parameters.filter((type) => {
+      if (typeof type === 'object') {
+        const struct =
+          (type as any).MutableReference?.Struct ||
+          (type as any).Reference?.Struct ||
+          (type as any).Struct;
+        return !(
+          struct &&
+          struct.address === '0x2' &&
+          struct.module === 'tx_context' &&
+          struct.name === 'TxContext'
+        );
+      }
+      return true;
+    });
+    setParameters(temp);
+    setInputValues(new Array(temp.length).fill(''));
+    setInputErrors(new Array(temp.length).fill(''));
+    setIsOpen(false);
+  }, [func]);
+
   return (
     <div style={styles.card}>
       <div style={{ flexDirection: 'column' }}>
-        <div style={styles.titleBar} onClick={toggleCard}>
+        <div
+          style={styles.titleBar}
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
           <div style={styles.title}>{name}</div>
           <div
             style={{
@@ -142,16 +162,9 @@ export const Function = ({
               ...(isOpen ? styles.openContentVisible : {}),
             }}
           >
-            {func.typeParameters.length > 0 && (
+            {parameters.length > 0 && (
               <>
-                <small>Type Parameters</small>
-                <p>{JSON.stringify(func.typeParameters)}</p>
-              </>
-            )}
-            {func.parameters.length > 0 && (
-              <>
-                <small>Parameters</small>
-                {func.parameters.map((item, key) => (
+                {parameters.map((item, key) => (
                   <div key={key}>
                     <label style={{ fontSize: '11px', color: 'GrayText' }}>
                       {`Arg ${key}`}
@@ -160,7 +173,7 @@ export const Function = ({
                       <VSCodeTextArea
                         rows={3}
                         style={{ width: '100%' }}
-                        placeholder={getTypeName(packageId, item)}
+                        placeholder={getTypeName(item)}
                         value={inputValues[key]}
                         onInput={(e) =>
                           handleInputChange(
@@ -173,7 +186,7 @@ export const Function = ({
                     ) : (
                       <VSCodeTextField
                         style={{ width: '100%' }}
-                        placeholder={getTypeName(packageId, item)}
+                        placeholder={getTypeName(item)}
                         value={inputValues[key]}
                         onInput={(e) =>
                           handleInputChange(
@@ -186,7 +199,7 @@ export const Function = ({
                     )}
                     {inputErrors[key] && (
                       <span style={{ color: 'red', fontSize: '11px' }}>
-                        Invalid value for type {getTypeName(packageId, item)}
+                        Invalid value for type {getTypeName(item)}
                       </span>
                     )}
                   </div>
