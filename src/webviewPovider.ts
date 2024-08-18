@@ -6,6 +6,7 @@ import { COMMENDS } from './webview/src/utilities/commends';
 import { FileWathcer } from './utilities/fileWatcher';
 import { accountLoad, accountStore } from './utilities/account';
 import { exchangeToken } from './utilities/authCode';
+import { cleanObject, stateLoad, stateUpdate } from './utilities/state';
 import {
   COMPILER,
   COMPILER_URL,
@@ -68,12 +69,13 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
         switch (command) {
           case COMMENDS.Env:
             {
-              const account = accountLoad(this._context);
               this._view?.webview.postMessage({
                 command,
-                data: !account
-                  ? { hasTerminal: hasTerminal() }
-                  : { hasTerminal: hasTerminal(), account },
+                data: cleanObject({
+                  hasTerminal: hasTerminal(),
+                  state: stateLoad(this._context),
+                  account: accountLoad(this._context),
+                }),
               });
               await this._fileWatcher?.initializePackageList();
             }
@@ -122,6 +124,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.PackageSelect:
             {
+              await stateUpdate(this._context, { path: data });
               const upgradeToml = await this._fileWatcher?.getUpgradeToml(data);
               this._view?.webview.postMessage({
                 command: COMMENDS.PackageSelect,
