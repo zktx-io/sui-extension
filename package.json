@@ -1,14 +1,14 @@
 {
   "name": "sui-extension",
-  "displayName": "sui extension",
+  "displayName": "Sui Extension",
   "description": "Supports the compilation, deployment, and testing of Sui smart contracts, boosting development productivity in GitHub Codespaces. Enables unified management of frontend and backend development within a single repository.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.92.0"
   },
   "publisher": "zktxio",
   "categories": [
-    "Other"
+    "Education", "Programming Languages", "Other"
   ],
   "icon": "media/icon.png",
   "activationEvents": [
