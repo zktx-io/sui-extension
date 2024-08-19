@@ -49,9 +49,7 @@ export const exchangeToken = (
 
   const intervalId = setInterval(async () => {
     try {
-      const tokenResponse = await fetch(
-        `${UrlAuthCode}?state=${state}`,
-      );
+      const tokenResponse = await fetch(`${UrlAuthCode}?state=${state}`);
       const { authCode } = await tokenResponse.json();
 
       if (authCode) {

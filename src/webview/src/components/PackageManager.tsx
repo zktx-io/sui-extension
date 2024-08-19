@@ -11,7 +11,7 @@ import {
   SuiMoveNormalizedModule,
 } from '@mysten/sui/client';
 import { useRecoilState } from 'recoil';
-import { Client, Package } from './Package';
+import { Package } from './Package';
 import { ACCOUNT } from '../recoil';
 import {
   VSCodeDivider,
@@ -34,7 +34,7 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
     const initialized = useRef<boolean>(false);
 
     const [account] = useRecoilState(ACCOUNT);
-    const [client, setClinet] = useState<Client | undefined>(undefined);
+    const [client, setClinet] = useState<SuiClient | undefined>(undefined);
 
     const [packages, setPackages] = useState<{
       [packageId: string]: {
@@ -137,7 +137,12 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
           Object.keys(packages)
             .sort((a, b) => packages[b].index - packages[a].index)
             .map((id, key) => (
-              <Package key={key} packageId={id} data={packages[id].data} />
+              <Package
+                key={key}
+                client={client}
+                packageId={id}
+                data={packages[id].data}
+              />
             ))}
       </>
     );

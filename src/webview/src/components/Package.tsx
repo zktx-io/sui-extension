@@ -9,12 +9,14 @@ import {
   SuiClient,
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedModule,
-  SuiTransactionBlockResponse,
 } from '@mysten/sui/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { vscode } from '../utilities/vscode';
 import { Function } from './Function';
 import { COMMENDS } from '../utilities/commends';
+import { useRecoilState } from 'recoil';
+import { ACCOUNT } from '../recoil';
+import { moveCall } from '../utilities/moveCall';
 
 const cardStyles = {
   card: {
@@ -52,23 +54,23 @@ const cardStyles = {
   },
 };
 
-export type Client = SuiClient;
-export type Receipt = SuiTransactionBlockResponse;
-
 type IFunctions = {
   [name: string]: SuiMoveNormalizedFunction;
 };
 
 export const Package = ({
+  client,
   packageId,
   data,
 }: {
+  client: SuiClient;
   packageId: string;
   data: { [module: string]: SuiMoveNormalizedModule };
 }) => {
+  const [account] = useRecoilState(ACCOUNT);
   const [modules, setModules] = useState<string[]>([]);
   const [module, setModule] = useState<string | undefined>(undefined);
-  const [excute, setExcute] = useState<boolean>(false);
+  const [isExcute, setIsExcute] = useState<boolean>(false);
   const [funcWrite, setFuncWrite] = useState<IFunctions | undefined>(undefined);
 
   const onDelete = () => {
@@ -76,6 +78,33 @@ export const Package = ({
       command: COMMENDS.PackageDelete,
       data: packageId,
     });
+  };
+
+  const onExcute = async (
+    name: string,
+    func: SuiMoveNormalizedFunction,
+    inputValues: string[],
+  ) => {
+    if (account && account.zkAddress && module) {
+      try {
+        setIsExcute(true);
+        const { digest } = await moveCall(
+          client,
+          account,
+          `${packageId}::${module}::${name}`,
+          func,
+          inputValues,
+        );
+        vscode.postMessage({
+          command: COMMENDS.MsgInfo,
+          data: `success: ${account.nonce.network}:${digest}`,
+        });
+      } catch (error) {
+        vscode.postMessage({ command: COMMENDS.MsgError, data: `${error}` });
+      } finally {
+        setIsExcute(false);
+      }
+    }
   };
 
   useEffect(() => {
@@ -170,11 +199,8 @@ export const Package = ({
                 isWrire={true}
                 name={name}
                 func={funcWrite[name]}
-                isDisable={excute}
-                onExcute={() => {
-                  // TODO
-                  setExcute(true);
-                }}
+                isDisable={isExcute}
+                onExcute={onExcute}
               />
             ))
           ) : (

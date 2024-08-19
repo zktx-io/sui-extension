@@ -5,7 +5,6 @@ import {
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import {
-  SuiMoveAbilitySet,
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedType,
 } from '@mysten/sui/client';
@@ -67,7 +66,11 @@ export const Function = ({
   name: string;
   func: SuiMoveNormalizedFunction;
   isDisable: boolean;
-  onExcute: () => void;
+  onExcute: (
+    name: string,
+    func: SuiMoveNormalizedFunction,
+    inputValues: string[],
+  ) => Promise<void>;
 }) => {
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
 
@@ -215,7 +218,9 @@ export const Function = ({
             >
               <VSCodeButton
                 disabled={isDisable || !allFieldsValid}
-                onClick={onExcute}
+                onClick={() => {
+                  onExcute(name, func, inputValues);
+                }}
               >
                 {isWrire ? 'Write' : 'Read'}
               </VSCodeButton>
