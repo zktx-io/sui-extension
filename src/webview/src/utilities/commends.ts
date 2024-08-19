@@ -15,10 +15,10 @@ export enum COMMENDS {
 }
 
 export const UrlCallback =
-  'https://us-central1-proof-key-exchange.cloudfunctions.net/callback'
+  'https://callback-b2sh2eqjia-uc.a.run.app'
 
 export const UrlAuthCode =
-  'https://us-central1-proof-key-exchange.cloudfunctions.net/getAuthCode'
+  'https://getauthcode-b2sh2eqjia-uc.a.run.app'
 
 export const ClientId =
   '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';
