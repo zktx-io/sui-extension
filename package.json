@@ -8,7 +8,9 @@
   },
   "publisher": "zktxio",
   "categories": [
-    "Education", "Programming Languages", "Other"
+    "Education",
+    "Programming Languages",
+    "Other"
   ],
   "icon": "media/icon.png",
   "activationEvents": [

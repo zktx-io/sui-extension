@@ -14,11 +14,9 @@ export enum COMMENDS {
   MsgError = 'message:error',
 }
 
-export const UrlCallback =
-  'https://callback-b2sh2eqjia-uc.a.run.app'
+export const UrlCallback = 'https://callback-b2sh2eqjia-uc.a.run.app';
 
-export const UrlAuthCode =
-  'https://getauthcode-b2sh2eqjia-uc.a.run.app'
+export const UrlAuthCode = 'https://getauthcode-b2sh2eqjia-uc.a.run.app';
 
 export const ClientId =
   '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';
