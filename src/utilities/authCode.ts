@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import {
   ClientId,
   ClientSecret,
-  PkceUrl,
+  UrlAuthCode,
+  UrlCallback,
 } from '../webview/src/utilities/commends';
 
 const exchangeAuthCodeForJwt = async (
@@ -19,7 +20,7 @@ const exchangeAuthCodeForJwt = async (
         code: authCode,
         client_id: ClientId,
         client_secret: ClientSecret,
-        redirect_uri: `${PkceUrl}/callback`,
+        redirect_uri: UrlCallback,
         grant_type: 'authorization_code',
         code_verifier: codeVerifier,
       }),
@@ -49,7 +50,7 @@ export const exchangeToken = (
   const intervalId = setInterval(async () => {
     try {
       const tokenResponse = await fetch(
-        `${PkceUrl}/getAuthCode?state=${state}`,
+        `${UrlAuthCode}?state=${state}`,
       );
       const { authCode } = await tokenResponse.json();
 

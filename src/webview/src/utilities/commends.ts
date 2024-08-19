@@ -14,7 +14,11 @@ export enum COMMENDS {
   MsgError = 'message:error',
 }
 
-export const PkceUrl = 'https://pkce.zktx.io';
+export const UrlCallback =
+  'https://us-central1-proof-key-exchange.cloudfunctions.net/callback'
+
+export const UrlAuthCode =
+  'https://us-central1-proof-key-exchange.cloudfunctions.net/getAuthCode'
 
 export const ClientId =
   '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';

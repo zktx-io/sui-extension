@@ -3,7 +3,7 @@ import SHA256 from 'crypto-js/sha256';
 import Base64 from 'crypto-js/enc-base64';
 import * as querystring from 'querystring';
 import { vscode } from './vscode';
-import { ClientId, COMMENDS, PkceUrl } from './commends';
+import { ClientId, COMMENDS, UrlCallback } from './commends';
 
 const generateLoginUrl = (
   state: string,
@@ -13,7 +13,7 @@ const generateLoginUrl = (
   return `https://accounts.google.com/o/oauth2/auth?${querystring.stringify({
     response_type: 'code',
     client_id: ClientId,
-    redirect_uri: `${PkceUrl}/callback`,
+    redirect_uri: UrlCallback,
     scope: 'openid profile email',
     nonce,
     state,
