@@ -124,11 +124,33 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.PackageSelect:
             {
-              await stateUpdate(this._context, { path: data });
+              stateUpdate(this._context, { path: data });
               const upgradeToml = await this._fileWatcher?.getUpgradeToml(data);
               this._view?.webview.postMessage({
                 command: COMMENDS.PackageSelect,
                 data: { path: data, data: upgradeToml || '' },
+              });
+            }
+            break;
+          case COMMENDS.PackageAdd:
+            {
+              const { packages } = stateUpdate(this._context, {
+                packages: data,
+              });
+              this._view?.webview.postMessage({
+                command: COMMENDS.PackageAdd,
+                data: { packages },
+              });
+            }
+            break;
+          case COMMENDS.PackageDelete:
+            {
+              const { packages } = stateUpdate(this._context, {
+                packageDelete: data,
+              });
+              this._view?.webview.postMessage({
+                command: COMMENDS.PackageDelete,
+                data: { packages },
               });
             }
             break;

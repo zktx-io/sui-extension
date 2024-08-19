@@ -1,22 +1,25 @@
 import * as vscode from 'vscode';
 
-export const stateUpdate = async (
+export const stateUpdate = (
   context: vscode.ExtensionContext,
   state: { [key: string]: any },
-) => {
+): { [key: string]: any } => {
   try {
-    const old = stateLoad(context) || '{}';
-    const parsed = { ...JSON.parse(old), ...state };
-    context.workspaceState.update('state', JSON.stringify(parsed));
+    const data = stateLoad(context);
+    state.path && (data.path = state.path);
+    state.packages && (data.packages = { ...data.packages, ...state.packages });
+    state.packageDelete && delete data.packages[state.packageDelete];
+    context.workspaceState.update('state', data);
+    return data;
   } catch (error) {
-    vscode.window.showErrorMessage('Failed to store state.');
+    return {};
   }
 };
 
 export const stateLoad = (
   context: vscode.ExtensionContext,
-): string | undefined => {
-  return context.workspaceState.get<string>('state');
+): { [key: string]: any } => {
+  return context.workspaceState.get<{ [key: string]: any }>('state') || {};
 };
 
 export const cleanObject = (obj: {

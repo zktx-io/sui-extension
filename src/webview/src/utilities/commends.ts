@@ -5,6 +5,8 @@ export enum COMMENDS {
   StoreAccount = 'storeAccount',
   PackageList = 'package:list',
   PackageSelect = 'package:select',
+  PackageAdd = 'package:add',
+  PackageDelete = 'package:delete',
   Compile = 'package:compile',
   UintTest = 'package:unitTest',
   Deploy = 'package:deploy',

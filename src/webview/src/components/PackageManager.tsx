@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {
   getFullnodeUrl,
   SuiClient,
@@ -15,32 +21,43 @@ import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
 
+type IModule = {
+  [name: string]: SuiMoveNormalizedModule;
+};
+
 export type PackageManagerHandles = {
   addPackage: (objectId: string) => Promise<void>;
 };
 
 export const PackageManager = forwardRef<PackageManagerHandles>(
   (props, ref) => {
+    const initialized = useRef<boolean>(false);
+
     const [account] = useRecoilState(ACCOUNT);
     const [client, setClinet] = useState<Client | undefined>(undefined);
 
-    const [index, setIndex] = useState<string[]>([]);
     const [packages, setPackages] = useState<{
-      [packageId: string]: { [module: string]: SuiMoveNormalizedModule };
+      [packageId: string]: {
+        index: number;
+        data: IModule;
+      };
     }>({});
-
     const [packageId, setPackageId] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const updateFunctions = async (objectId: string) => {
+    const loadPackageData = async (objectId: string) => {
       if (client && !packages[objectId]) {
         try {
-          const res: { [module: string]: SuiMoveNormalizedModule } =
+          const module: IModule =
             await client.getNormalizedMoveModulesByPackage({
               package: objectId,
             });
-          setPackages({ ...packages, [objectId]: res });
-          setIndex([objectId, ...index]);
+          vscode.postMessage({
+            command: COMMENDS.PackageAdd,
+            data: {
+              [objectId]: { index: Date.now(), data: module },
+            },
+          });
         } catch (error) {
           vscode.postMessage({
             command: COMMENDS.MsgError,
@@ -52,15 +69,9 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
 
     useImperativeHandle(ref, () => ({
       addPackage: async (objectId: string) => {
-        await updateFunctions(objectId);
+        await loadPackageData(objectId);
       },
     }));
-
-    const handleLoading = async () => {
-      setIsLoading(true);
-      await updateFunctions(packageId);
-      setIsLoading(false);
-    };
 
     useEffect(() => {
       if (account) {
@@ -70,6 +81,29 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
           }),
         );
       }
+
+      const handleMessage = (event: any) => {
+        const message = event.data;
+        switch (message.command) {
+          case COMMENDS.PackageAdd:
+          case COMMENDS.PackageDelete:
+            setPackages(message.data.packages);
+            break;
+          default:
+            break;
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      if (!initialized.current) {
+        initialized.current = true;
+        vscode.postMessage({ command: COMMENDS.PackageAdd, data: {} });
+      }
+
+      return () => {
+        window.removeEventListener('message', handleMessage);
+      };
     }, [account]);
 
     return (
@@ -91,13 +125,20 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
             spin={isLoading}
             disabled={isLoading}
             width="100%"
-            onClick={handleLoading}
+            onClick={async () => {
+              setIsLoading(true);
+              await loadPackageData(packageId);
+              setIsLoading(false);
+            }}
           />
         </div>
+        <VSCodeDivider style={{ marginTop: '10px', marginBottom: '10px' }} />
         {client &&
-          index.map((id, key) => (
-            <Package key={key} packageId={id} data={packages[id]} />
-          ))}
+          Object.keys(packages)
+            .sort((a, b) => packages[b].index - packages[a].index)
+            .map((id, key) => (
+              <Package key={key} packageId={id} data={packages[id].data} />
+            ))}
       </>
     );
   },

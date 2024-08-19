@@ -92,13 +92,12 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
             } = message.data;
             setHasTerminal(terminal);
             loaddedAccount && setAccount(loaddedAccount);
-            if (state) {
-              const { path: tempPath } = JSON.parse(state);
+            state &&
+              state.path &&
               vscode.postMessage({
                 command: COMMENDS.PackageSelect,
-                data: tempPath,
+                data: state.path,
               });
-            }
           }
           break;
         case COMMENDS.LoginJwt:

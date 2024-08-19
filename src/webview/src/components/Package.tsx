@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  VSCodeButton,
   VSCodeDivider,
   VSCodeDropdown,
   VSCodeOption,
@@ -11,7 +12,45 @@ import {
   SuiTransactionBlockResponse,
 } from '@mysten/sui/client';
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { vscode } from '../utilities/vscode';
 import { Function } from './Function';
+import { COMMENDS } from '../utilities/commends';
+
+const cardStyles = {
+  card: {
+    borderRadius: '4px',
+    border: '1px solid var(--vscode-editorGroup-border)',
+    backgroundColor: 'var(--vscode-editor-background)',
+    width: '100%',
+    marginBottom: '16px',
+  },
+  titleBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'var(--vscode-titleBar-activeBackground)',
+    padding: '8px 12px',
+    borderRadius: '4px 4px 0 0',
+    height: 'auto',
+  },
+  label: {
+    fontSize: '14px',
+    color: 'var(--vscode-foreground)',
+  },
+  deleteButton: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  divider: {
+    width: '100%',
+    marginTop: '0px',
+    marginBottom: '8px',
+  },
+  content: {
+    padding: '12px',
+  },
+};
 
 export type Client = SuiClient;
 export type Receipt = SuiTransactionBlockResponse;
@@ -31,6 +70,13 @@ export const Package = ({
   const [module, setModule] = useState<string | undefined>(undefined);
   const [excute, setExcute] = useState<boolean>(false);
   const [funcWrite, setFuncWrite] = useState<IFunctions | undefined>(undefined);
+
+  const onDelete = () => {
+    vscode.postMessage({
+      command: COMMENDS.PackageDelete,
+      data: packageId,
+    });
+  };
 
   useEffect(() => {
     const temp = Object.keys(data).sort();
@@ -53,14 +99,31 @@ export const Package = ({
   }, [data]);
 
   return (
-    <>
-      <VSCodeDivider style={{ marginTop: '10px', marginBottom: '8px' }} />
-      <div
-        style={{
-          width: '100%',
-          flexDirection: 'column',
-        }}
-      >
+    <div style={cardStyles.card}>
+      <div style={cardStyles.titleBar}>
+        <label style={cardStyles.label}>Package</label>
+        <VSCodeButton
+          appearance="icon"
+          onClick={onDelete}
+          style={cardStyles.deleteButton}
+        >
+          <svg
+            width="16px"
+            height="16px"
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M7.116 8l-4.558 4.558.884.884L8 8.884l4.558 4.558.884-.884L8.884 8l4.558-4.558-.884-.884L8 7.116 3.442 2.558l-.884.884L7.116 8z"
+            />
+          </svg>
+        </VSCodeButton>
+      </div>
+      <VSCodeDivider style={cardStyles.divider} />
+      <div style={cardStyles.content}>
         <label style={{ fontSize: '11px', color: 'GrayText' }}>
           Package Id
         </label>
@@ -119,6 +182,6 @@ export const Package = ({
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
