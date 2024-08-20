@@ -1,12 +1,7 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import {
   VSCodeButton,
+  VSCodeDivider,
   VSCodeDropdown,
   VSCodeOption,
   VSCodeTextField,
@@ -23,12 +18,9 @@ import { createProof } from '../utilities/createProof';
 
 export type AccountHandles = {
   updateBalance: () => void;
-  hasTerminal: boolean;
 };
 
 export const Account = forwardRef<AccountHandles>((props, ref) => {
-  const initialized = useRef<boolean>(false);
-  const [hasTerminal, setHasTerminal] = useState<boolean>(false);
   const [account, setAccount] = useRecoilState(ACCOUNT);
   const [balance, setBalance] = useState<string>('n/a');
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
@@ -39,7 +31,6 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       const value = account && (await getBalance(account));
       setBalance(value || 'n/a');
     },
-    hasTerminal,
   }));
 
   const handleLogin = async () => {
@@ -68,6 +59,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       data: undefined,
     });
     setAccount(undefined);
+    setBalance('n/a');
   };
 
   useEffect(() => {
@@ -83,23 +75,6 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.Env:
-          {
-            const {
-              hasTerminal: terminal,
-              account: loaddedAccount,
-              state,
-            } = message.data;
-            setHasTerminal(terminal);
-            loaddedAccount && setAccount(loaddedAccount);
-            state &&
-              state.path &&
-              vscode.postMessage({
-                command: COMMENDS.PackageSelect,
-                data: state.path,
-              });
-          }
-          break;
         case COMMENDS.LoginJwt:
           if (account && message.data) {
             try {
@@ -147,11 +122,6 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
 
     window.addEventListener('message', handleMessage);
 
-    if (!initialized.current) {
-      initialized.current = true;
-      vscode.postMessage({ command: COMMENDS.Env });
-    }
-
     updateBalance();
 
     return () => {
@@ -161,6 +131,17 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
 
   return (
     <>
+      <div
+        style={{
+          width: '100%',
+          padding: '6px 0',
+          fontWeight: 'bold',
+          marginBottom: '4px',
+        }}
+      >
+        Wallet
+        <VSCodeDivider />
+      </div>
       <label style={{ fontSize: '11px', color: 'GrayText' }}>ACCOUNT</label>
       <VSCodeTextField
         style={{ width: '100%' }}

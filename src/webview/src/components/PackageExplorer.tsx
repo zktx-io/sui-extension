@@ -25,11 +25,11 @@ type IModule = {
   [name: string]: SuiMoveNormalizedModule;
 };
 
-export type PackageManagerHandles = {
+export type PackageExplorerHandles = {
   addPackage: (objectId: string) => Promise<void>;
 };
 
-export const PackageManager = forwardRef<PackageManagerHandles>(
+export const PackageExplorer = forwardRef<PackageExplorerHandles>(
   (props, ref) => {
     const initialized = useRef<boolean>(false);
 
@@ -108,8 +108,19 @@ export const PackageManager = forwardRef<PackageManagerHandles>(
 
     return (
       <>
+        <div
+          style={{
+            width: '100%',
+            padding: '6px 0',
+            fontWeight: 'bold',
+            marginTop: '8px',
+            marginBottom: '4px',
+          }}
+        >
+          Package Explorer
+          <VSCodeDivider />
+        </div>
         <div>
-          <VSCodeDivider style={{ marginTop: '10px', marginBottom: '8px' }} />
           <label style={{ fontSize: '11px', color: 'GrayText' }}>
             Load Package
           </label>
