@@ -1,14 +1,21 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 
-export const isComplexType = (paramType: SuiMoveNormalizedType) => {
-  return (
+export const getInterfaceType = (
+  paramType: SuiMoveNormalizedType,
+): 'vector' | 'complex' | 'other' => {
+  if (typeof paramType === 'object' && 'Vector' in paramType) {
+    return 'vector';
+  }
+  if (
     typeof paramType === 'object' &&
     ('Struct' in paramType ||
-      'Vector' in paramType ||
       'Reference' in paramType ||
       'MutableReference' in paramType)
-  );
+  ) {
+    return 'complex';
+  }
+  return 'other';
 };
 
 export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
@@ -43,58 +50,29 @@ export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
   return 'Unknown Type';
 };
 
-export const validateInput = (
-  value: string,
-  paramType: SuiMoveNormalizedType,
-): boolean => {
-  if (typeof paramType === 'string') {
-    switch (paramType) {
-      case 'U8':
-      case 'U16':
-      case 'U32':
-      case 'U64':
-      case 'U128':
-      case 'U256':
-        return /^\d+$/.test(value);
-      case 'Bool':
-        return /^(true|false)$/.test(value.toLowerCase());
-      case 'Address':
-        return /^0x[a-fA-F0-9]{64}$/.test(value);
-      default:
-        return true;
-    }
+export const getVecterType = (paramType: SuiMoveNormalizedType): string => {
+  switch (paramType) {
+    case 'U8':
+    case 'U16':
+    case 'U32':
+    case 'U64':
+    case 'U128':
+    case 'U256':
+    case 'Bool':
+    case 'Address':
+      return paramType.toLowerCase();
+    default:
+      break;
   }
-
-  if (typeof paramType === 'object' && 'Struct' in paramType) {
-    return (
-      value.includes(paramType.Struct.module) &&
-      value.includes(paramType.Struct.name)
-    );
-  } else if (typeof paramType === 'object' && 'Vector' in paramType) {
-    const elements = value.split(',').map((el) => el.trim());
-    return elements.every((el) => validateInput(el, paramType.Vector));
-  } else if (
-    typeof paramType === 'object' &&
-    ('Reference' in paramType || 'MutableReference' in paramType)
-  ) {
-    const referencedType =
-      'Reference' in paramType
-        ? paramType.Reference
-        : paramType.MutableReference;
-    return validateInput(value, referencedType);
-  } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
-    return /^\d+$/.test(value);
-  }
-
-  return false;
+  return '';
 };
 
 export const makeParams = (
   transaction: Transaction,
-  value: string,
+  value: string | string[],
   paramType: SuiMoveNormalizedType,
 ): any => {
-  if (typeof paramType === 'string') {
+  if (typeof paramType === 'string' && typeof value === 'string') {
     switch (paramType) {
       case 'U8':
         return transaction.pure('u8', parseInt(value));
@@ -117,16 +95,32 @@ export const makeParams = (
     }
   }
 
-  if (typeof paramType === 'object' && 'Struct' in paramType) {
-    // TODO
-  } else if (typeof paramType === 'object' && 'Vector' in paramType) {
+  if (typeof paramType === 'object' && 'Vector' in paramType) {
+    if (typeof value !== 'string') {
+      const temp = getVecterType(paramType.Vector);
+      return transaction.makeMoveVec(
+        temp
+          ? {
+              type: temp,
+              elements: value.map((item) =>
+                makeParams(transaction, item, paramType.Vector),
+              ),
+            }
+          : {
+              elements: value.map((item) =>
+                makeParams(transaction, item, paramType.Vector),
+              ),
+            },
+      );
+    }
+  } else if (typeof paramType === 'object' && 'Struct' in paramType) {
     // TODO
   } else if (typeof paramType === 'object' && 'Reference' in paramType) {
     // TODO
   } else if (typeof paramType === 'object' && 'MutableReference' in paramType) {
-    return transaction.object(value);
+    // return transaction.object(value);
   } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
     // TODO
   }
-  throw new Error(`${paramType} is unknown type`);
+  throw new Error(`${JSON.stringify(paramType)} is unknown type`);
 };

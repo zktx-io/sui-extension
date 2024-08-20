@@ -3,7 +3,7 @@ import { Transaction } from '@mysten/sui/transactions';
 import { signAndExcute } from './signAndExcute';
 import { COMMENDS } from './commends';
 import { vscode } from './vscode';
-import { makeParams } from '../components/utils';
+import { makeParams } from './helper';
 import { IAccount } from '../recoil';
 
 export const moveCall = async (
@@ -11,7 +11,7 @@ export const moveCall = async (
   account: IAccount,
   target: string,
   func: SuiMoveNormalizedFunction,
-  inputValues: string[],
+  inputValues: Array<string | string[]>,
 ): Promise<{ digest: string }> => {
   if (account.nonce.privateKey && account.zkAddress) {
     try {

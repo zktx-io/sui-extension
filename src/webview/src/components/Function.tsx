@@ -8,7 +8,8 @@ import {
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedType,
 } from '@mysten/sui/client';
-import { getTypeName, isComplexType, validateInput } from './utils';
+import { getInterfaceType, getTypeName } from '../utilities/helper';
+import { VectorInputFields } from './VectorInputFields';
 
 const styles = {
   card: {
@@ -69,37 +70,17 @@ export const Function = ({
   onExcute: (
     name: string,
     func: SuiMoveNormalizedFunction,
-    inputValues: string[],
+    inputValues: Array<string | string[]>,
   ) => Promise<void>;
 }) => {
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
-
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValues, setInputValues] = useState<string[]>([]);
-  const [inputErrors, setInputErrors] = useState<boolean[]>([]);
+  const [inputValues, setInputValues] = useState<Array<string | string[]>>([]);
 
-  const allFieldsValid =
-    inputErrors.every((error) => !error) &&
-    inputValues.every((value) => value.trim() !== '');
-
-  const handleInputChange = (
-    index: number,
-    value: string,
-    expectedType: SuiMoveNormalizedType,
-  ) => {
+  const handleInputChange = (index: number, value: string | string[]) => {
     const newInputValues = [...inputValues];
-    const newInputErrors = [...inputErrors];
-
     newInputValues[index] = value;
-
-    if (value.trim()) {
-      newInputErrors[index] = !validateInput(value, expectedType);
-    } else {
-      newInputErrors[index] = false;
-    }
-
     setInputValues(newInputValues);
-    setInputErrors(newInputErrors);
   };
 
   useEffect(() => {
@@ -120,7 +101,6 @@ export const Function = ({
     });
     setParameters(temp);
     setInputValues(new Array(temp.length).fill(''));
-    setInputErrors(new Array(temp.length).fill(''));
     setIsOpen(false);
   }, [func]);
 
@@ -172,38 +152,40 @@ export const Function = ({
                     <label style={{ fontSize: '11px', color: 'GrayText' }}>
                       {`Arg ${key}`}
                     </label>
-                    {isComplexType(item) ? (
+                    {getInterfaceType(item) === 'vector' && (
+                      <VectorInputFields
+                        paramType={(item as any).Vector}
+                        update={(params: string[]) => {
+                          handleInputChange(key, params);
+                        }}
+                      />
+                    )}
+                    {getInterfaceType(item) === 'complex' && (
                       <VSCodeTextArea
                         rows={3}
                         style={{ width: '100%' }}
                         placeholder={getTypeName(item)}
-                        value={inputValues[key]}
+                        value={inputValues[key] as string}
                         onInput={(e) =>
                           handleInputChange(
                             key,
                             (e.target as HTMLTextAreaElement).value,
-                            item,
-                          )
-                        }
-                      />
-                    ) : (
-                      <VSCodeTextField
-                        style={{ width: '100%' }}
-                        placeholder={getTypeName(item)}
-                        value={inputValues[key]}
-                        onInput={(e) =>
-                          handleInputChange(
-                            key,
-                            (e.target as HTMLInputElement).value,
-                            item,
                           )
                         }
                       />
                     )}
-                    {inputErrors[key] && (
-                      <span style={{ color: 'red', fontSize: '11px' }}>
-                        Invalid value for type {getTypeName(item)}
-                      </span>
+                    {getInterfaceType(item) === 'other' && (
+                      <VSCodeTextField
+                        style={{ width: '100%' }}
+                        placeholder={getTypeName(item)}
+                        value={inputValues[key] as string}
+                        onInput={(e) =>
+                          handleInputChange(
+                            key,
+                            (e.target as HTMLInputElement).value,
+                          )
+                        }
+                      />
                     )}
                   </div>
                 ))}
@@ -217,7 +199,7 @@ export const Function = ({
               }}
             >
               <VSCodeButton
-                disabled={isDisable || !allFieldsValid}
+                disabled={isDisable}
                 onClick={() => {
                   onExcute(name, func, inputValues);
                 }}
