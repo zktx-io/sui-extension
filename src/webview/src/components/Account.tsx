@@ -55,6 +55,15 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
     await googleLogin(nonce);
   };
 
+  const handleLogout = async () => {
+    vscode.postMessage({
+      command: COMMENDS.StoreAccount,
+      data: undefined,
+    });
+    setAccount(undefined);
+    setBalance('n/a');
+  };
+
   const handleFaucet = async () => {
     try {
       setIsLogin(true);
@@ -73,15 +82,6 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       setIsLogin(false);
       setIsFaucet(false);
     }
-  };
-
-  const handleLogout = async () => {
-    vscode.postMessage({
-      command: COMMENDS.StoreAccount,
-      data: undefined,
-    });
-    setAccount(undefined);
-    setBalance('n/a');
   };
 
   useEffect(() => {
