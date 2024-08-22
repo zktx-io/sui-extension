@@ -15,6 +15,7 @@ import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
 import { getBalance } from '../utilities/getBalance';
 import { createProof } from '../utilities/createProof';
+import { faucet } from '../utilities/faucet';
 
 export type AccountHandles = {
   updateBalance: () => void;
@@ -24,6 +25,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
   const [account, setAccount] = useRecoilState(ACCOUNT);
   const [balance, setBalance] = useState<string>('n/a');
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
+  const [isFaucet, setIsFaucet] = useState<boolean>(false);
   const [isLogin, setIsLogin] = useState<boolean>(false);
 
   useImperativeHandle(ref, () => ({
@@ -51,6 +53,26 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       },
     });
     await googleLogin(nonce);
+  };
+
+  const handleFaucet = async () => {
+    try {
+      setIsLogin(true);
+      setIsFaucet(true);
+      const result = account && (await faucet(account));
+      if (result) {
+        const value = account && (await getBalance(account));
+        setBalance(value || 'n/a');
+      }
+    } catch (error) {
+      vscode.postMessage({
+        command: COMMENDS.MsgError,
+        data: `${error}`,
+      });
+    } finally {
+      setIsLogin(false);
+      setIsFaucet(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -182,13 +204,28 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
           onClick={handleLogin}
         />
       ) : (
-        <VSCodeButton
-          style={{ width: '100%' }}
-          disabled={isLogin}
-          onClick={handleLogout}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
         >
-          Logout
-        </VSCodeButton>
+          <VSCodeButton
+            style={{ flex: 1, marginRight: '2px' }}
+            disabled={isLogin || isFaucet}
+            onClick={handleFaucet}
+          >
+            Faucet
+          </VSCodeButton>
+          <VSCodeButton
+            style={{ flex: 1, marginLeft: '2px' }}
+            disabled={isLogin}
+            onClick={handleLogout}
+          >
+            Logout
+          </VSCodeButton>
+        </div>
       )}
     </>
   );
