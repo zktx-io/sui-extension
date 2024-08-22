@@ -17,6 +17,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
   package_id = "The address of the deployed package"
   upgrade_cap = "The UpgradeCap is the central type responsible for coordinating package upgrades."
   ```
+
 ## Interface Overview
 
 ![Sui Extension](https://docs.zktx.io/images/sui-extension.png)
