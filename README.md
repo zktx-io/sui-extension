@@ -22,7 +22,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 
 ![Sui Extension](https://docs.zktx.io/images/sui-extension.png)
 
-1. **Wallet**: This section of the interface is used to manage wallets. You can create a wallet using Sui’s `zkLogin`. After selecting a network, click the `Google Login` button to create a wallet. Please note that wallets created using zkLogin will require re-authentication after a specific period. The currently supported network is `Devnet`.
+1. **Wallet**: This section of the interface is used to manage wallets. You can create a wallet using Sui’s `zkLogin`. After selecting a network, click the `Google Login` button to create a wallet. Please note that wallets created using zkLogin will require re-authentication after a specific period. The currently supported networks are `Devnet` and `Testnet` (accessible via **[Enoki](https://docs.enoki.mystenlabs.com)**).
 1. **Workspace**: This section of the interface allows you to compile or deploy Smart Contracts. If you have multiple smart contracts in your repository, you can select the specific smart contract (`Move.toml`) and proceed with compilation or deployment. If there is an `Upgrade.toml` file in the same folder as the `Move.toml` file, the contract will be upgraded rather than published.
 1. **Package Explorer**: This section of the user interface allows you to test smart contracts. When you deploy a Smart Contract, it is automatically registered here. You can also manually enter the address of a previously deployed Smart Contract to register it. If the smart contract is loaded correctly, you will see a list of functions available to interact with the contract.
 
