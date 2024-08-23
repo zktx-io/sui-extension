@@ -3,6 +3,8 @@ import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 import Hex from 'crypto-js/enc-hex';
 import SHA256 from 'crypto-js/sha256';
 import { INonce, NETWORK } from '../recoil';
+import { getEnokiSalt } from './enoki/getSault';
+import { Enoki } from './commends';
 
 const getProverUrl = (network: NETWORK): string => {
   switch (network) {
@@ -21,6 +23,38 @@ export const createProof = async (
   { network, expiration, randomness, publicKey }: INonce,
   jwt: string,
 ): Promise<{ address: string; proof: string; salt: string }> => {
+  if (network === 'testnet') {
+    const enoki = await getEnokiSalt(jwt);
+    const res = await fetch(`${Enoki.url}/zklogin/zkp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Enoki.key}`,
+        'zklogin-jwt': jwt,
+      },
+      body: JSON.stringify({
+        network: network,
+        randomness: randomness,
+        maxEpoch: expiration,
+        ephemeralPublicKey: getExtendedEphemeralPublicKey(
+          new Ed25519PublicKey(Buffer.from(publicKey, 'base64')),
+        ),
+      }),
+    });
+
+    const { data, errors } = await res.json();
+
+    if (!data) {
+      throw new Error(`${errors}`);
+    }
+
+    return {
+      address: enoki.address,
+      proof: JSON.stringify(data),
+      salt: enoki.salt,
+    };
+  }
+
   const path = getPath(network);
   const salt = `0x${SHA256(path).toString(Hex).slice(0, 32)}`;
   const address = jwtToAddress(jwt, BigInt(salt));
