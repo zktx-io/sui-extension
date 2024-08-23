@@ -113,14 +113,16 @@ export const makeParams = (
             },
       );
     }
-  } else if (typeof paramType === 'object' && 'Struct' in paramType) {
-    // TODO
-  } else if (typeof paramType === 'object' && 'Reference' in paramType) {
-    // TODO
-  } else if (typeof paramType === 'object' && 'MutableReference' in paramType) {
-    // return transaction.object(value);
+  } else if (
+    typeof paramType === 'object' &&
+    ('Struct' in paramType ||
+      'MutableReference' in paramType ||
+      'Reference' in paramType) &&
+    typeof value === 'string'
+  ) {
+    return transaction.object(value);
   } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
     // TODO
   }
-  throw new Error(`${JSON.stringify(paramType)} is unknown type`);
+  return;
 };
