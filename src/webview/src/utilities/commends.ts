@@ -22,3 +22,8 @@ export const ClientId =
   '39820794793-qgodeckj0dobe2qd7o23s8etn8j5lf05.apps.googleusercontent.com';
 
 export const ClientSecret = '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';
+
+export const Enoki = {
+  url: 'https://api.enoki.mystenlabs.com/v1',
+  key: 'enoki_public_0d3eef3abea2cb860534859c2f5a63e8',
+};
