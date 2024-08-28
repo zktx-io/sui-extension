@@ -74,7 +74,7 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
     }));
 
     useEffect(() => {
-      if (account) {
+      if (account && !client) {
         setClinet(
           new SuiClient({
             url: getFullnodeUrl(account.nonce.network),
@@ -104,7 +104,7 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
       return () => {
         window.removeEventListener('message', handleMessage);
       };
-    }, [account]);
+    }, [account, client]);
 
     return (
       <>
@@ -134,7 +134,7 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
           <SpinButton
             title="Load"
             spin={isLoading}
-            disabled={isLoading}
+            disabled={isLoading || !client}
             width="100%"
             onClick={async () => {
               setIsLoading(true);
