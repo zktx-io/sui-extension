@@ -4,6 +4,7 @@ import './App.css';
 
 import { vscode } from './utilities/vscode';
 import { Account, AccountHandles } from './components/Account';
+import { ExplorerObject } from './components/ExplorerObject';
 import {
   ExplorerPackage,
   ExplorerPackageHandles,
@@ -67,6 +68,7 @@ function App() {
           refPackageManager.current?.addPackage(packageId);
         }}
       />
+      <ExplorerObject />
       <ExplorerPackage ref={refPackageManager} />
     </>
   );
