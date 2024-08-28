@@ -5,9 +5,9 @@ import './App.css';
 import { vscode } from './utilities/vscode';
 import { Account, AccountHandles } from './components/Account';
 import {
-  PackageExplorer,
-  PackageExplorerHandles,
-} from './components/PackageExplorer';
+  ExplorerPackage,
+  ExplorerPackageHandles,
+} from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
 import { COMMENDS } from './utilities/commends';
 import { useRecoilState } from 'recoil';
@@ -16,7 +16,7 @@ import { ACCOUNT } from './recoil';
 function App() {
   const initialized = useRef<boolean>(false);
   const refAccount = useRef<AccountHandles>(null);
-  const refPackageManager = useRef<PackageExplorerHandles>(null);
+  const refPackageManager = useRef<ExplorerPackageHandles>(null);
   const [hasTerminal, setHasTerminal] = useState<boolean>(false);
   const [, setAccount] = useRecoilState(ACCOUNT);
 
@@ -67,7 +67,7 @@ function App() {
           refPackageManager.current?.addPackage(packageId);
         }}
       />
-      <PackageExplorer ref={refPackageManager} />
+      <ExplorerPackage ref={refPackageManager} />
     </>
   );
 }

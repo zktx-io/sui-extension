@@ -25,11 +25,11 @@ type IModule = {
   [name: string]: SuiMoveNormalizedModule;
 };
 
-export type PackageExplorerHandles = {
+export type ExplorerPackageHandles = {
   addPackage: (objectId: string) => Promise<void>;
 };
 
-export const PackageExplorer = forwardRef<PackageExplorerHandles>(
+export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
   (props, ref) => {
     const initialized = useRef<boolean>(false);
 
