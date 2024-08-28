@@ -36,3 +36,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 ## Extension Settings
 
 - No additional configuration is required.
+
+## Docs
+
+- [link](https://docs.zktx.io/vsce/sui/)
