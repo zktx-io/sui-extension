@@ -8,8 +8,15 @@ import {
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedType,
 } from '@mysten/sui/client';
-import { getInterfaceType, getTypeName } from '../utilities/helper';
+import {
+  getInterfaceType,
+  getTypeName,
+  validateInput,
+} from '../utilities/helper';
 import { VectorInputFields } from './VectorInputFields';
+import { ACCOUNT } from '../recoil';
+import { useRecoilState } from 'recoil';
+import { SpinButton } from './SpinButton';
 
 const styles = {
   card: {
@@ -73,14 +80,44 @@ export const Function = ({
     inputValues: Array<string | string[]>,
   ) => Promise<void>;
 }) => {
+  const [account] = useRecoilState(ACCOUNT);
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValues, setInputValues] = useState<Array<string | string[]>>([]);
+  const [inputErrors, setInputErrors] = useState<boolean[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleInputChange = (index: number, value: string | string[]) => {
     const newInputValues = [...inputValues];
     newInputValues[index] = value;
     setInputValues(newInputValues);
+  };
+
+  const handleExcute = async (
+    name: string,
+    func: SuiMoveNormalizedFunction,
+    inputValues: Array<string | string[]>,
+  ) => {
+    try {
+      setIsLoading(true);
+      let errors: boolean[] = [...new Array(inputValues.length).fill(false)];
+      for (let i = 0; i < inputValues.length; i++) {
+        if (account) {
+          const temp = await validateInput(
+            account,
+            inputValues[i],
+            func.parameters[i],
+          );
+          errors[i] = !temp;
+        }
+      }
+      setInputErrors(errors);
+      !!account &&
+        errors.every((value) => value === false) &&
+        (await onExcute(name, func, inputValues));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -101,6 +138,7 @@ export const Function = ({
     });
     setParameters(temp);
     setInputValues(new Array(temp.length).fill(''));
+    setInputErrors(new Array(temp.length).fill(false));
     setIsOpen(false);
   }, [func]);
 
@@ -187,6 +225,18 @@ export const Function = ({
                         }
                       />
                     )}
+                    {inputErrors[key] && (
+                      <span
+                        style={{
+                          color: 'red',
+                          fontSize: '11px',
+                          wordWrap: 'break-word',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        Invalid value for type {getTypeName(item)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </>
@@ -198,14 +248,14 @@ export const Function = ({
                 marginTop: '8px',
               }}
             >
-              <VSCodeButton
-                disabled={isDisable}
+              <SpinButton
+                title={isWrire ? 'Write' : 'Read'}
+                spin={isLoading}
+                disabled={isDisable || isLoading}
                 onClick={() => {
-                  onExcute(name, func, inputValues);
+                  handleExcute(name, func, inputValues);
                 }}
-              >
-                {isWrire ? 'Write' : 'Read'}
-              </VSCodeButton>
+              />
             </div>
           </div>
         </div>
