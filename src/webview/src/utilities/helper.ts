@@ -1,5 +1,7 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
+import { getObjectType } from './getObjectType';
+import { IAccount } from '../recoil';
 
 export const getInterfaceType = (
   paramType: SuiMoveNormalizedType,
@@ -48,6 +50,57 @@ export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
   }
 
   return 'Unknown Type';
+};
+
+export const validateInput = async (
+  account: IAccount,
+  value: string | string[],
+  paramType: SuiMoveNormalizedType,
+): Promise<boolean> => {
+  try {
+    if (typeof value === 'string' && typeof paramType === 'string') {
+      switch (paramType) {
+        case 'U8':
+        case 'U16':
+        case 'U32':
+        case 'U64':
+        case 'U128':
+        case 'U256':
+          return /^\d+$/.test(value);
+        case 'Bool':
+          return /^(true|false)$/.test(value.toLowerCase());
+        case 'Address':
+          return /^0x[a-fA-F0-9]{64}$/.test(value);
+        default:
+          break;
+      }
+    }
+
+    if (typeof paramType === 'object' && 'Vector' in paramType) {
+      if (typeof value !== 'string') {
+        let result = true;
+        for (const item of value) {
+          result && (await validateInput(account, item, paramType.Vector));
+        }
+        return result;
+      }
+    } else if (
+      typeof paramType === 'object' &&
+      ('Struct' in paramType ||
+        'MutableReference' in paramType ||
+        'Reference' in paramType) &&
+      typeof value === 'string'
+    ) {
+      const typeName = getTypeName(paramType);
+      const objectType = await getObjectType(account, value);
+      return typeName === objectType;
+    } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
+      // TODO
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
 };
 
 export const getVecterType = (paramType: SuiMoveNormalizedType): string => {
