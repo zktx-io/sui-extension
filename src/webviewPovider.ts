@@ -8,6 +8,7 @@ import { accountLoad, accountStore } from './utilities/account';
 import { exchangeToken } from './utilities/authCode';
 import { cleanObject, stateLoad, stateUpdate } from './utilities/state';
 import {
+  CHANNEL,
   COMPILER,
   COMPILER_URL,
   MoveToml,
@@ -22,6 +23,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
   private readonly _context;
   private readonly _extensionUri: vscode.Uri;
   private _fileWatcher?: FileWathcer;
+  private _outputChannel?: vscode.OutputChannel;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
@@ -52,6 +54,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
   ) {
     this._view = webviewView;
     this._fileWatcher = new FileWathcer(webviewView, this._context, MoveToml);
+    this._outputChannel = vscode.window.createOutputChannel(CHANNEL);
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -183,11 +186,17 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.MsgInfo:
             vscode.window.showInformationMessage(data);
-            console.log(data);
+            this._outputChannel?.appendLine(data);
             break;
           case COMMENDS.MsgError:
             vscode.window.showErrorMessage(data);
-            console.error(data);
+            this._outputChannel?.appendLine(`[ERROR]\n${data}`);
+            break;
+          case COMMENDS.OutputInfo:
+            this._outputChannel?.appendLine(data);
+            break;
+          case COMMENDS.OutputError:
+            this._outputChannel?.appendLine(`[ERROR]\n${data}`);
             break;
           default:
             vscode.window.showErrorMessage(

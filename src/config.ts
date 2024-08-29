@@ -1,3 +1,4 @@
+export const CHANNEL = 'Sui Extension';
 export const COMPILER = 'sui';
 export const COMPILER_URL =
   'https://docs.sui.io/guides/developer/getting-started/sui-install';

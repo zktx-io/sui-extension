@@ -12,6 +12,8 @@ export enum COMMENDS {
   Deploy = 'package:deploy',
   MsgInfo = 'message:info',
   MsgError = 'message:error',
+  OutputInfo = 'output:info',
+  OutputError = 'output:error',
 }
 
 export const UrlCallback = 'https://callback-b2sh2eqjia-uc.a.run.app';
