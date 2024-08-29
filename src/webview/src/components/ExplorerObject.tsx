@@ -145,7 +145,7 @@ export const ExplorerObject = () => {
             <label style={{ fontSize: '11px', color: 'GrayText' }}>Type</label>
             <VSCodeTextArea
               rows={2}
-              resize='vertical'
+              resize="vertical"
               style={{ width: '100%' }}
               value={objectInfo?.data?.type || ''}
               readOnly
@@ -174,7 +174,7 @@ export const ExplorerObject = () => {
             </label>
             <VSCodeTextArea
               rows={3}
-              resize='vertical'
+              resize="vertical"
               style={{ width: '100%' }}
               value={
                 objectInfo?.data?.content
@@ -183,7 +183,7 @@ export const ExplorerObject = () => {
               }
               readOnly
             />
-                        <div
+            <div
               style={{
                 display: 'flex',
                 justifyContent: 'flex-end',
@@ -192,7 +192,7 @@ export const ExplorerObject = () => {
             >
               <VSCodeButton
                 onClick={() => {
-                  setObjectInfo(undefined)
+                  setObjectInfo(undefined);
                 }}
               >
                 Clear
