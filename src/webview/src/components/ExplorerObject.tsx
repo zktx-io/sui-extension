@@ -69,7 +69,7 @@ export const ExplorerObject = () => {
         if (res.error) {
           vscode.postMessage({
             command: COMMENDS.MsgError,
-            data: `${res.error}`,
+            data: `${JSON.stringify(res.error)}`,
           });
         } else {
           setObjectInfo(res);
