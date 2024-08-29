@@ -27,8 +27,8 @@ export const moveCall = async (
       });
       const res = await signAndExcute(account, client, transaction);
       vscode.postMessage({
-        command: COMMENDS.MsgInfo,
-        data: JSON.stringify(res, null, 2),
+        command: COMMENDS.OutputInfo,
+        data: JSON.stringify(res, null, 4),
       });
       return {
         digest: res.digest,

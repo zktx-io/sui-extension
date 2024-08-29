@@ -43,8 +43,8 @@ export const packagePublish = async (
         throw new Error('publish error');
       }
       vscode.postMessage({
-        command: COMMENDS.MsgInfo,
-        data: JSON.stringify(res, null, 2),
+        command: COMMENDS.OutputInfo,
+        data: JSON.stringify(res, null, 4),
       });
       return {
         digest: res.digest,
