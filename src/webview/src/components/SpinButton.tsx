@@ -9,20 +9,30 @@ export const SpinButton = ({
 }: {
   title: string;
   spin: boolean;
-  width: string;
   disabled: boolean;
+  width?: string;
   onClick: () => void;
 }) => {
   return (
-    <VSCodeButton style={{ width }} disabled={disabled} onClick={onClick}>
+    <VSCodeButton
+      style={{
+        width: width || 'auto',
+        minWidth: '100px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      disabled={disabled}
+      onClick={onClick}
+    >
       {!spin ? (
         title
       ) : (
         <svg
           id="loading-spinner"
           xmlns="http://www.w3.org/2000/svg"
-          width="48"
-          height="48"
+          width="16"
+          height="16"
           viewBox="0 0 48 48"
         >
           <g fill="none">
