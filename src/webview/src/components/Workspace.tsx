@@ -83,6 +83,8 @@ export const Workspace = ({
               );
               update(packageId);
             }
+          } catch (e) {
+            console.error(e);
           } finally {
             setIsLoading(false);
           }
