@@ -95,6 +95,8 @@ export const Package = ({
           func,
           inputValues,
         );
+      } catch (e) {
+        console.error(e);
       } finally {
         setIsExcute(false);
       }
