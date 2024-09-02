@@ -5,6 +5,8 @@ import { Transaction } from '@mysten/sui/transactions';
 import { genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
 import { decodeJwt } from 'jose';
 import { IAccount } from '../recoil';
+import { vscode } from './vscode';
+import { COMMENDS } from './commends';
 
 export const signAndExcute = async (
   account: IAccount,
@@ -43,6 +45,21 @@ export const signAndExcute = async (
       const res = await client.waitForTransaction({
         digest,
         options: { showObjectChanges: true },
+      });
+      vscode.postMessage({
+        command: COMMENDS.OutputInfo,
+        data: JSON.stringify(res, null, 4),
+      });
+      if (!!res.errors) {
+        vscode.postMessage({
+          command: COMMENDS.MsgError,
+          data: `error: ${res.errors.toString()}`,
+        });
+        throw new Error(`${res.errors.toString()}`);
+      }
+      vscode.postMessage({
+        command: COMMENDS.MsgInfo,
+        data: `success: ${account.nonce.network}:${res.digest}`,
       });
       return res;
     } catch (error) {

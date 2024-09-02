@@ -186,11 +186,9 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.MsgInfo:
             vscode.window.showInformationMessage(data);
-            this._outputChannel?.appendLine(data);
             break;
           case COMMENDS.MsgError:
             vscode.window.showErrorMessage(data);
-            this._outputChannel?.appendLine(`[ERROR]\n${data}`);
             break;
           case COMMENDS.OutputInfo:
             this._outputChannel?.appendLine(data);

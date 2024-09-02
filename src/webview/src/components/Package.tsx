@@ -88,19 +88,13 @@ export const Package = ({
     if (account && account.zkAddress && module) {
       try {
         setIsExcute(true);
-        const { digest } = await moveCall(
+        await moveCall(
           client,
           account,
           `${packageId}::${module}::${name}`,
           func,
           inputValues,
         );
-        vscode.postMessage({
-          command: COMMENDS.MsgInfo,
-          data: `success: ${account.nonce.network}:${digest}`,
-        });
-      } catch (error) {
-        vscode.postMessage({ command: COMMENDS.MsgError, data: `${error}` });
       } finally {
         setIsExcute(false);
       }

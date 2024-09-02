@@ -73,29 +73,16 @@ export const Workspace = ({
         case COMMENDS.Deploy:
           try {
             if (!upgradeToml && !!account?.zkAddress) {
-              const res = await packagePublish(account, message.data);
-              vscode.postMessage({
-                command: COMMENDS.MsgInfo,
-                data: `success: ${account.nonce.network}:${res.digest}`,
-              });
-              update(res.packageId);
+              const { packageId } = await packagePublish(account, message.data);
+              update(packageId);
             } else if (!!account?.zkAddress) {
-              const res = await packageUpgrade(
+              const { packageId } = await packageUpgrade(
                 account,
                 message.data,
                 upgradeToml,
               );
-              vscode.postMessage({
-                command: COMMENDS.MsgInfo,
-                data: `success: ${account.nonce.network}:${res.digest}`,
-              });
-              update(res.packageId);
+              update(packageId);
             }
-          } catch (error) {
-            vscode.postMessage({
-              command: COMMENDS.MsgError,
-              data: `${error}`,
-            });
           } finally {
             setIsLoading(false);
           }

@@ -63,10 +63,6 @@ export const packageUpgrade = async (
         });
         throw new Error('upgrade error');
       }
-      vscode.postMessage({
-        command: COMMENDS.OutputInfo,
-        data: JSON.stringify(res, null, 4),
-      });
       return {
         digest: res.digest,
         packageId: (published[0] as any).packageId,
