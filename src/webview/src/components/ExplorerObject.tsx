@@ -50,6 +50,17 @@ const styles = {
   arrow: {
     transition: 'transform 0.3s ease',
   },
+  header: {
+    width: '100%',
+    padding: '6px 0',
+    fontWeight: 'bold',
+    marginTop: '8px',
+    marginBottom: '4px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    cursor: 'pointer',
+  },
 };
 
 export const ExplorerObject = () => {
@@ -101,16 +112,7 @@ export const ExplorerObject = () => {
   return (
     <>
       <div
-        style={{
-          width: '100%',
-          padding: '6px 0',
-          fontWeight: 'bold',
-          marginTop: '8px',
-          marginBottom: '4px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+        style={styles.header}
         onClick={() => setIsContentVisible(!isContentVisible)}
       >
         <span>Object Explorer</span>
