@@ -24,6 +24,11 @@ const styles = {
     color: 'var(--vscode-foreground)',
     width: '100%',
     marginTop: '10px',
+    transition: 'background-color 0.3s ease, border-color 0.3s ease',
+  },
+  cardHidden: {
+    border: 'none',
+    backgroundColor: 'transparent',
   },
   contentWrapper: {
     overflow: 'hidden',
@@ -131,33 +136,12 @@ export const ExplorerObject = () => {
 
       <VSCodeDivider />
 
-      {isContentVisible && (
-        <div>
-          <label style={{ fontSize: '11px', color: 'GrayText' }}>
-            Load Object
-          </label>
-          <VSCodeTextField
-            style={{ width: '100%', marginBottom: '8px' }}
-            placeholder="Object Id"
-            disabled={isLoading}
-            value={objectId}
-            onInput={(e) => setObjectId((e.target as HTMLInputElement).value)}
-          />
-          <SpinButton
-            title="Load"
-            spin={isLoading}
-            disabled={isLoading || !client}
-            width="100%"
-            onClick={async () => {
-              setIsLoading(true);
-              await loadObjectData(objectId);
-              setIsLoading(false);
-            }}
-          />
-        </div>
-      )}
-
-      <div style={styles.card}>
+      <div
+        style={{
+          ...styles.card,
+          ...(isContentVisible ? {} : styles.cardHidden),
+        }}
+      >
         <div
           style={{
             ...styles.contentWrapper,
@@ -170,6 +154,30 @@ export const ExplorerObject = () => {
               ...(isContentVisible ? styles.openContentVisible : {}),
             }}
           >
+            <label style={{ fontSize: '11px', color: 'GrayText' }}>
+              Load Object
+            </label>
+            <VSCodeTextField
+              style={{ width: '100%', marginBottom: '8px' }}
+              placeholder="Object Id"
+              disabled={isLoading}
+              value={objectId}
+              onInput={(e) => setObjectId((e.target as HTMLInputElement).value)}
+            />
+            <SpinButton
+              title="Load"
+              spin={isLoading}
+              disabled={isLoading || !client}
+              width="100%"
+              onClick={async () => {
+                setIsLoading(true);
+                await loadObjectData(objectId);
+                setIsLoading(false);
+              }}
+            />
+
+            <VSCodeDivider style={{ marginTop: '8px', marginBottom: '8px' }} />
+
             <label style={{ fontSize: '11px', color: 'GrayText' }}>Type</label>
             <VSCodeTextArea
               rows={2}
