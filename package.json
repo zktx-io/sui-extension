@@ -2,7 +2,7 @@
   "name": "sui-extension",
   "displayName": "Sui Extension",
   "description": "Supports the compilation, deployment, and testing of Sui smart contracts, boosting development productivity in GitHub Codespaces. Enables unified management of frontend and backend development within a single repository.",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "engines": {
     "vscode": "^1.92.0"
   },
@@ -73,7 +73,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "format": "prettier --write --ignore-path .gitignore .",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "vsce": "npm run build:all && vsce package"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",
