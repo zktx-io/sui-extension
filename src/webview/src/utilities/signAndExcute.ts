@@ -46,20 +46,24 @@ export const signAndExcute = async (
         digest,
         options: { showObjectChanges: true },
       });
-      vscode.postMessage({
-        command: COMMENDS.OutputInfo,
-        data: JSON.stringify(res, null, 4),
-      });
       if (!!res.errors) {
         vscode.postMessage({
           command: COMMENDS.MsgError,
           data: `error: ${res.errors.toString()}`,
+        });
+        vscode.postMessage({
+          command: COMMENDS.OutputError,
+          data: JSON.stringify(res, null, 4),
         });
         throw new Error(`${res.errors.toString()}`);
       }
       vscode.postMessage({
         command: COMMENDS.MsgInfo,
         data: `success: ${account.nonce.network}:${res.digest}`,
+      });
+      vscode.postMessage({
+        command: COMMENDS.OutputInfo,
+        data: JSON.stringify(res, null, 4),
       });
       return res;
     } catch (error) {
