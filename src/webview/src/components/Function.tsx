@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  VSCodeButton,
   VSCodeTextArea,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
