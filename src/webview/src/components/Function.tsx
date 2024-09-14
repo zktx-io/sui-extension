@@ -179,6 +179,11 @@ export const Function = ({
                     </label>
                     {getInterfaceType(item) === 'vector' && (
                       <VectorInputFields
+                        error={
+                          inputErrors[key]
+                            ? `Invalid value for type ${getTypeName(item)}`
+                            : undefined
+                        }
                         paramType={(item as any).Vector}
                         update={(params: string[]) => {
                           handleInputChange(key, params);
@@ -186,43 +191,59 @@ export const Function = ({
                       />
                     )}
                     {getInterfaceType(item) === 'complex' && (
-                      <VSCodeTextArea
-                        rows={3}
-                        style={{ width: '100%' }}
-                        placeholder={getTypeName(item)}
-                        value={inputValues[key] as string}
-                        onInput={(e) =>
-                          handleInputChange(
-                            key,
-                            (e.target as HTMLTextAreaElement).value,
-                          )
-                        }
-                      />
+                      <>
+                        <VSCodeTextArea
+                          rows={3}
+                          style={{ width: '100%' }}
+                          placeholder={getTypeName(item)}
+                          value={inputValues[key] as string}
+                          onInput={(e) =>
+                            handleInputChange(
+                              key,
+                              (e.target as HTMLTextAreaElement).value,
+                            )
+                          }
+                        />
+                        {inputErrors[key] && (
+                          <span
+                            style={{
+                              color: 'red',
+                              fontSize: '11px',
+                              wordWrap: 'break-word',
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            Invalid value for type {getTypeName(item)}
+                          </span>
+                        )}
+                      </>
                     )}
                     {getInterfaceType(item) === 'other' && (
-                      <VSCodeTextField
-                        style={{ width: '100%' }}
-                        placeholder={getTypeName(item)}
-                        value={inputValues[key] as string}
-                        onInput={(e) =>
-                          handleInputChange(
-                            key,
-                            (e.target as HTMLInputElement).value,
-                          )
-                        }
-                      />
-                    )}
-                    {inputErrors[key] && (
-                      <span
-                        style={{
-                          color: 'red',
-                          fontSize: '11px',
-                          wordWrap: 'break-word',
-                          whiteSpace: 'pre-wrap',
-                        }}
-                      >
-                        Invalid value for type {getTypeName(item)}
-                      </span>
+                      <>
+                        <VSCodeTextField
+                          style={{ width: '100%' }}
+                          placeholder={getTypeName(item)}
+                          value={inputValues[key] as string}
+                          onInput={(e) =>
+                            handleInputChange(
+                              key,
+                              (e.target as HTMLInputElement).value,
+                            )
+                          }
+                        />
+                        {inputErrors[key] && (
+                          <span
+                            style={{
+                              color: 'red',
+                              fontSize: '11px',
+                              wordWrap: 'break-word',
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            Invalid value for type {getTypeName(item)}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}
