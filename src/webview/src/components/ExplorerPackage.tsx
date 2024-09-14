@@ -8,22 +8,18 @@ import {
 import {
   getFullnodeUrl,
   SuiClient,
-  SuiMoveNormalizedModule,
+  SuiMoveNormalizedModules,
 } from '@mysten/sui/client';
 import { useRecoilState } from 'recoil';
 import {
   VSCodeDivider,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
-import { Package } from './Package';
+import { IModule, Package } from './Package';
 import { ACCOUNT } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
-
-type IModule = {
-  [name: string]: SuiMoveNormalizedModule;
-};
 
 export type ExplorerPackageHandles = {
   addPackage: (objectId: string) => Promise<void>;
@@ -46,16 +42,16 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const loadPackageData = async (objectId: string) => {
-      if (client && !packages[objectId]) {
+      if (client) {
         try {
-          const module: IModule =
+          const modules: SuiMoveNormalizedModules =
             await client.getNormalizedMoveModulesByPackage({
               package: objectId,
             });
           vscode.postMessage({
             command: COMMENDS.PackageAdd,
             data: {
-              [objectId]: { index: Date.now(), data: module },
+              [objectId]: { index: Date.now(), data: modules },
             },
           });
         } catch (error) {

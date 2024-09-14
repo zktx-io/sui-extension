@@ -58,6 +58,10 @@ type IFunctions = {
   [name: string]: SuiMoveNormalizedFunction;
 };
 
+export type IModule = {
+  [name: string]: SuiMoveNormalizedModule;
+};
+
 export const Package = ({
   client,
   packageId,
@@ -65,7 +69,7 @@ export const Package = ({
 }: {
   client: SuiClient;
   packageId: string;
-  data: { [module: string]: SuiMoveNormalizedModule };
+  data: IModule;
 }) => {
   const [account] = useRecoilState(ACCOUNT);
   const [modules, setModules] = useState<string[]>([]);
