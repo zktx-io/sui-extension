@@ -122,8 +122,8 @@ export const getVecterType = (paramType: SuiMoveNormalizedType): string => {
 
 export const makeParams = (
   transaction: Transaction,
-  value: string | string[],
   paramType: SuiMoveNormalizedType,
+  value: string | string[],
 ): any => {
   if (typeof paramType === 'string' && typeof value === 'string') {
     switch (paramType) {
@@ -156,12 +156,12 @@ export const makeParams = (
           ? {
               type: temp,
               elements: value.map((item) =>
-                makeParams(transaction, item, paramType.Vector),
+                makeParams(transaction, paramType.Vector, item),
               ),
             }
           : {
               elements: value.map((item) =>
-                makeParams(transaction, item, paramType.Vector),
+                makeParams(transaction, paramType.Vector, item),
               ),
             },
       );

@@ -13,6 +13,7 @@ import {
   getTypeName,
   validateInput,
 } from '../utilities/helper';
+import { parameterFilter } from '../utilities/parameterFilter';
 import { VectorInputFields } from './VectorInputFields';
 import { ACCOUNT } from '../recoil';
 import { SpinButton } from './SpinButton';
@@ -102,10 +103,11 @@ export const Function = ({
       let errors: boolean[] = [...new Array(inputValues.length).fill(false)];
       for (let i = 0; i < inputValues.length; i++) {
         if (account) {
+          const filtered = parameterFilter(func);
           const temp = await validateInput(
             account,
             inputValues[i],
-            func.parameters[i],
+            filtered[i],
           );
           errors[i] = !temp;
         }
@@ -120,24 +122,10 @@ export const Function = ({
   };
 
   useEffect(() => {
-    const temp = func.parameters.filter((type) => {
-      if (typeof type === 'object') {
-        const struct =
-          (type as any).MutableReference?.Struct ||
-          (type as any).Reference?.Struct ||
-          (type as any).Struct;
-        return !(
-          struct &&
-          struct.address === '0x2' &&
-          struct.module === 'tx_context' &&
-          struct.name === 'TxContext'
-        );
-      }
-      return true;
-    });
-    setParameters(temp);
-    setInputValues(new Array(temp.length).fill(''));
-    setInputErrors(new Array(temp.length).fill(false));
+    const filtered = parameterFilter(func);
+    setParameters(filtered);
+    setInputValues(new Array(filtered.length).fill(''));
+    setInputErrors(new Array(filtered.length).fill(false));
     setIsOpen(false);
   }, [func]);
 

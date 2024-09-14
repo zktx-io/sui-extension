@@ -20,7 +20,7 @@ export const moveCall = async (
         target,
         // typeArguments: func.typeParameters, // TODO
         arguments: inputValues.map((value, i) =>
-          makeParams(transaction, value, func.parameters[i]),
+          makeParams(transaction, func.parameters[i], value),
         ),
       });
       await signAndExcute(account, client, transaction);
