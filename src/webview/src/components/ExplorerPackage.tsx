@@ -11,12 +11,12 @@ import {
   SuiMoveNormalizedModule,
 } from '@mysten/sui/client';
 import { useRecoilState } from 'recoil';
-import { Package } from './Package';
-import { ACCOUNT } from '../recoil';
 import {
   VSCodeDivider,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
+import { Package } from './Package';
+import { ACCOUNT } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
