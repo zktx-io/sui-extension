@@ -4,17 +4,17 @@ import {
   VSCodeDivider,
   VSCodeDropdown,
   VSCodeOption,
+  VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
+import { useRecoilState } from 'recoil';
 import {
   SuiClient,
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedModule,
 } from '@mysten/sui/client';
-import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { vscode } from '../utilities/vscode';
 import { Function } from './Function';
 import { COMMENDS } from '../utilities/commends';
-import { useRecoilState } from 'recoil';
 import { ACCOUNT } from '../recoil';
 import { moveCall } from '../utilities/moveCall';
 

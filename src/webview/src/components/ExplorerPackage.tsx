@@ -6,15 +6,15 @@ import {
   useState,
 } from 'react';
 import {
+  VSCodeDivider,
+  VSCodeTextField,
+} from '@vscode/webview-ui-toolkit/react';
+import { useRecoilState } from 'recoil';
+import {
   getFullnodeUrl,
   SuiClient,
   SuiMoveNormalizedModules,
 } from '@mysten/sui/client';
-import { useRecoilState } from 'recoil';
-import {
-  VSCodeDivider,
-  VSCodeTextField,
-} from '@vscode/webview-ui-toolkit/react';
 import { IModule, Package } from './Package';
 import { ACCOUNT } from '../recoil';
 import { SpinButton } from './SpinButton';

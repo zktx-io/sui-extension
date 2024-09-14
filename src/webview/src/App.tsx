@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import './App.css';
 
+import { useRecoilState } from 'recoil';
 import { vscode } from './utilities/vscode';
 import { Account, AccountHandles } from './components/Account';
 import { ExplorerObject } from './components/ExplorerObject';
@@ -11,7 +12,6 @@ import {
 } from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
 import { COMMENDS } from './utilities/commends';
-import { useRecoilState } from 'recoil';
 import { ACCOUNT } from './recoil';
 
 function App() {

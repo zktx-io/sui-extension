@@ -3,6 +3,7 @@ import {
   VSCodeTextArea,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
+import { useRecoilState } from 'recoil';
 import {
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedType,
@@ -14,7 +15,6 @@ import {
 } from '../utilities/helper';
 import { VectorInputFields } from './VectorInputFields';
 import { ACCOUNT } from '../recoil';
-import { useRecoilState } from 'recoil';
 import { SpinButton } from './SpinButton';
 
 const styles = {

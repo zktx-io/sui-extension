@@ -6,9 +6,9 @@ import {
   VSCodeOption,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
+import { useRecoilState } from 'recoil';
 import { SpinButton } from './SpinButton';
 import { ACCOUNT, NETWORK, NETWORKS } from '../recoil';
-import { useRecoilState } from 'recoil';
 import { createNonce } from '../utilities/createNonce';
 import { googleLogin } from '../utilities/googleLogin';
 import { vscode } from '../utilities/vscode';
