@@ -107,24 +107,29 @@ export const Package = ({
     }
   };
 
+  const selectModule = (select: string) => {
+    setModule(select);
+    const entryFunctions = Object.fromEntries(
+      Object.entries(data[select].exposedFunctions).filter(
+        ([, value]) => value.isEntry,
+      ),
+    );
+    setFuncWrite(
+      Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
+    );
+  };
+
   useEffect(() => {
     const temp = Object.keys(data).sort();
     if (temp.length > 0) {
       setModules(temp);
-      setModule(temp[0]);
-      const entryFunctions = Object.fromEntries(
-        Object.entries(data[temp[0]].exposedFunctions).filter(
-          ([, value]) => value.isEntry,
-        ),
-      );
-      setFuncWrite(
-        Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
-      );
+      selectModule(temp[0]);
     } else {
       setModules([]);
       setModule(undefined);
       setFuncWrite(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   return (
@@ -168,17 +173,7 @@ export const Package = ({
           onChange={(e) => {
             if (e.target) {
               const key = (e.target as HTMLInputElement).value;
-              setModule(key);
-              const entryFunctions = Object.fromEntries(
-                Object.entries(data[key].exposedFunctions).filter(
-                  ([, value]) => value.isEntry,
-                ),
-              );
-              setFuncWrite(
-                Object.keys(entryFunctions).length > 0
-                  ? entryFunctions
-                  : undefined,
-              );
+              selectModule(key);
             } else {
               setModule(undefined);
               setFuncWrite(undefined);
