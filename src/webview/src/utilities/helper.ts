@@ -54,8 +54,8 @@ export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
 
 export const validateInput = async (
   account: IAccount,
-  value: string | string[],
   paramType: SuiMoveNormalizedType,
+  value: string | string[],
 ): Promise<boolean> => {
   try {
     if (typeof value === 'string' && typeof paramType === 'string') {
@@ -80,7 +80,7 @@ export const validateInput = async (
       if (typeof value !== 'string') {
         let result = true;
         for (const item of value) {
-          result && (await validateInput(account, item, paramType.Vector));
+          result && (await validateInput(account, paramType.Vector, item));
         }
         return result;
       }

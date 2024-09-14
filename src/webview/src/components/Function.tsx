@@ -106,8 +106,8 @@ export const Function = ({
           const filtered = parameterFilter(func);
           const temp = await validateInput(
             account,
-            inputValues[i],
             filtered[i],
+            inputValues[i],
           );
           errors[i] = !temp;
         }
