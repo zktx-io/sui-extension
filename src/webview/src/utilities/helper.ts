@@ -80,7 +80,7 @@ export const validateInput = async (
       if (typeof value !== 'string') {
         let result = true;
         for (const item of value) {
-          result && (await validateInput(account, paramType.Vector, item));
+          result &&= await validateInput(account, paramType.Vector, item);
         }
         return result;
       }
