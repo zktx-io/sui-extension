@@ -17,9 +17,11 @@ const cardStyles = {
 };
 
 export const VectorInputFields = ({
+  error,
   paramType,
   update,
 }: {
+  error?: string;
   paramType: SuiMoveNormalizedType;
   update: (params: string[]) => void;
 }) => {
@@ -87,10 +89,26 @@ export const VectorInputFields = ({
         <div
           style={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             marginTop: '8px',
+            width: '100%',
           }}
         >
+          {error ? (
+            <span
+              style={{
+                color: 'red',
+                fontSize: '11px',
+                wordWrap: 'break-word',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {error}
+            </span>
+          ) : (
+            <>&nbsp;</>
+          )}
           <VSCodeButton style={{ height: '16px' }} onClick={handleAddField}>
             <div style={{ fontSize: '8px' }}>Add</div>
           </VSCodeButton>
