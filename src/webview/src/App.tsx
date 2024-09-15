@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useRecoilState } from 'recoil';
 
 import './App.css';
 
-import { useRecoilState } from 'recoil';
 import { vscode } from './utilities/vscode';
 import { Account, AccountHandles } from './components/Account';
 import { ExplorerObject } from './components/ExplorerObject';
