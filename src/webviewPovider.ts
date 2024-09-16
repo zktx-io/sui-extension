@@ -6,7 +6,6 @@ import { COMMENDS } from './webview/src/utilities/commends';
 import { FileWathcer } from './utilities/fileWatcher';
 import { accountLoad, accountStore } from './utilities/account';
 import { exchangeToken } from './utilities/authCode';
-import { cleanObject, stateLoad, stateUpdate } from './utilities/state';
 import {
   CHANNEL,
   COMPILER,
@@ -74,11 +73,10 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             {
               this._view?.webview.postMessage({
                 command,
-                data: cleanObject({
+                data: {
                   hasTerminal: hasTerminal(),
-                  state: stateLoad(this._context),
                   account: accountLoad(this._context),
-                }),
+                },
               });
               await this._fileWatcher?.initializePackageList();
             }
@@ -124,38 +122,6 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.StoreAccount:
             await accountStore(this._context, data);
-            break;
-          case COMMENDS.PackageSelect:
-            {
-              stateUpdate(this._context, { path: data });
-              const upgradeToml = await this._fileWatcher?.getUpgradeToml(data);
-              this._view?.webview.postMessage({
-                command: COMMENDS.PackageSelect,
-                data: { path: data, data: upgradeToml || '' },
-              });
-            }
-            break;
-          case COMMENDS.PackageAdd:
-            {
-              const { packages } = stateUpdate(this._context, {
-                packages: data,
-              });
-              this._view?.webview.postMessage({
-                command: COMMENDS.PackageAdd,
-                data: { packages },
-              });
-            }
-            break;
-          case COMMENDS.PackageDelete:
-            {
-              const { packages } = stateUpdate(this._context, {
-                packageDelete: data,
-              });
-              this._view?.webview.postMessage({
-                command: COMMENDS.PackageDelete,
-                data: { packages },
-              });
-            }
             break;
           case COMMENDS.Compile:
             if (!hasTerminal()) {

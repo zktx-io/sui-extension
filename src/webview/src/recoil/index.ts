@@ -30,7 +30,15 @@ export interface IAccount {
   };
 }
 
-export const ACCOUNT = atom<IAccount | undefined>({
-  key: 'Account',
-  default: undefined,
+export interface IState {
+  account?: IAccount;
+  path?: string;
+  packages: { [x: string]: any };
+}
+
+export const STATE = atom<IState>({
+  key: 'State',
+  default: {
+    packages: {},
+  },
 });

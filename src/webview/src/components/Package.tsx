@@ -12,11 +12,10 @@ import {
   SuiMoveNormalizedFunction,
   SuiMoveNormalizedModule,
 } from '@mysten/sui/client';
-import { vscode } from '../utilities/vscode';
 import { Function } from './Function';
-import { COMMENDS } from '../utilities/commends';
-import { ACCOUNT } from '../recoil';
+import { STATE } from '../recoil';
 import { moveCall } from '../utilities/moveCall';
+import { packageDelete } from '../utilities/stateController';
 
 const cardStyles = {
   card: {
@@ -58,10 +57,6 @@ type IFunctions = {
   [name: string]: SuiMoveNormalizedFunction;
 };
 
-export type IModule = {
-  [name: string]: SuiMoveNormalizedModule;
-};
-
 export const Package = ({
   client,
   packageId,
@@ -69,19 +64,16 @@ export const Package = ({
 }: {
   client: SuiClient;
   packageId: string;
-  data: IModule;
+  data: { [name: string]: SuiMoveNormalizedModule };
 }) => {
-  const [account] = useRecoilState(ACCOUNT);
+  const [state, setState] = useRecoilState(STATE);
   const [modules, setModules] = useState<string[]>([]);
   const [module, setModule] = useState<string | undefined>(undefined);
   const [isExcute, setIsExcute] = useState<boolean>(false);
   const [funcWrite, setFuncWrite] = useState<IFunctions | undefined>(undefined);
 
   const onDelete = () => {
-    vscode.postMessage({
-      command: COMMENDS.PackageDelete,
-      data: packageId,
-    });
+    setState((oldState) => ({ ...oldState, ...packageDelete(packageId) }));
   };
 
   const onExcute = async (
@@ -89,12 +81,12 @@ export const Package = ({
     func: SuiMoveNormalizedFunction,
     inputValues: Array<string | string[]>,
   ) => {
-    if (account && account.zkAddress && module) {
+    if (state.account && state.account.zkAddress && module) {
       try {
         setIsExcute(true);
         await moveCall(
           client,
-          account,
+          state.account,
           `${packageId}::${module}::${name}`,
           func,
           inputValues,

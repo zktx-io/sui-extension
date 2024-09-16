@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import {
   VSCodeDivider,
   VSCodeTextField,
@@ -15,11 +9,12 @@ import {
   SuiClient,
   SuiMoveNormalizedModules,
 } from '@mysten/sui/client';
-import { IModule, Package } from './Package';
-import { ACCOUNT } from '../recoil';
+import { Package } from './Package';
+import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
+import { packageAdd } from '../utilities/stateController';
 
 export type ExplorerPackageHandles = {
   addPackage: (objectId: string) => Promise<void>;
@@ -27,17 +22,8 @@ export type ExplorerPackageHandles = {
 
 export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
   (props, ref) => {
-    const initialized = useRef<boolean>(false);
-
-    const [account] = useRecoilState(ACCOUNT);
+    const [state, setState] = useRecoilState(STATE);
     const [client, setClinet] = useState<SuiClient | undefined>(undefined);
-
-    const [packages, setPackages] = useState<{
-      [packageId: string]: {
-        index: number;
-        data: IModule;
-      };
-    }>({});
     const [packageId, setPackageId] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -48,12 +34,10 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
             await client.getNormalizedMoveModulesByPackage({
               package: objectId,
             });
-          vscode.postMessage({
-            command: COMMENDS.PackageAdd,
-            data: {
-              [objectId]: { index: Date.now(), data: modules },
-            },
-          });
+          setState((oldState) => ({
+            ...oldState,
+            ...packageAdd(objectId, modules),
+          }));
         } catch (error) {
           vscode.postMessage({
             command: COMMENDS.MsgError,
@@ -70,37 +54,14 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
     }));
 
     useEffect(() => {
-      if (account && !client) {
+      if (state.account && !client) {
         setClinet(
           new SuiClient({
-            url: getFullnodeUrl(account.nonce.network),
+            url: getFullnodeUrl(state.account.nonce.network),
           }),
         );
       }
-
-      const handleMessage = (event: any) => {
-        const message = event.data;
-        switch (message.command) {
-          case COMMENDS.PackageAdd:
-          case COMMENDS.PackageDelete:
-            setPackages(message.data.packages);
-            break;
-          default:
-            break;
-        }
-      };
-
-      window.addEventListener('message', handleMessage);
-
-      if (!initialized.current) {
-        initialized.current = true;
-        vscode.postMessage({ command: COMMENDS.PackageAdd, data: {} });
-      }
-
-      return () => {
-        window.removeEventListener('message', handleMessage);
-      };
-    }, [account, client]);
+    }, [client, state]);
 
     return (
       <>
@@ -141,14 +102,15 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
         </div>
         <VSCodeDivider style={{ marginTop: '10px', marginBottom: '10px' }} />
         {client &&
-          Object.keys(packages)
-            .sort((a, b) => packages[b].index - packages[a].index)
+          state &&
+          Object.keys(state.packages)
+            .sort((a, b) => state.packages[b].index - state.packages[a].index)
             .map((id, key) => (
               <Package
                 key={key}
                 client={client}
                 packageId={id}
-                data={packages[id].data}
+                data={state.packages[id].data}
               />
             ))}
       </>

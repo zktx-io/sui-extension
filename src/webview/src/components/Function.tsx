@@ -15,7 +15,7 @@ import {
 } from '../utilities/helper';
 import { parameterFilter } from '../utilities/parameterFilter';
 import { VectorInputFields } from './VectorInputFields';
-import { ACCOUNT } from '../recoil';
+import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 
 const styles = {
@@ -80,7 +80,7 @@ export const Function = ({
     inputValues: Array<string | string[]>,
   ) => Promise<void>;
 }) => {
-  const [account] = useRecoilState(ACCOUNT);
+  const [state] = useRecoilState(STATE);
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValues, setInputValues] = useState<Array<string | string[]>>([]);
@@ -102,10 +102,10 @@ export const Function = ({
       setIsLoading(true);
       let errors: boolean[] = [...new Array(inputValues.length).fill(false)];
       for (let i = 0; i < inputValues.length; i++) {
-        if (account) {
+        if (state.account) {
           const filtered = parameterFilter(func);
           const temp = await validateInput(
-            account,
+            state.account,
             filtered[i],
             inputValues[i],
           );
@@ -113,7 +113,7 @@ export const Function = ({
         }
       }
       setInputErrors(errors);
-      !!account &&
+      !!state.account &&
         errors.every((value) => value === false) &&
         (await onExcute(name, func, inputValues));
     } finally {

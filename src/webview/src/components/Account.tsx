@@ -8,7 +8,7 @@ import {
 } from '@vscode/webview-ui-toolkit/react';
 import { useRecoilState } from 'recoil';
 import { SpinButton } from './SpinButton';
-import { ACCOUNT, NETWORK, NETWORKS } from '../recoil';
+import { NETWORK, NETWORKS, STATE } from '../recoil';
 import { createNonce } from '../utilities/createNonce';
 import { googleLogin } from '../utilities/googleLogin';
 import { vscode } from '../utilities/vscode';
@@ -22,7 +22,7 @@ export type AccountHandles = {
 };
 
 export const Account = forwardRef<AccountHandles>((props, ref) => {
-  const [account, setAccount] = useRecoilState(ACCOUNT);
+  const [state, setState] = useRecoilState(STATE);
   const [balance, setBalance] = useState<string>('n/a');
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
   const [isFaucet, setIsFaucet] = useState<boolean>(false);
@@ -30,7 +30,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     updateBalance: async () => {
-      const value = account && (await getBalance(account));
+      const value = state.account && (await getBalance(state.account));
       setBalance(value || 'n/a');
     },
   }));
@@ -43,15 +43,20 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       randomness,
       ephemeralKeyPair: { publicKey, privateKey },
     } = await createNonce(network);
-    setAccount({
-      nonce: {
-        expiration,
-        randomness,
-        network,
-        publicKey,
-        privateKey,
+    setState((oldState) => ({
+      ...oldState!,
+      account: {
+        ...oldState!.account,
+        nonce: {
+          expiration,
+          randomness,
+          network,
+          publicKey,
+          privateKey,
+        },
       },
-    });
+    }));
+
     await googleLogin(nonce);
   };
 
@@ -60,7 +65,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       command: COMMENDS.StoreAccount,
       data: undefined,
     });
-    setAccount(undefined);
+    setState((oldStte) => ({ ...oldStte, account: undefined }));
     setBalance('n/a');
   };
 
@@ -68,9 +73,9 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
     try {
       setIsLogin(true);
       setIsFaucet(true);
-      const result = account && (await faucet(account));
+      const result = state.account && (await faucet(state.account));
       if (result) {
-        const value = account && (await getBalance(account));
+        const value = state.account && (await getBalance(state.account));
         setBalance(value || 'n/a');
       }
     } catch (error) {
@@ -87,7 +92,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
   useEffect(() => {
     const updateBalance = async () => {
       try {
-        const value = account && (await getBalance(account));
+        const value = state.account && (await getBalance(state.account));
         setBalance(value || 'n/a');
       } catch (error) {
         setBalance('n/a');
@@ -98,25 +103,28 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.LoginJwt:
-          if (account && message.data) {
+          if (state.account && message.data) {
             try {
               const { address, proof, salt } = await createProof(
-                account.nonce,
+                state.account.nonce,
                 message.data,
               );
-              setAccount({
-                ...account,
-                zkAddress: {
-                  address,
-                  proof,
-                  salt,
-                  jwt: message.data,
+              setState((oldState) => ({
+                ...oldState,
+                account: {
+                  ...oldState.account!,
+                  zkAddress: {
+                    address,
+                    proof,
+                    salt,
+                    jwt: message.data,
+                  },
                 },
-              });
+              }));
               vscode.postMessage({
                 command: COMMENDS.StoreAccount,
                 data: {
-                  ...account,
+                  ...state.account,
                   zkAddress: {
                     address,
                     proof,
@@ -149,7 +157,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [account, setAccount]);
+  }, [setState, state]);
 
   return (
     <>
@@ -168,7 +176,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       <VSCodeTextField
         style={{ width: '100%' }}
         readOnly
-        value={account?.zkAddress?.address || ''}
+        value={state.account?.zkAddress?.address || ''}
       />
       <div
         style={{
@@ -183,7 +191,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       <VSCodeDropdown
         style={{ width: '100%', marginBottom: '8px' }}
         value={network}
-        disabled={!!account?.zkAddress?.address || isLogin}
+        disabled={!!state.account?.zkAddress?.address || isLogin}
         onChange={(e) => {
           e.target &&
             setNetwork((e.target as HTMLInputElement).value as NETWORK);
@@ -195,7 +203,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
           </VSCodeOption>
         ))}
       </VSCodeDropdown>
-      {!account?.zkAddress ? (
+      {!state.account?.zkAddress ? (
         <SpinButton
           title="Google Login"
           spin={isLogin}

@@ -11,7 +11,7 @@ import {
   SuiClient,
   SuiObjectResponse,
 } from '@mysten/sui/client';
-import { ACCOUNT } from '../recoil';
+import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
@@ -64,7 +64,7 @@ const styles = {
 };
 
 export const ExplorerObject = () => {
-  const [account] = useRecoilState(ACCOUNT);
+  const [state] = useRecoilState(STATE);
   const [client, setClinet] = useState<SuiClient | undefined>(undefined);
 
   const [objectId, setObjectId] = useState<string>('');
@@ -75,7 +75,7 @@ export const ExplorerObject = () => {
   const [isContentVisible, setIsContentVisible] = useState<boolean>(false);
 
   const loadObjectData = async (objectId: string) => {
-    if (account && client) {
+    if (state.account && client) {
       try {
         const res = await client.getObject({
           id: objectId,
@@ -100,14 +100,14 @@ export const ExplorerObject = () => {
   };
 
   useEffect(() => {
-    if (account && !client) {
+    if (state.account && !client) {
       setClinet(
         new SuiClient({
-          url: getFullnodeUrl(account.nonce.network),
+          url: getFullnodeUrl(state.account.nonce.network),
         }),
       );
     }
-  }, [account, client]);
+  }, [client, state]);
 
   return (
     <>
