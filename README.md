@@ -9,9 +9,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 + **GitHub Codespaces Integration**: Increase the efficiency of your development workflow with full support for GitHub Codespaces.
 + **Unified Development**: Manage both front-end and back-end code in a single repository for streamlined development.
 + **Upgrade Smart Contracts**: Seamlessly upgrade and test your smart contracts.
-
-> Note: To upgrade, add an `upgrade.toml` file in the same directory as your `move.toml` file. The format is as follows:
-
+  > Note: To upgrade, add an `upgrade.toml` file in the same directory as your `move.toml` file. The format is as follows:
   ```toml
   [upgrade]
   package_id = "The address of the deployed package"
