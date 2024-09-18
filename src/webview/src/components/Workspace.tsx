@@ -7,21 +7,27 @@ import {
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react';
+import { SuiClient } from '@mysten/sui/dist/cjs/client';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
 import { SpinButton } from './SpinButton';
 import { STATE } from '../recoil';
 import { packageUpgrade } from '../utilities/packageUpgrade';
 import { packagePublish } from '../utilities/packagePublish';
-import { dataGet, packageSelect } from '../utilities/stateController';
+import {
+  dataGet,
+  packageAdd,
+  packageSelect,
+} from '../utilities/stateController';
 import { getBalance } from '../utilities/getBalance';
+import { loadPackageData } from '../utilities/loadPackageData';
 
 export const Workspace = ({
   hasTerminal,
-  update,
+  client,
 }: {
   hasTerminal: boolean;
-  update: (packageId: string) => void;
+  client: SuiClient | undefined;
 }) => {
   const [state, setState] = useRecoilState(STATE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -72,8 +78,16 @@ export const Workspace = ({
                   message.data,
                 );
                 const balance = await getBalance(state.account);
-                setState((oldState) => ({ ...oldState, balance }));
-                update(packageId);
+                const modules = await loadPackageData(client, packageId);
+                setState((oldState) =>
+                  modules
+                    ? {
+                        ...oldState,
+                        balance,
+                        ...packageAdd(packageId, modules),
+                      }
+                    : { ...oldState, balance },
+                );
               } else {
                 const { packageId } = await packageUpgrade(
                   state.account,
@@ -81,8 +95,16 @@ export const Workspace = ({
                   upgradeToml,
                 );
                 const balance = await getBalance(state.account);
-                setState((oldState) => ({ ...oldState, balance }));
-                update(packageId);
+                const modules = await loadPackageData(client, packageId);
+                setState((oldState) =>
+                  modules
+                    ? {
+                        ...oldState,
+                        balance,
+                        ...packageAdd(packageId, modules),
+                      }
+                    : { ...oldState, balance },
+                );
               }
             }
           } catch (e) {
@@ -101,7 +123,8 @@ export const Workspace = ({
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [setState, state, update, upgradeToml]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.account, upgradeToml]);
 
   return (
     <>

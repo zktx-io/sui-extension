@@ -62,7 +62,7 @@ export const Package = ({
   packageId,
   data,
 }: {
-  client: SuiClient;
+  client: SuiClient | undefined;
   packageId: string;
   data: { [name: string]: SuiMoveNormalizedModule };
 }) => {
@@ -81,7 +81,7 @@ export const Package = ({
     func: SuiMoveNormalizedFunction,
     inputValues: Array<string | string[]>,
   ) => {
-    if (state.account && state.account.zkAddress && module) {
+    if (client && state.account && state.account.zkAddress && module) {
       try {
         setIsExcute(true);
         await moveCall(

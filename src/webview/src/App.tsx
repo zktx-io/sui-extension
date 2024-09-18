@@ -1,24 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 
 import './App.css';
 
 import { vscode } from './utilities/vscode';
 import { Account } from './components/Account';
 import { ExplorerObject } from './components/ExplorerObject';
-import {
-  ExplorerPackage,
-  ExplorerPackageHandles,
-} from './components/ExplorerPackage';
+import { ExplorerPackage } from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
 import { COMMENDS } from './utilities/commends';
 import { STATE } from './recoil';
 
 function App() {
   const initialized = useRef<boolean>(false);
-  const refPackageManager = useRef<ExplorerPackageHandles>(null);
   const [hasTerminal, setHasTerminal] = useState<boolean>(false);
-  const [, setState] = useRecoilState(STATE);
+  const [client, setClinet] = useState<SuiClient | undefined>(undefined);
+  const [state, setState] = useRecoilState(STATE);
 
   useEffect(() => {
     const handleMessage = async (event: any) => {
@@ -52,17 +50,22 @@ function App() {
     };
   }, [setState]);
 
+  useEffect(() => {
+    if (!client && state.account) {
+      setClinet(
+        new SuiClient({
+          url: getFullnodeUrl(state.account.nonce.network),
+        }),
+      );
+    }
+  }, [client, state]);
+
   return (
     <>
       <Account />
-      <Workspace
-        hasTerminal={hasTerminal}
-        update={(packageId: string) => {
-          refPackageManager.current?.addPackage(packageId);
-        }}
-      />
-      <ExplorerObject />
-      <ExplorerPackage ref={refPackageManager} />
+      <Workspace client={client} hasTerminal={hasTerminal} />
+      <ExplorerObject client={client} />
+      <ExplorerPackage client={client} />
     </>
   );
 }

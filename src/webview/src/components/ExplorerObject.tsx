@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   VSCodeButton,
   VSCodeDivider,
@@ -6,11 +6,7 @@ import {
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import { useRecoilState } from 'recoil';
-import {
-  getFullnodeUrl,
-  SuiClient,
-  SuiObjectResponse,
-} from '@mysten/sui/client';
+import { SuiClient, SuiObjectResponse } from '@mysten/sui/client';
 import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
@@ -63,10 +59,12 @@ const styles = {
   },
 };
 
-export const ExplorerObject = () => {
+export const ExplorerObject = ({
+  client,
+}: {
+  client: SuiClient | undefined;
+}) => {
   const [state] = useRecoilState(STATE);
-  const [client, setClinet] = useState<SuiClient | undefined>(undefined);
-
   const [objectId, setObjectId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [objectInfo, setObjectInfo] = useState<SuiObjectResponse | undefined>(
@@ -98,16 +96,6 @@ export const ExplorerObject = () => {
       }
     }
   };
-
-  useEffect(() => {
-    if (state.account && !client) {
-      setClinet(
-        new SuiClient({
-          url: getFullnodeUrl(state.account.nonce.network),
-        }),
-      );
-    }
-  }, [client, state]);
 
   return (
     <>
