@@ -6,6 +6,7 @@ import './App.css';
 
 import { vscode } from './utilities/vscode';
 import { Account } from './components/Account';
+import { ExplorerOwnerObjects } from './components/ExplorerOwnerObjects';
 import { ExplorerObject } from './components/ExplorerObject';
 import { ExplorerPackage } from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
@@ -64,6 +65,7 @@ function App() {
     <>
       <Account />
       <Workspace client={client} hasTerminal={hasTerminal} />
+      <ExplorerOwnerObjects client={client} />
       <ExplorerObject client={client} />
       <ExplorerPackage client={client} />
     </>
