@@ -100,15 +100,17 @@ export const Package = ({
   };
 
   const selectModule = (select: string) => {
-    setModule(select);
-    const entryFunctions = Object.fromEntries(
-      Object.entries(data[select].exposedFunctions).filter(
-        ([, value]) => value.isEntry,
-      ),
-    );
-    setFuncWrite(
-      Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
-    );
+    if (data[select].exposedFunctions) {
+      setModule(select);
+      const entryFunctions = Object.fromEntries(
+        Object.entries(data[select].exposedFunctions).filter(
+          ([, value]) => value.isEntry,
+        ),
+      );
+      setFuncWrite(
+        Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
+      );
+    }
   };
 
   useEffect(() => {
