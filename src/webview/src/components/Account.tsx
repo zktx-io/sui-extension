@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   VSCodeButton,
   VSCodeDivider,
@@ -17,23 +17,11 @@ import { getBalance } from '../utilities/getBalance';
 import { createProof } from '../utilities/createProof';
 import { faucet } from '../utilities/faucet';
 
-export type AccountHandles = {
-  updateBalance: () => void;
-};
-
-export const Account = forwardRef<AccountHandles>((props, ref) => {
+export const Account = () => {
   const [state, setState] = useRecoilState(STATE);
-  const [balance, setBalance] = useState<string>('n/a');
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
   const [isFaucet, setIsFaucet] = useState<boolean>(false);
   const [isLogin, setIsLogin] = useState<boolean>(false);
-
-  useImperativeHandle(ref, () => ({
-    updateBalance: async () => {
-      const value = state.account && (await getBalance(state.account));
-      setBalance(value || 'n/a');
-    },
-  }));
 
   const handleLogin = async () => {
     setIsLogin(true);
@@ -65,8 +53,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       command: COMMENDS.StoreAccount,
       data: undefined,
     });
-    setState((oldStte) => ({ ...oldStte, account: undefined }));
-    setBalance('n/a');
+    setState(() => ({ packages: {} }));
   };
 
   const handleFaucet = async () => {
@@ -75,8 +62,8 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       setIsFaucet(true);
       const result = state.account && (await faucet(state.account));
       if (result) {
-        const value = state.account && (await getBalance(state.account));
-        setBalance(value || 'n/a');
+        const balance = state.account && (await getBalance(state.account));
+        setState((oldState) => ({ ...oldState, balance }));
       }
     } catch (error) {
       vscode.postMessage({
@@ -91,12 +78,8 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
 
   useEffect(() => {
     const updateBalance = async () => {
-      try {
-        const value = state.account && (await getBalance(state.account));
-        setBalance(value || 'n/a');
-      } catch (error) {
-        setBalance('n/a');
-      }
+      const balance = await getBalance(state.account);
+      setState((oldState) => ({ ...oldState, balance }));
     };
 
     const handleMessage = async (event: any) => {
@@ -157,7 +140,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [setState, state]);
+  }, [setState, state.account]);
 
   return (
     <>
@@ -185,7 +168,7 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
           marginBottom: '8px',
           textAlign: 'right',
         }}
-      >{`Balance: ${balance}`}</div>
+      >{`Balance: ${state.balance || 'n/a'}`}</div>
 
       <label style={{ fontSize: '11px', color: 'GrayText' }}>NETWORK</label>
       <VSCodeDropdown
@@ -237,4 +220,4 @@ export const Account = forwardRef<AccountHandles>((props, ref) => {
       )}
     </>
   );
-});
+};

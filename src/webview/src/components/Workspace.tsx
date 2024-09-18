@@ -14,6 +14,7 @@ import { STATE } from '../recoil';
 import { packageUpgrade } from '../utilities/packageUpgrade';
 import { packagePublish } from '../utilities/packagePublish';
 import { dataGet, packageSelect } from '../utilities/stateController';
+import { getBalance } from '../utilities/getBalance';
 
 export const Workspace = ({
   hasTerminal,
@@ -64,19 +65,25 @@ export const Workspace = ({
           break;
         case COMMENDS.Deploy:
           try {
-            if (!upgradeToml && !!state.account?.zkAddress) {
-              const { packageId } = await packagePublish(
-                state.account,
-                message.data,
-              );
-              update(packageId);
-            } else if (!!state.account?.zkAddress) {
-              const { packageId } = await packageUpgrade(
-                state.account,
-                message.data,
-                upgradeToml,
-              );
-              update(packageId);
+            if (!!state.account?.zkAddress) {
+              if (!upgradeToml) {
+                const { packageId } = await packagePublish(
+                  state.account,
+                  message.data,
+                );
+                const balance = await getBalance(state.account);
+                setState((oldState) => ({ ...oldState, balance }));
+                update(packageId);
+              } else {
+                const { packageId } = await packageUpgrade(
+                  state.account,
+                  message.data,
+                  upgradeToml,
+                );
+                const balance = await getBalance(state.account);
+                setState((oldState) => ({ ...oldState, balance }));
+                update(packageId);
+              }
             }
           } catch (e) {
             console.error(e);
@@ -114,6 +121,7 @@ export const Workspace = ({
       <VSCodeDropdown
         style={{ width: '100%', marginBottom: '8px' }}
         value={state.path}
+        disabled={!state.account || !state.account.zkAddress}
         onChange={(e) => {
           if (e.target) {
             const path = (e.target as HTMLInputElement).value;
@@ -131,7 +139,12 @@ export const Workspace = ({
 
       <VSCodeButton
         style={{ width: '100%', marginBottom: '8px' }}
-        disabled={!hasTerminal || !state.path}
+        disabled={
+          !hasTerminal ||
+          !state.account ||
+          !state.account.zkAddress ||
+          !state.path
+        }
         onClick={() => {
           vscode.postMessage({
             command: COMMENDS.Compile,
@@ -148,7 +161,12 @@ export const Workspace = ({
           marginBottom: '8px',
           backgroundColor: '#ff9800',
         }}
-        disabled={!hasTerminal || !state.path}
+        disabled={
+          !hasTerminal ||
+          !state.account ||
+          !state.account.zkAddress ||
+          !state.path
+        }
         onClick={() => {
           vscode.postMessage({
             command: COMMENDS.UintTest,

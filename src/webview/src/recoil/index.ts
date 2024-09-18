@@ -32,6 +32,7 @@ export interface IAccount {
 
 export interface IState {
   account?: IAccount;
+  balance?: string;
   path?: string;
   packages: { [x: string]: any };
 }

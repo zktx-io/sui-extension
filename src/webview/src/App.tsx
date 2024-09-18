@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 import './App.css';
 
 import { vscode } from './utilities/vscode';
-import { Account, AccountHandles } from './components/Account';
+import { Account } from './components/Account';
 import { ExplorerObject } from './components/ExplorerObject';
 import {
   ExplorerPackage,
@@ -16,7 +16,6 @@ import { STATE } from './recoil';
 
 function App() {
   const initialized = useRef<boolean>(false);
-  const refAccount = useRef<AccountHandles>(null);
   const refPackageManager = useRef<ExplorerPackageHandles>(null);
   const [hasTerminal, setHasTerminal] = useState<boolean>(false);
   const [, setState] = useRecoilState(STATE);
@@ -55,11 +54,10 @@ function App() {
 
   return (
     <>
-      <Account ref={refAccount} />
+      <Account />
       <Workspace
         hasTerminal={hasTerminal}
         update={(packageId: string) => {
-          refAccount.current?.updateBalance();
           refPackageManager.current?.addPackage(packageId);
         }}
       />

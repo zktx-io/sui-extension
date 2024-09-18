@@ -91,7 +91,9 @@ export const ExplorerPackage = forwardRef<ExplorerPackageHandles>(
           <SpinButton
             title="Load"
             spin={isLoading}
-            disabled={isLoading || !client}
+            disabled={
+              isLoading || !client || !state.account || !state.account.zkAddress
+            }
             width="100%"
             onClick={async () => {
               setIsLoading(true);
