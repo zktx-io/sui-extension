@@ -90,6 +90,10 @@ export const ExplorerObject = ({
           });
         } else {
           setObjectInfo(res);
+          vscode.postMessage({
+            command: COMMENDS.OutputInfo,
+            data: JSON.stringify(res, null, 4),
+          });
         }
       } catch (error) {
         vscode.postMessage({ command: COMMENDS.MsgError, data: `${error}` });
