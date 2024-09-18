@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   VSCodeButton,
   VSCodeDivider,
-  VSCodeTextArea,
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import { useRecoilState } from 'recoil';
@@ -11,6 +10,7 @@ import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
+import { SuiObject } from './SuiObject';
 
 const styles = {
   card: {
@@ -168,47 +168,8 @@ export const ExplorerObject = ({
 
             <VSCodeDivider style={{ marginTop: '8px', marginBottom: '8px' }} />
 
-            <label style={{ fontSize: '11px', color: 'GrayText' }}>Type</label>
-            <VSCodeTextArea
-              rows={2}
-              resize="vertical"
-              style={{ width: '100%' }}
-              value={objectInfo?.data?.type || ''}
-              readOnly
-            />
+            <SuiObject objectInfo={objectInfo} />
 
-            <label style={{ fontSize: '11px', color: 'GrayText' }}>
-              Version
-            </label>
-            <VSCodeTextField
-              style={{ width: '100%' }}
-              value={objectInfo?.data?.version || ''}
-              readOnly
-            />
-
-            <label style={{ fontSize: '11px', color: 'GrayText' }}>
-              Digest
-            </label>
-            <VSCodeTextField
-              style={{ width: '100%' }}
-              value={objectInfo?.data?.digest || ''}
-              readOnly
-            />
-
-            <label style={{ fontSize: '11px', color: 'GrayText' }}>
-              Content
-            </label>
-            <VSCodeTextArea
-              rows={3}
-              resize="vertical"
-              style={{ width: '100%' }}
-              value={
-                objectInfo?.data?.content
-                  ? JSON.stringify(objectInfo.data.content, null, 4)
-                  : ''
-              }
-              readOnly
-            />
             <div
               style={{
                 display: 'flex',
