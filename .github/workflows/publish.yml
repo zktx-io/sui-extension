@@ -1,0 +1,78 @@
+name: Publish VS Code Extension
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Node.js and install dependencies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Install dependencies
+      - run: npm run install:all
+
+      # Get the release version from the GitHub tag and remove the 'v' prefix
+      - name: Get release version
+        run: |
+          VERSION="${GITHUB_REF##*/}"
+          CLEAN_VERSION="${VERSION#v}"  # Remove 'v' from tag name
+          echo "RELEASE_VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
+
+      # Compare the release version with the current package.json version
+      - name: Compare versions
+        id: compare_versions
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          RELEASE_VERSION=${{ env.RELEASE_VERSION }}
+
+          compare_versions() {
+            if [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$1" ] && [ "$1" != "$2" ]; then
+              return 0
+            else
+              return 1
+            fi
+          }
+
+          if compare_versions "$CURRENT_VERSION" "$RELEASE_VERSION"; then
+            echo "The release version ($RELEASE_VERSION) is greater than the current version ($CURRENT_VERSION)."
+            echo "SHOULD_UPDATE=true" >> $GITHUB_ENV
+          else
+            echo "The release version ($RELEASE_VERSION) is not greater than the current version ($CURRENT_VERSION)."
+            echo "SHOULD_UPDATE=false" >> $GITHUB_ENV
+          fi
+
+      # Update package.json version only if the release version is greater
+      - name: Update package version
+        if: env.SHOULD_UPDATE == 'true'
+        run: npm version ${{ env.RELEASE_VERSION }} --no-git-tag-version
+
+      # Commit the updated package.json if the version was updated
+      - name: Commit version update
+        if: env.SHOULD_UPDATE == 'true'
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add package.json
+          git commit -m "Bump version to ${{ env.RELEASE_VERSION }}"
+          git push origin HEAD:main
+
+      # Install vsce globally
+      - run: npm i -g vsce
+
+      # Build the extension
+      - run: npm run build:webview
+
+      # Publish the extension
+      - name: Publish
+        run: vsce publish -p ${{ secrets.VSCE_PAT }} --allow-missing-repository
