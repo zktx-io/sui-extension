@@ -189,6 +189,7 @@ export const ExplorerOwnerObjects = ({
               width="100%"
               onClick={async () => {
                 setIsLoading(true);
+                setNext(() => undefined);
                 setObjectsInfo(() => []);
                 await loadOwnerObjecs();
                 setCurrentPage(0);
