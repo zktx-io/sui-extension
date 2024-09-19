@@ -63,7 +63,7 @@ function App() {
 
   return (
     <>
-      <Account />
+      <Account client={client} />
       <Workspace client={client} hasTerminal={hasTerminal} />
       <ExplorerOwnerObjects client={client} />
       <ExplorerObject client={client} />

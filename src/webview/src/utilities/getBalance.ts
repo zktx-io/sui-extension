@@ -1,21 +1,20 @@
-import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
+import { SuiClient } from '@mysten/sui/client';
 import { SUI_DECIMALS } from '@mysten/sui/utils';
 import BigNumber from 'bignumber.js';
 import { IAccount } from '../recoil';
 
 export const getBalance = async (
+  client: SuiClient | undefined,
   account: IAccount | undefined,
 ): Promise<string | undefined> => {
   if (
+    !!client &&
     account &&
     account.zkAddress &&
     account.zkAddress.address &&
     account.nonce.privateKey
   ) {
     try {
-      const client = new SuiClient({
-        url: getFullnodeUrl(account.nonce.network),
-      });
       const balance = await client.getBalance({
         owner: account.zkAddress.address,
       });

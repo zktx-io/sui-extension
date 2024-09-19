@@ -77,7 +77,7 @@ export const Workspace = ({
                   state.account,
                   message.data,
                 );
-                const balance = await getBalance(state.account);
+                const balance = await getBalance(client, state.account);
                 const modules = await loadPackageData(client, packageId);
                 setState((oldState) =>
                   modules
@@ -94,7 +94,7 @@ export const Workspace = ({
                   message.data,
                   upgradeToml,
                 );
-                const balance = await getBalance(state.account);
+                const balance = await getBalance(client, state.account);
                 const modules = await loadPackageData(client, packageId);
                 setState((oldState) =>
                   modules
@@ -124,7 +124,7 @@ export const Workspace = ({
       window.removeEventListener('message', handleMessage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.account, upgradeToml]);
+  }, [client, state.account, upgradeToml]);
 
   return (
     <>
@@ -204,6 +204,7 @@ export const Workspace = ({
         title={!upgradeToml ? 'Deploy' : 'Upgrade'}
         spin={isLoading}
         disabled={
+          !client ||
           !hasTerminal ||
           !state.path ||
           !state.account?.zkAddress?.address ||

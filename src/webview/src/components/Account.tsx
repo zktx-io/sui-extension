@@ -7,6 +7,7 @@ import {
   VSCodeTextField,
 } from '@vscode/webview-ui-toolkit/react';
 import { useRecoilState } from 'recoil';
+import { SuiClient } from '@mysten/sui/client';
 import { SpinButton } from './SpinButton';
 import { NETWORK, NETWORKS, STATE } from '../recoil';
 import { createNonce } from '../utilities/createNonce';
@@ -17,7 +18,7 @@ import { getBalance } from '../utilities/getBalance';
 import { createProof } from '../utilities/createProof';
 import { faucet } from '../utilities/faucet';
 
-export const Account = () => {
+export const Account = ({ client }: { client: SuiClient | undefined }) => {
   const [state, setState] = useRecoilState(STATE);
   const [network, setNetwork] = useState<NETWORK>(NETWORK.DevNet);
   const [isFaucet, setIsFaucet] = useState<boolean>(false);
@@ -62,7 +63,8 @@ export const Account = () => {
       setIsFaucet(true);
       const result = state.account && (await faucet(state.account));
       if (result) {
-        const balance = state.account && (await getBalance(state.account));
+        const balance =
+          state.account && (await getBalance(client, state.account));
         setState((oldState) => ({ ...oldState, balance }));
       }
     } catch (error) {
@@ -78,7 +80,7 @@ export const Account = () => {
 
   useEffect(() => {
     const updateBalance = async () => {
-      const balance = await getBalance(state.account);
+      const balance = await getBalance(client, state.account);
       setState((oldState) => ({ ...oldState, balance }));
     };
 
@@ -140,7 +142,8 @@ export const Account = () => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [setState, state.account]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, state.account]);
 
   return (
     <>
