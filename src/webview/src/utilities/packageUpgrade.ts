@@ -1,4 +1,4 @@
-import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
+import { SuiClient } from '@mysten/sui/client';
 import { Transaction, UpgradePolicy } from '@mysten/sui/transactions';
 import { parse } from 'smol-toml';
 import { vscode } from './vscode';
@@ -8,14 +8,12 @@ import { IAccount } from '../recoil';
 
 export const packageUpgrade = async (
   account: IAccount,
+  client: SuiClient,
   dumpByte: string,
   upgradeToml: string,
 ): Promise<{ digest: string; packageId: string }> => {
   if (account.nonce.privateKey && account.zkAddress) {
     try {
-      const client = new SuiClient({
-        url: getFullnodeUrl(account.nonce.network),
-      });
       const {
         modules,
         dependencies,
