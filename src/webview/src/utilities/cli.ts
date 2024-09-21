@@ -5,7 +5,7 @@ export const COMPILER_URL =
 export const MoveToml = 'Move.toml';
 export const ByteDump = 'bytecode.dump.json';
 
-export const runCompile = (path: string) => {
+export const runBuild = (path: string) => {
   return `${COMPILER} move build --dump-bytecode-as-base64 --path ${path} > ${path}/${ByteDump}`;
 };
 

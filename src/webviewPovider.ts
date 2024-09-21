@@ -11,9 +11,7 @@ import {
   COMPILER,
   COMPILER_URL,
   MoveToml,
-  runCompile,
-  runTest,
-} from './config';
+} from './webview/src/utilities/cli';
 
 export class WebviewViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'webviewViewProvider';
@@ -123,22 +121,13 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
           case COMMENDS.StoreAccount:
             await accountStore(this._context, data);
             break;
-          case COMMENDS.Compile:
+          case COMMENDS.CLI:
             if (!hasTerminal()) {
               vscode.window.showErrorMessage(
                 'This environment does not support terminal operations.',
               );
             } else {
-              this.runTerminal(runCompile(data));
-            }
-            break;
-          case COMMENDS.UintTest:
-            if (!hasTerminal()) {
-              vscode.window.showErrorMessage(
-                'This environment does not support terminal operations.',
-              );
-            } else {
-              this.runTerminal(runTest(data));
+              this.runTerminal(data);
             }
             break;
           case COMMENDS.Deploy:
