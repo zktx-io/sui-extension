@@ -5,23 +5,36 @@ export const SpinButton = ({
   spin,
   disabled,
   width,
+  bgColor,
   onClick,
 }: {
   title: string;
   spin: boolean;
   disabled: boolean;
   width?: string;
+  bgColor?: string;
   onClick: () => void;
 }) => {
   return (
     <VSCodeButton
-      style={{
-        width: width || 'auto',
-        minWidth: '100px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
+      style={
+        bgColor
+          ? {
+              width: width || 'auto',
+              minWidth: '100px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: bgColor,
+            }
+          : {
+              width: width || 'auto',
+              minWidth: '100px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }
+      }
       disabled={disabled}
       onClick={onClick}
     >
