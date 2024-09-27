@@ -54,8 +54,9 @@ jobs:
 
       # Update package.json and package-lock.json with the next version
       - name: Update Version in package.json
+        if: env.SHOULD_UPDATE == 'true'
         run: |
-          npm version ${{ env.NEXT_VERSION }} --no-git-tag-version
+          npm version ${{ env.RELEASE_VERSION }} --no-git-tag-version
           npm install  # Ensure package-lock.json is updated
 
       # Commit the updated package.json if the version was updated
