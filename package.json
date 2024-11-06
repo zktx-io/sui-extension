@@ -8,12 +8,21 @@
     "vscode": "^1.92.0"
   },
   "publisher": "zktxio",
+  "homepage": "https://docs.zktx.io/vsce/sui/",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/zktx-io/sui-extension"
+  },
   "categories": [
     "Education",
     "Programming Languages",
     "Other"
   ],
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#011829",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onView:webviewViewProvider"
   ],
@@ -25,7 +34,7 @@
         {
           "id": "extensionSidebar",
           "title": "Sui Extension",
-          "icon": "media/icon.png"
+          "icon": "media/icon-side.png"
         }
       ]
     },
