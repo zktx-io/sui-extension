@@ -185,7 +185,7 @@ export const Package = ({
             Object.keys(funcWrite).map((name, key) => (
               <Function
                 key={key}
-                isWrire={true}
+                isWrite={true}
                 name={name}
                 func={funcWrite[name]}
                 isDisable={isExcute}

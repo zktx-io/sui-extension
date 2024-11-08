@@ -82,13 +82,13 @@ const styles = {
 };
 
 export const Function = ({
-  isWrire,
+  isWrite,
   name,
   func,
   isDisable,
   onExcute,
 }: {
-  isWrire: boolean;
+  isWrite: boolean;
   name: string;
   func: SuiMoveNormalizedFunction;
   isDisable: boolean;
@@ -157,13 +157,19 @@ export const Function = ({
           }}
         >
           <div style={styles.titleContainer}>
-            {func.isEntry ? (
-              <span style={styles.icon} title="entry">
-                E
-              </span>
+            {isWrite ? (
+              func.isEntry ? (
+                <span style={styles.icon} title="entry">
+                  E
+                </span>
+              ) : (
+                <span style={styles.icon} title="public">
+                  P
+                </span>
+              )
             ) : (
-              <span style={styles.icon} title="public">
-                P
+              <span style={styles.icon} title="read">
+                R
               </span>
             )}
             <div style={styles.title}>{name}</div>
@@ -286,7 +292,7 @@ export const Function = ({
               }}
             >
               <SpinButton
-                title={isWrire ? 'Write' : 'Read'}
+                title={isWrite ? 'Write' : 'Read'}
                 spin={isLoading}
                 disabled={isDisable || isLoading}
                 onClick={() => {
