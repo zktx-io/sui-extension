@@ -102,13 +102,13 @@ export const Package = ({
   const selectModule = (select: string) => {
     if (data[select].exposedFunctions) {
       setModule(select);
-      const entryFunctions = Object.fromEntries(
+      const writeFunctions = Object.fromEntries(
         Object.entries(data[select].exposedFunctions).filter(
           ([, value]) => value.isEntry,
         ),
       );
       setFuncWrite(
-        Object.keys(entryFunctions).length > 0 ? entryFunctions : undefined,
+        Object.keys(writeFunctions).length > 0 ? writeFunctions : undefined,
       );
     }
   };
