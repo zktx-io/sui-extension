@@ -104,7 +104,7 @@ export const Package = ({
       setModule(select);
       const writeFunctions = Object.fromEntries(
         Object.entries(data[select].exposedFunctions).filter(
-          ([, value]) => value.isEntry,
+          ([, value]) => value.isEntry || value.visibility === 'Public',
         ),
       );
       setFuncWrite(
