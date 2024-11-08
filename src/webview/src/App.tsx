@@ -52,14 +52,16 @@ function App() {
   }, [setState]);
 
   useEffect(() => {
-    if (!client && state.account) {
+    if (state.account) {
       setClinet(
         new SuiClient({
           url: getFullnodeUrl(state.account.nonce.network),
         }),
       );
+    } else {
+      setClinet(undefined);
     }
-  }, [client, state]);
+  }, [state.account]);
 
   return (
     <>
