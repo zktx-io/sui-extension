@@ -37,9 +37,27 @@ const styles = {
     padding: '8px 12px',
     justifyContent: 'space-between',
   },
+  titleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
   title: {
-    marginTop: '0px',
-    marginBottom: '0px',
+    margin: '0',
+    fontSize: '14px',
+  },
+  icon: {
+    marginRight: '4px',
+    cursor: 'default',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '12px',
+    height: '10px',
+    borderRadius: '2px',
+    border: '1px dotted var(--vscode-foreground)',
+    color: 'var(--vscode-foreground)',
+    fontSize: '8px',
+    fontWeight: 'bold' as const,
   },
   arrow: {
     transition: 'transform 0.3s ease',
@@ -138,7 +156,18 @@ export const Function = ({
             setIsOpen(!isOpen);
           }}
         >
-          <div style={styles.title}>{name}</div>
+          <div style={styles.titleContainer}>
+            {func.isEntry ? (
+              <span style={styles.icon} title="entry">
+                E
+              </span>
+            ) : (
+              <span style={styles.icon} title="public">
+                P
+              </span>
+            )}
+            <div style={styles.title}>{name}</div>
+          </div>
           <div
             style={{
               ...styles.arrow,
