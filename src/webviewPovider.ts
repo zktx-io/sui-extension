@@ -14,7 +14,7 @@ import {
 } from './webview/src/utilities/cli';
 
 export class WebviewViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'webviewViewProvider';
+  public static readonly viewType = 'webviewViewProviderSui';
   private _view?: vscode.WebviewView;
 
   private readonly _context;

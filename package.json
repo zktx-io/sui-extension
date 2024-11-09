@@ -24,7 +24,7 @@
     "theme": "dark"
   },
   "activationEvents": [
-    "onView:webviewViewProvider"
+    "onView:webviewViewProviderSui"
   ],
   "main": "./out/extension.js",
   "browser": "./out/web/extension.js",
@@ -32,17 +32,17 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "extensionSidebar",
+          "id": "extensionSidebarSui",
           "title": "Sui Extension",
           "icon": "media/icon-side.png"
         }
       ]
     },
     "views": {
-      "extensionSidebar": [
+      "extensionSidebarSui": [
         {
+          "id": "webviewViewProviderSui",
           "type": "webview",
-          "id": "webviewViewProvider",
           "name": "Sui Extension"
         }
       ]
@@ -61,7 +61,7 @@
       "view/title": [
         {
           "command": "extension.openDocs",
-          "when": "view == webviewViewProvider",
+          "when": "view == webviewViewProviderSui",
           "group": "navigation"
         }
       ]
