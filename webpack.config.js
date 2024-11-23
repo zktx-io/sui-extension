@@ -37,6 +37,7 @@ const webExtensionConfig = {
       assert: require.resolve('assert'),
       buffer: require.resolve('buffer/'),
       path: require.resolve('path-browserify'),
+      fs: false,
     },
   },
   experiments: {
@@ -87,6 +88,7 @@ const webExtensionConfig = {
   ],
   externals: {
     vscode: 'commonjs vscode', // ignored because it doesn't exist
+    prettier: "commonjs prettier",
   },
   performance: {
     hints: false,
