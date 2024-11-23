@@ -49,27 +49,42 @@
     },
     "commands": [
       {
-        "command": "extension.openDocs",
+        "command": "sui-extension.openDocs",
         "title": "docs",
         "icon": {
           "dark": "media/docs-dark.svg",
           "light": "media/docs-light.svg"
         }
+      },
+      {
+        "command": "sui-extension.formatMoveFile",
+        "title": "Format Move File (sui-extension)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "extension.openDocs",
+          "command": "sui-extension.openDocs",
           "when": "view == webviewViewProviderSui",
           "group": "navigation"
         }
       ]
-    }
+    },
+    "languages": [
+      {
+        "id": "move",
+        "extensions": [
+          ".move"
+        ],
+        "aliases": [
+          "Move"
+        ]
+      }
+    ]
   },
   "scripts": {
     "open-in-browser": "npm run build:all && vscode-test-web --extensionDevelopmentPath=. .",
-    "build:all": "npm run compile && npm run build:webview",
+    "build:all": "npm run build:webview && npm run compile",
     "install:all": "npm install && cd src/webview && npm install",
     "start:webview": "cd src/webview && npm run start",
     "build:webview": "cd src/webview && npm run build",
@@ -94,13 +109,18 @@
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
     "@vscode/test-web": "^0.0.56",
+    "copy-webpack-plugin": "^12.0.2",
     "eslint": "^8.57.0",
     "path-browserify": "^1.0.1",
-    "prettier": "^3.3.3",
     "process": "^0.11.10",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.5",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@mysten/prettier-plugin-move": "^0.1.1",
+    "prettier": "^3.3.2",
+    "web-tree-sitter": "^0.20.8"
   }
 }

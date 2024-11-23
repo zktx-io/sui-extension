@@ -9,6 +9,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
 
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
@@ -38,6 +39,9 @@ const webExtensionConfig = {
       path: require.resolve('path-browserify'),
     },
   },
+  experiments: {
+    asyncWebAssembly: true,
+  },
   module: {
     rules: [
       {
@@ -57,6 +61,28 @@ const webExtensionConfig = {
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(
+            __dirname,
+            'node_modules/web-tree-sitter/tree-sitter.wasm',
+          ),
+          to: path.resolve(__dirname, 'out/tree-sitter.wasm'),
+        },
+      ],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(
+            __dirname,
+            'node_modules/@mysten/prettier-plugin-move/tree-sitter-move.wasm',
+          ),
+          to: path.resolve(__dirname, 'out/tree-sitter-move.wasm'),
+        },
+      ],
     }),
   ],
   externals: {
@@ -86,7 +112,7 @@ const nodeExtensionConfig = {
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.wasm'],
   },
   module: {
     rules: [
@@ -98,6 +124,10 @@ const nodeExtensionConfig = {
             loader: 'ts-loader',
           },
         ],
+      },
+      {
+        test: /\.wasm$/,
+        type: 'asset/resource',
       },
     ],
   },
