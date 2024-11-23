@@ -171,7 +171,7 @@ export const Workspace = ({
         }}
       >
         <VSCodeButton
-          style={{ flex: 1, marginRight: '2px' }}
+          style={{ width: '100%' }}
           disabled={
             !hasTerminal ||
             !state.account ||
@@ -188,9 +188,17 @@ export const Workspace = ({
         >
           Build
         </VSCodeButton>
+      </div>
 
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: '4px',
+        }}
+      >
         <VSCodeButton
-          style={{ flex: 1, marginLeft: '2px' }}
+          style={{ flex: 1, marginRight: '2px' }}
           disabled={
             !hasTerminal ||
             !state.account ||
@@ -206,6 +214,25 @@ export const Workspace = ({
           }}
         >
           Test
+        </VSCodeButton>
+
+        <VSCodeButton
+          style={{ flex: 1, marginLeft: '2px' }}
+          disabled={
+            !hasTerminal ||
+            !state.account ||
+            !state.account.zkAddress ||
+            !state.path
+          }
+          onClick={() => {
+            state.path &&
+              vscode.postMessage({
+                command: COMMENDS.Prettier,
+                data: state.path,
+              });
+          }}
+        >
+          Prettier
         </VSCodeButton>
       </div>
 

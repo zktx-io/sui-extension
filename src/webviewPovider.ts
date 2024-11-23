@@ -6,6 +6,7 @@ import { COMMENDS } from './webview/src/utilities/commends';
 import { FileWathcer } from './utilities/fileWatcher';
 import { accountLoad, accountStore } from './utilities/account';
 import { exchangeToken } from './utilities/authCode';
+import { prettify } from './utilities/prettify';
 import {
   CHANNEL,
   COMPILER,
@@ -129,6 +130,9 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
             } else {
               this.runTerminal(data);
             }
+            break;
+          case COMMENDS.Prettier:
+            prettify(data, this._context, this._outputChannel);
             break;
           case COMMENDS.Deploy:
             {
