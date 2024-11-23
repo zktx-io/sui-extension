@@ -88,7 +88,7 @@ const webExtensionConfig = {
   ],
   externals: {
     vscode: 'commonjs vscode', // ignored because it doesn't exist
-    prettier: "commonjs prettier",
+    prettier: 'commonjs prettier',
   },
   performance: {
     hints: false,
