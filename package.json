@@ -58,7 +58,7 @@
       },
       {
         "command": "sui-extension.formatMoveFile",
-        "title": "Format Move File (sui-extension)"
+        "title": "Sui Extension: Format Move File"
       }
     ],
     "menus": {
