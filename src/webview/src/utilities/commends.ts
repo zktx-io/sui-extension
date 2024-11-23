@@ -5,6 +5,7 @@ export enum COMMENDS {
   StoreAccount = 'storeAccount',
   PackageList = 'package:list',
   CLI = 'package:cli',
+  Prettier = 'package:prettier',
   Deploy = 'package:deploy',
   MsgInfo = 'message:info',
   MsgError = 'message:error',
