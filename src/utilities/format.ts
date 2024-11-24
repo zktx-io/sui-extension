@@ -3,9 +3,7 @@ import * as prettier from 'prettier';
 import * as Parser from 'web-tree-sitter';
 import * as tree from '@mysten/prettier-plugin-move/out/tree.js';
 import * as printer from '@mysten/prettier-plugin-move/out/printer.js';
-
-let isWasmInitialized = false;
-let parser: Parser | undefined = undefined;
+import { initParser } from './initParser';
 
 const getMoveFilesFromFolder = async (folderUri: string) => {
   try {
@@ -26,22 +24,9 @@ const getMoveFilesFromFolder = async (folderUri: string) => {
   }
 };
 
-const initParser = async (context: vscode.ExtensionContext) => {
-  if (!isWasmInitialized) {
-    await Parser.init();
-    const wasmPath = vscode.Uri.joinPath(
-      context.extensionUri,
-      'out/tree-sitter-move.wasm',
-    ).path;
-    const Lang = await Parser.Language.load(wasmPath);
-    parser = new Parser();
-    parser.setLanguage(Lang);
-    isWasmInitialized = true;
-  }
-};
-
 const formatAndSaveMoveFiles = async (
   files: vscode.Uri[],
+  parser: Parser,
   channel?: vscode.OutputChannel,
 ) => {
   try {
@@ -50,7 +35,7 @@ const formatAndSaveMoveFiles = async (
         'move-parse': {
           parse: (text: string) => {
             return (async () => {
-              return new tree.Tree(parser!.parse(text).rootNode);
+              return new tree.Tree(parser.parse(text).rootNode);
             })();
           },
           astFormat: 'move-format',
@@ -101,15 +86,15 @@ const formatAndSaveMoveFiles = async (
   }
 };
 
-export const prettify = async (
+export const format = async (
   folderUri: string,
   context: vscode.ExtensionContext,
   channel?: vscode.OutputChannel,
 ): Promise<undefined> => {
   try {
-    await initParser(context);
+    const parser = await initParser(context.extensionUri);
     const files = await getMoveFilesFromFolder(folderUri);
-    await formatAndSaveMoveFiles(files, channel);
+    await formatAndSaveMoveFiles(files, parser, channel);
   } catch (error) {
     vscode.window.showErrorMessage(`Error getting .move files: ${error}`);
   }

@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as prettier from 'prettier';
-import * as Parser from 'web-tree-sitter';
 import * as tree from '@mysten/prettier-plugin-move/out/tree.js';
 import * as printer from '@mysten/prettier-plugin-move/out/printer.js';
+import { initParser } from './initParser';
 
 export const initPrettierMovePlugin = (context: vscode.ExtensionContext) => {
   const disposable = vscode.commands.registerCommand(
@@ -23,25 +23,16 @@ export const initPrettierMovePlugin = (context: vscode.ExtensionContext) => {
           return;
         }
 
-        const formatted = await prettier.format(document.getText(), {
+        const parser = await initParser(context.extensionUri);
+        const originalText = document.getText();
+        const formatted = await prettier.format(originalText, {
           parser: 'move-parse',
           plugins: [
             {
               parsers: {
                 'move-parse': {
-                  parse: (text: string) => {
-                    return (async () => {
-                      await Parser.init();
-                      const wasmPath = vscode.Uri.joinPath(
-                        context.extensionUri,
-                        'out/tree-sitter-move.wasm',
-                      ).path;
-                      const Lang = await Parser.Language.load(wasmPath);
-                      const parser = new Parser();
-                      parser.setLanguage(Lang);
-                      return new tree.Tree(parser.parse(text).rootNode);
-                    })();
-                  },
+                  parse: (text: string) =>
+                    new tree.Tree(parser.parse(text).rootNode),
                   astFormat: 'move-format',
                   locStart: () => -1,
                   locEnd: () => -1,
@@ -54,15 +45,23 @@ export const initPrettierMovePlugin = (context: vscode.ExtensionContext) => {
           ],
         });
 
+        if (originalText === formatted) {
+          vscode.window.showInformationMessage(
+            'Move file is already formatted.',
+          );
+          return;
+        }
+
         const edit = new vscode.WorkspaceEdit();
         const fullRange = new vscode.Range(
           document.positionAt(0),
-          document.positionAt(document.getText().length),
+          document.positionAt(originalText.length),
         );
         edit.replace(document.uri, fullRange, formatted);
         await vscode.workspace.applyEdit(edit);
+        await document.save();
         vscode.window.showInformationMessage(
-          'Move file formatted successfully!',
+          'Move file formatted and saved successfully!',
         );
       } catch (error) {
         vscode.window.showErrorMessage(`${error}`);

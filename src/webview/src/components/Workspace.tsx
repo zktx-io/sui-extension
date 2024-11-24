@@ -227,12 +227,12 @@ export const Workspace = ({
           onClick={() => {
             state.path &&
               vscode.postMessage({
-                command: COMMENDS.Prettier,
+                command: COMMENDS.FMT,
                 data: state.path,
               });
           }}
         >
-          Prettier
+          Format
         </VSCodeButton>
       </div>
 
