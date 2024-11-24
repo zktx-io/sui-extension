@@ -9,6 +9,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 - **Format Sui Smart Contracts**: Format your Move smart contracts with Prettier, using `@mysten/prettier-plugin-move` for clean, readable, and consistent code.
 
   > Note: The extension supports formatting configurations defined in a `.prettierrc.json` file located in your project. These configurations allow you to customize the formatting rules for your Move files. If no configuration is found, the extension falls back to its default settings:
+
   ```json
   {
     "tabWidth": 4,
@@ -22,13 +23,13 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 
   > Customize: To use a custom configuration, create a .prettierrc.json file in the root of your project directory with your preferred settings. For example:
 
-	+ Configuration Options:
-	+ tabWidth: Number of spaces per tab (default: 4).
-	+ printWidth: Maximum line length before wrapping (default: 100).
-	+ useModuleLabel: Converts old module blocks to a module label (default: true).
-	+ autoGroupImports: Controls how imports are grouped. Options: "module" (default) or "package".
-	+ enableErrorDebug: Enables debug information for formatting errors (default: false).
-	+ wrapComments: Wraps comments to adhere to the printWidth (default: false).
+  - Configuration Options:
+  - tabWidth: Number of spaces per tab (default: 4).
+  - printWidth: Maximum line length before wrapping (default: 100).
+  - useModuleLabel: Converts old module blocks to a module label (default: true).
+  - autoGroupImports: Controls how imports are grouped. Options: "module" (default) or "package".
+  - enableErrorDebug: Enables debug information for formatting errors (default: false).
+  - wrapComments: Wraps comments to adhere to the printWidth (default: false).
 
   ```json
   {
@@ -45,6 +46,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 - **Upgrade Smart Contracts**: Seamlessly upgrade and test your smart contracts.
 
   > Note: To upgrade, add an `upgrade.toml` file in the same directory as your `move.toml` file. The format is as follows:
+
   ```toml
   [upgrade]
   package_id = "The address of the deployed package"
