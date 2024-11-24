@@ -5,6 +5,7 @@ import * as tree from '@mysten/prettier-plugin-move/out/tree.js';
 import * as printer from '@mysten/prettier-plugin-move/out/printer.js';
 
 let parser: Parser | undefined = undefined;
+const EXTENSION_NAME = 'prettierMove';
 
 const Default = {
   tabWidth: 4,
@@ -32,7 +33,19 @@ const initParser = async (extensionUri: vscode.Uri): Promise<Parser> => {
   return parser;
 };
 
-const loadPrettierConfig = async (
+const loadVSCodePrettierMoveConfig = (): Record<string, any> => {
+  const config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  return {
+    tabWidth: config.get('tabWidth', Default.tabWidth),
+    printWidth: config.get('printWidth', Default.printWidth),
+    useModuleLabel: config.get('useModuleLabel', Default.useModuleLabel),
+    autoGroupImports: config.get('autoGroupImports', Default.autoGroupImports),
+    enableErrorDebug: config.get('enableErrorDebug', Default.enableErrorDebug),
+    wrapComments: config.get('wrapComments', Default.wrapComments),
+  };
+};
+
+const loadProjectPrettierConfig = async (
   folderUri: string,
 ): Promise<Record<string, any>> => {
   try {
@@ -53,6 +66,14 @@ const loadPrettierConfig = async (
     vscode.window.showErrorMessage(`Error loading .prettierrc: ${error}`);
     return Default;
   }
+};
+
+const getEffectivePrettierConfig = async (
+  folderUri: string,
+): Promise<Record<string, any>> => {
+  const vscodeConfig = loadVSCodePrettierMoveConfig();
+  const projectConfig = await loadProjectPrettierConfig(folderUri);
+  return { ...vscodeConfig, ...projectConfig };
 };
 
 const getMoveFilesFromFolder = async (folderUri: string) => {
@@ -126,7 +147,7 @@ const formatAndSaveMoveFiles = async (
   channel?: vscode.OutputChannel,
 ) => {
   try {
-    const config = await loadPrettierConfig(folderUri);
+    const config = await getEffectivePrettierConfig(folderUri);
     const plugin = {
       parsers: {
         'move-parse': {
