@@ -55,10 +55,6 @@
           "dark": "media/docs-dark.svg",
           "light": "media/docs-light.svg"
         }
-      },
-      {
-        "command": "sui-extension.formatMoveFile",
-        "title": "Format Move File"
       }
     ],
     "menus": {
@@ -67,13 +63,6 @@
           "command": "sui-extension.openDocs",
           "when": "view == webviewViewProviderSui",
           "group": "navigation"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "sui-extension.formatMoveFile",
-          "when": "editorTextFocus && resourceLangId == move",
-          "group": "moveTools@1"
         }
       ]
     },
