@@ -67,7 +67,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 ## Requirements
 
 - **Sui CLI**: Install the Sui command-line interface to interact with the Sui blockchain.
-  > Note: If you are using GitHub Codespaces, please install Homebrew from https://brew.sh first to manage and install the Sui CLI.
+  > Note: If you are using GitHub Codespaces, please install Homebrew from https://brew.sh first to manage and [install the Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
 - **zkLogin**: Set up zkLogin to generate wallets for contract deployment and testing. A Google account is required.
 
 ## Extension Settings
