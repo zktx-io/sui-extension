@@ -3,6 +3,7 @@ import * as prettier from 'prettier';
 import * as Parser from 'web-tree-sitter';
 import * as tree from '@mysten/prettier-plugin-move/out/tree.js';
 import * as printer from '@mysten/prettier-plugin-move/out/printer.js';
+import { getMoveFilesFromFolder } from './getMoveFilesFromFolder';
 
 let parser: Parser | undefined = undefined;
 const EXTENSION_NAME = 'prettierMove';
@@ -74,25 +75,6 @@ const getEffectivePrettierConfig = async (
   const vscodeConfig = loadVSCodePrettierMoveConfig();
   const projectConfig = await loadProjectPrettierConfig(folderUri);
   return { ...vscodeConfig, ...projectConfig };
-};
-
-const getMoveFilesFromFolder = async (folderUri: string) => {
-  try {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-      vscode.window.showErrorMessage('No workspace folder found');
-      return [];
-    }
-    const pattern = new vscode.RelativePattern(
-      vscode.Uri.joinPath(workspaceFolder.uri, `${folderUri}/sources`),
-      '**/*.move',
-    );
-    const files = await vscode.workspace.findFiles(pattern);
-    return files;
-  } catch (error) {
-    vscode.window.showErrorMessage(`Error getting .move files: ${error}`);
-    return [];
-  }
 };
 
 const tryFormat = async (
