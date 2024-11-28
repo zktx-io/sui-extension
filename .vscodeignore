@@ -7,8 +7,8 @@ out/test/**
 
 # Ignore source code
 src/**
-!src/webview/build/
-!src/webview/build/**
+!src/webview/activitybar/build/
+!src/webview/activitybar/build/**
 
 # Ignore Misc
 .yarnrc

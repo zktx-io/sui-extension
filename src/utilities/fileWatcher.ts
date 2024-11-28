@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { COMMENDS } from '../webview/src/utilities/commends';
-import { ByteDump } from '../webview/src/utilities/cli';
+import { COMMENDS } from '../webview/activitybar/src/utilities/commends';
+import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 
 const MoveToml = 'Move.toml';
 const UpgradeToml = 'Upgrade.toml';

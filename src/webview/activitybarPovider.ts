@@ -1,21 +1,21 @@
 import * as vscode from 'vscode';
-import { getUri } from './utilities/getUri';
-import { getNonce } from './utilities/getNonce';
-import { hasTerminal } from './utilities/hasTerminal';
-import { COMMENDS } from './webview/src/utilities/commends';
-import { FileWathcer } from './utilities/fileWatcher';
-import { accountLoad, accountStore } from './utilities/account';
-import { exchangeToken } from './utilities/authCode';
-import { format } from './utilities/format';
+import { getUri } from '../utilities/getUri';
+import { getNonce } from '../utilities/getNonce';
+import { hasTerminal } from '../utilities/hasTerminal';
+import { COMMENDS } from './activitybar/src/utilities/commends';
+import { FileWathcer } from '../utilities/fileWatcher';
+import { accountLoad, accountStore } from '../utilities/account';
+import { exchangeToken } from '../utilities/authCode';
+import { format } from '../utilities/format';
 import {
   CHANNEL,
   COMPILER,
   COMPILER_URL,
   MoveToml,
-} from './webview/src/utilities/cli';
+} from './activitybar/src/utilities/cli';
 
-export class WebviewViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'webviewViewProviderSui';
+export class ActivitybarProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'activitybarProviderSui';
   private _view?: vscode.WebviewView;
 
   private readonly _context;
@@ -172,6 +172,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
     const stylesUri = getUri(webview, extensionUri, [
       'src',
       'webview',
+      'activitybar',
       'build',
       'static',
       'css',
@@ -180,6 +181,7 @@ export class WebviewViewProvider implements vscode.WebviewViewProvider {
     const scriptUri = getUri(webview, extensionUri, [
       'src',
       'webview',
+      'activitybar',
       'build',
       'static',
       'js',

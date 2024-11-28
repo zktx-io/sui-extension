@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IAccount } from '../webview/src/recoil';
+import { IAccount } from '../webview/activitybar/src/recoil';
 
 export const accountStore = async (
   context: vscode.ExtensionContext,

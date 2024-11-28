@@ -4,7 +4,7 @@ import {
   ClientSecret,
   UrlAuthCode,
   UrlCallback,
-} from '../webview/src/utilities/commends';
+} from '../webview/activitybar/src/utilities/commends';
 
 const exchangeAuthCodeForJwt = async (
   authCode: string,

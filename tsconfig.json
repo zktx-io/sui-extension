@@ -8,5 +8,5 @@
     "outDir": "out",
     "strict": true
   },
-  "exclude": ["node_modules", "src/webview", ".vscode-test-web"]
+  "exclude": ["node_modules", "src/webview/activitybar", ".vscode-test-web"]
 }
