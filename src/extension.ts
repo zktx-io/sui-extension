@@ -1,14 +1,8 @@
 import * as vscode from 'vscode';
-import { ActivitybarProvider } from './webview/activitybarPovider';
+import { initActivityBar } from './webview/activitybarProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-  const provider = new ActivitybarProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      ActivitybarProvider.viewType,
-      provider,
-    ),
-  );
+  initActivityBar(context);
   context.subscriptions.push(
     vscode.commands.registerCommand('sui-extension.openDocs', () => {
       vscode.env.openExternal(vscode.Uri.parse('https://docs.zktx.io'));
