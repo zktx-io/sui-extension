@@ -5,22 +5,22 @@ import { hasTerminal } from '../utilities/hasTerminal';
 import { COMMENDS } from './activitybar/src/utilities/commends';
 import { FileWathcer } from '../utilities/fileWatcher';
 import { accountLoad, accountStore } from '../utilities/account';
+import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
 import { format } from '../utilities/format';
 import {
-  CHANNEL,
   COMPILER,
   COMPILER_URL,
   MoveToml,
 } from './activitybar/src/utilities/cli';
 
 class ActivitybarProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'activitybarProviderSui';
   private _view?: vscode.WebviewView;
 
   private readonly _context;
   private readonly _extensionUri: vscode.Uri;
   private _fileWatcher?: FileWathcer;
-  private _outputChannel?: vscode.OutputChannel;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
@@ -51,7 +51,6 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
   ) {
     this._view = webviewView;
     this._fileWatcher = new FileWathcer(webviewView, this._context, MoveToml);
-    this._outputChannel = vscode.window.createOutputChannel(CHANNEL);
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -131,7 +130,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
             }
             break;
           case COMMENDS.FMT:
-            format(data, this._context, this._outputChannel);
+            format(data, this._context);
             break;
           case COMMENDS.Deploy:
             {
@@ -149,10 +148,10 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
             vscode.window.showErrorMessage(data);
             break;
           case COMMENDS.OutputInfo:
-            this._outputChannel?.appendLine(data);
+            printOutputChannel(data);
             break;
           case COMMENDS.OutputError:
-            this._outputChannel?.appendLine(`[ERROR]\n${data}`);
+            printOutputChannel(`[ERROR]\n${data}`);
             break;
           default:
             vscode.window.showErrorMessage(
@@ -211,7 +210,7 @@ export const initActivityBar = (context: vscode.ExtensionContext) => {
   const provider = new ActivitybarProvider(context);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      'activitybarProviderSui',
+      ActivitybarProvider.viewType,
       provider,
     ),
   );
