@@ -206,9 +206,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
   }
 }
 
-export const initActivityBar = (
-  context: vscode.ExtensionContext,
-): ActivitybarProvider => {
+export const initActivityBar = (context: vscode.ExtensionContext) => {
   const provider = new ActivitybarProvider(context);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -216,5 +214,4 @@ export const initActivityBar = (
       provider,
     ),
   );
-  return provider;
 };
