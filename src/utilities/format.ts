@@ -52,7 +52,7 @@ const loadProjectPrettierConfig = async (
   try {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) {
-      return Default;
+      return {};
     }
     const prettierConfigPath = vscode.Uri.joinPath(
       workspaceFolder.uri,
@@ -64,8 +64,7 @@ const loadProjectPrettierConfig = async (
     const config = JSON.parse(document.getText());
     return config ? { ...Default, ...config } : Default;
   } catch (error) {
-    vscode.window.showErrorMessage(`Error loading .prettierrc: ${error}`);
-    return Default;
+    return {};
   }
 };
 
