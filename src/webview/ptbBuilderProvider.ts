@@ -3,6 +3,7 @@ import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
 import { COMMENDS } from './ptb-builder/src/utilities/commends';
 import { accountLoad } from '../utilities/account';
+import { printOutputChannel } from '../utilities/printOutputChannel';
 
 export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = 'sui-extension.ptb-builder';
@@ -73,6 +74,18 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
             break;
           case COMMENDS.SaveData:
             this.updateTextDocument(document, data);
+            break;
+          case COMMENDS.MsgInfo:
+            vscode.window.showInformationMessage(data);
+            break;
+          case COMMENDS.MsgError:
+            vscode.window.showErrorMessage(data);
+            break;
+          case COMMENDS.OutputInfo:
+            printOutputChannel(data);
+            break;
+          case COMMENDS.OutputError:
+            printOutputChannel(`[ERROR]\n${data}`);
             break;
           default:
             vscode.window.showErrorMessage(

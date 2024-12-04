@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import { closeSnackbar, SnackbarProvider } from 'notistack';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -10,33 +9,6 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <SnackbarProvider
-      anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
-      hideIconVariant
-      action={(snackbarId) => (
-        <VSCodeButton
-          appearance="icon"
-          onClick={() => closeSnackbar(snackbarId)}
-          style={{ padding: 0 }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="white"
-            width="20"
-            height="20"
-          >
-            <path
-              d="M18 6L6 18M6 6l12 12"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </VSCodeButton>
-      )}
-    />
     <App />
   </React.StrictMode>,
 );

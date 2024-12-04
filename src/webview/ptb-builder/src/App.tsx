@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { enqueueSnackbar } from 'notistack';
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
@@ -13,6 +12,7 @@ import './App.css';
 import { COMMENDS } from './utilities/commends';
 import { vscode } from './utilities/vscode';
 import { IAccount } from './utilities/account';
+import { postMessage } from './utilities/postMessage';
 
 function App() {
   const initialized = useRef<boolean>(false);
@@ -58,22 +58,30 @@ function App() {
           signature: zkLoginSignature,
         });
         if (errors && errors.length > 0) {
-          enqueueSnackbar(`${JSON.stringify(errors)}`, { variant: 'error' });
+          postMessage(`${JSON.stringify(errors)}`, { variant: 'error' });
         } else {
           const res = await client.waitForTransaction({
             digest,
             options: { showObjectChanges: true },
           });
           if (!!res.errors) {
-            enqueueSnackbar(`${res.errors}`, { variant: 'error' });
+            postMessage(`${res.errors}`, { variant: 'error' });
+            vscode.postMessage({
+              command: COMMENDS.OutputError,
+              data: JSON.stringify(res, null, 4),
+            });    
           }
-          enqueueSnackbar(`${res.digest}`, { variant: 'success' });
+          postMessage(`${account.nonce.network}:${res.digest}`, { variant: 'success' });
+          vscode.postMessage({
+            command: COMMENDS.OutputInfo,
+            data: JSON.stringify(res, null, 4),
+          });
         }
       } else {
-        enqueueSnackbar(`account empty: ${account}`, { variant: 'error' });
+        postMessage(`account empty: ${account}`, { variant: 'error' });
       }
     } catch (error) {
-      enqueueSnackbar(`${error}`, { variant: 'error' });
+      postMessage(`${error}`, { variant: 'error' });
     }
   };
 
