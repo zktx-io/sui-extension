@@ -1,6 +1,6 @@
 import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { fromB64 } from '@mysten/sui/utils';
+import { fromBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
 import { genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
 import { decodeJwt } from 'jose';
@@ -25,7 +25,7 @@ export const signAndExcute = async (
       ).toString();
       const { bytes, signature: userSignature } = await transaction.sign({
         client,
-        signer: Ed25519Keypair.fromSecretKey(fromB64(privateKey)),
+        signer: Ed25519Keypair.fromSecretKey(fromBase64(privateKey)),
       });
       const zkLoginSignature = getZkLoginSignature({
         inputs: {

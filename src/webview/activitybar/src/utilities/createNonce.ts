@@ -1,5 +1,5 @@
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
-import { toB64 } from '@mysten/sui/utils';
+import { toBase64 } from '@mysten/sui/utils';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { decodeSuiPrivateKey } from '@mysten/sui/cryptography';
 import { generateNonce, generateRandomness } from '@mysten/zklogin';
@@ -30,7 +30,7 @@ export const createNonce = async (
     randomness,
     ephemeralKeyPair: {
       publicKey: ephemeralKeyPair.getPublicKey().toBase64(),
-      privateKey: toB64(
+      privateKey: toBase64(
         decodeSuiPrivateKey(ephemeralKeyPair.getSecretKey()).secretKey,
       ),
     },
