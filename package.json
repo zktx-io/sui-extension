@@ -47,6 +47,17 @@
         }
       ]
     },
+    "customEditors": [
+      {
+        "viewType": "sui-extension.ptb-builder",
+        "displayName": "PTB Builder",
+        "selector": [
+          {
+            "filenamePattern": "*.ptb"
+          }
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "sui-extension.openDocs",
@@ -55,6 +66,14 @@
           "dark": "media/docs-dark.svg",
           "light": "media/docs-light.svg"
         }
+      },
+      {
+        "command": "sui-extension.ptbBuilder.new",
+        "title": "New PTB Builder (beta)"
+      },
+      {
+        "command": "sui-extension.ptbBuilder.open",
+        "title": "Open PTB Builder"
       }
     ],
     "menus": {
@@ -63,6 +82,12 @@
           "command": "sui-extension.openDocs",
           "when": "view == activitybarProviderSui",
           "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "sui-extension.ptbBuilder.new",
+          "group": "sui-extension"
         }
       ]
     },
@@ -82,9 +107,11 @@
     "open-in-browser": "npm run build:all && vscode-test-web --extensionDevelopmentPath=. .",
     "build:all": "npm run build:webview && npm run compile",
     "install:activitybar": "cd src/webview/activitybar && npm install",
-    "install:all": "npm install && npm run install:activitybar",
+    "install:ptb-builder": "cd src/webview/ptb-builder && npm install",
+    "install:all": "npm install && npm run install:activitybar && npm run install:ptb-builder",
     "build:activitybar": "cd src/webview/activitybar && npm run build",
-    "build:webview": "npm run build:activitybar",
+    "build:ptb-builder": "cd src/webview/ptb-builder && npm run build",
+    "build:webview": "npm run build:activitybar && npm run build:ptb-builder",
     "vscode:prepublish": "npm run package",
     "compile": "webpack",
     "watch": "webpack --watch",

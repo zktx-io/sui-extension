@@ -8,5 +8,10 @@
     "outDir": "out",
     "strict": true
   },
-  "exclude": ["node_modules", "src/webview/activitybar", ".vscode-test-web"]
+  "exclude": [
+    "node_modules",
+    "src/webview/activitybar",
+    "src/webview/ptb-builder",
+    ".vscode-test-web"
+  ]
 }

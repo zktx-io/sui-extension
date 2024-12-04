@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import { initActivityBar } from './webview/activitybarProvider';
+import { initPTBBuilderProvider } from './webview/ptbBuilderProvider';
 
 export function activate(context: vscode.ExtensionContext) {
   initActivityBar(context);
+  initPTBBuilderProvider(context);
   context.subscriptions.push(
     vscode.commands.registerCommand('sui-extension.openDocs', () => {
       vscode.env.openExternal(vscode.Uri.parse('https://docs.zktx.io'));

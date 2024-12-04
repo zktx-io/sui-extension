@@ -9,6 +9,8 @@ out/test/**
 src/**
 !src/webview/activitybar/build/
 !src/webview/activitybar/build/**
+!src/webview/ptb-builder/build/
+!src/webview/ptb-builder/build/**
 
 # Ignore Misc
 .yarnrc
