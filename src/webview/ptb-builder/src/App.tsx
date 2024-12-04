@@ -113,6 +113,7 @@ function App() {
     <div style={{ width: '100vw', height: '100vh' }}>
       <PTBBuilder
         address={account?.zkAddress?.address}
+        network={account?.nonce?.network}
         txbOrPtb={ptbJson}
         options={{ isEditor: true }}
         excuteTx={excuteTx}
