@@ -31,7 +31,7 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
     );
 
     const updateWebview = () => {
-      if (!document.isDirty && !!document.getText()) {
+      if (!document.isDirty) {
         webviewPanel.webview.postMessage({
           command: COMMENDS.LoadData,
           data: {
@@ -69,12 +69,6 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.onDidReceiveMessage(
       async ({ command, data }: { command: COMMENDS; data: any }) => {
         switch (command) {
-          case COMMENDS.GetAccountAndSignTx:
-            webviewPanel.webview.postMessage({
-              command: COMMENDS.GetAccountAndSignTx,
-              data: accountLoad(this._context),
-            });
-            break;
           case COMMENDS.LoadData:
             updateWebview();
             break;
