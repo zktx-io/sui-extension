@@ -1,0 +1,15 @@
+{
+  "iconDefinitions": {
+    "icon-ptb": {
+      "iconPath": "./media/icon-ptb.svg"
+    }
+  },
+  "fileExtensions": {
+    "ptb": "icon-ptb"
+  },
+  "languageIds": {
+    "ptb": "icon-ptb"
+  },
+  "folderNames": {},
+  "folderNamesExpanded": {}
+}
