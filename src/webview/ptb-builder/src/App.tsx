@@ -23,13 +23,40 @@ function App() {
   );
 
   const excuteTx = async (tx: Transaction | undefined) => {
-    if (account && account.nonce.privateKey && account.zkAddress && tx) {
-      setTransaction(undefined);
-      await signAndExcuteTx(account, tx);
-    } else {
-      setTransaction(tx);
-      vscode.postMessage({ command: COMMENDS.GetAccountAndSignTx });
+    try {
+      if (account && account.nonce.privateKey && account.zkAddress && tx) {
+        setTransaction(undefined);
+        await signAndExcuteTx(account, tx);
+      } else {
+        setTransaction(tx);
+        vscode.postMessage({ command: COMMENDS.GetAccountAndSignTx });
+        const updatedAccount = await waitForAccount();
+        if (updatedAccount) {
+          await signAndExcuteTx(updatedAccount, tx);
+        } else {
+          postMessage(`Account retrieval failed.`, { variant: 'error' });
+        }
+      }
+    } catch (error) {
+      postMessage(`${error}`, { variant: 'error' });
     }
+  };
+
+  const waitForAccount = (): Promise<IAccount | undefined> => {
+    return new Promise((resolve) => {
+      const handleMessage = (event: any) => {
+        const message = event.data;
+        if (message.command === COMMENDS.GetAccountAndSignTx) {
+          window.removeEventListener('message', handleMessage);
+          resolve(message.data);
+        }
+      };
+      window.addEventListener('message', handleMessage);
+      setTimeout(() => {
+        window.removeEventListener('message', handleMessage);
+        resolve(undefined);
+      }, 10000);
+    });
   };
 
   const signAndExcuteTx = useCallback(
