@@ -138,6 +138,7 @@ function App() {
         case COMMENDS.LoadData:
           setAccount(message.data.account);
           setPtbJson(message.data.ptb);
+          initialized.current = true;
           break;
         default:
           break;
@@ -146,7 +147,6 @@ function App() {
     window.addEventListener('message', handleMessage);
 
     if (!initialized.current) {
-      initialized.current = true;
       vscode.postMessage({ command: COMMENDS.LoadData });
     }
 
