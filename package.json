@@ -113,9 +113,9 @@
     ],
     "iconThemes": [
       {
-        "id": "ptb-icon-theme",
-        "label": "PTB Icon Theme",
-        "path": "./file-icons.json"
+        "id": "sui-extension-icon-theme",
+        "label": "Sui Extension Icon Theme",
+        "path": "./icons.json"
       }
     ]
   },
