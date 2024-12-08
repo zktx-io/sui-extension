@@ -13,7 +13,7 @@ import {
   getTypeName,
   validateInput,
 } from '../utilities/helper';
-import { parameterFilter } from '../utilities/parameterFilter';
+import { removeTxContext } from '../utilities/removeTxContext';
 import { VectorInputFields } from './VectorInputFields';
 import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
@@ -121,7 +121,7 @@ export const Function = ({
       let errors: boolean[] = [...new Array(inputValues.length).fill(false)];
       for (let i = 0; i < inputValues.length; i++) {
         if (state.account) {
-          const filtered = parameterFilter(func);
+          const filtered = removeTxContext(func);
           const temp = await validateInput(
             state.account,
             filtered[i],
@@ -140,7 +140,7 @@ export const Function = ({
   };
 
   useEffect(() => {
-    const filtered = parameterFilter(func);
+    const filtered = removeTxContext(func);
     setParameters(filtered);
     setInputValues(new Array(filtered.length).fill(''));
     setInputErrors(new Array(filtered.length).fill(false));
