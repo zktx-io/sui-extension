@@ -163,14 +163,14 @@ const formatAndSaveMoveFiles = async (
 };
 
 export const format = async (
-  folderUri: string,
+  uri: vscode.Uri,
   context: vscode.ExtensionContext,
   channel?: vscode.OutputChannel,
 ): Promise<undefined> => {
   try {
     const parser = await initParser(context.extensionUri);
-    const files = await getMoveFilesFromFolder(folderUri);
-    await formatAndSaveMoveFiles(folderUri, files, parser, channel);
+    const files = await getMoveFilesFromFolder(uri);
+    await formatAndSaveMoveFiles(uri.path, files, parser, channel);
   } catch (error) {
     vscode.window.showErrorMessage(`Error getting .move files: ${error}`);
   }

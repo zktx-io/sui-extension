@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import { initActivityBar } from './webview/activitybarProvider';
+// import { initPanel } from './webview/panelProvider';
 import { initPTBBuilderProvider } from './webview/ptbBuilderProvider';
 
 export function activate(context: vscode.ExtensionContext) {
   initActivityBar(context);
+  // initPanel(context);
   initPTBBuilderProvider(context);
   context.subscriptions.push(
     vscode.commands.registerCommand('sui-extension.openDocs', () => {

@@ -130,7 +130,14 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
             }
             break;
           case COMMENDS.FMT:
-            format(data, this._context);
+            {
+              const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+              workspaceFolder &&
+                format(
+                  vscode.Uri.joinPath(workspaceFolder.uri, `${data}/sources`),
+                  this._context,
+                );
+            }
             break;
           case COMMENDS.Deploy:
             {

@@ -11,6 +11,7 @@
   "exclude": [
     "node_modules",
     "src/webview/activitybar",
+    "src/webview/panel",
     "src/webview/ptb-builder",
     ".vscode-test-web"
   ]
