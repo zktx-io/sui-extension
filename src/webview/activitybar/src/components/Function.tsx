@@ -100,14 +100,22 @@ export const Function = ({
     name: string,
     func: SuiMoveNormalizedFunction,
     inputValues: Array<string | string[]>,
+    typeArguments: string[],
   ) => Promise<void>;
 }) => {
   const [state] = useRecoilState(STATE);
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [typeArguments, setTypeArguments] = useState<string[]>([]);
   const [inputValues, setInputValues] = useState<Array<string | string[]>>([]);
   const [inputErrors, setInputErrors] = useState<boolean[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleTypeChange = (index: number, value: string) => {
+    const newTypeValues = [...typeArguments];
+    newTypeValues[index] = value;
+    setTypeArguments(newTypeValues);
+  };
 
   const handleInputChange = (index: number, value: string | string[]) => {
     const newInputValues = [...inputValues];
@@ -137,7 +145,7 @@ export const Function = ({
       setInputErrors(errors);
       !!state.account &&
         errors.every((value) => value === false) &&
-        (await onExcute(name, func, inputValues));
+        (await onExcute(name, func, inputValues, typeArguments));
     } finally {
       setIsLoading(false);
     }
@@ -146,6 +154,7 @@ export const Function = ({
   useEffect(() => {
     const filtered = deleteTxContext(func);
     setParameters(filtered);
+    setTypeArguments(new Array(func.typeParameters.length).fill(''));
     setInputValues(new Array(filtered.length).fill(''));
     setInputErrors(new Array(filtered.length).fill(false));
     setIsOpen(false);
@@ -209,6 +218,25 @@ export const Function = ({
               ...(isOpen ? styles.openContentVisible : {}),
             }}
           >
+            {typeArguments.length > 0 &&
+              typeArguments.map((item, key) => (
+                <div key={key}>
+                  <label style={{ fontSize: '11px', color: 'GrayText' }}>
+                    {`T${key}`}
+                  </label>
+                  <VSCodeTextField
+                    style={{ width: '100%' }}
+                    placeholder={`Type Parameter ${key}`}
+                    value={typeArguments[key] as string}
+                    onInput={(e) =>
+                      handleTypeChange(
+                        key,
+                        (e.target as HTMLInputElement).value,
+                      )
+                    }
+                  />
+                </div>
+              ))}
             {parameters.length > 0 && (
               <>
                 {parameters.map((item, key) => (

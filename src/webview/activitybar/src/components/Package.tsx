@@ -80,6 +80,7 @@ export const Package = ({
     name: string,
     func: SuiMoveNormalizedFunction,
     inputValues: Array<string | string[]>,
+    typeArguments: string[],
   ) => {
     if (client && state.account && state.account.zkAddress && module) {
       try {
@@ -90,6 +91,7 @@ export const Package = ({
           `${packageId}::${module}::${name}`,
           func,
           inputValues,
+          typeArguments,
         );
       } catch (e) {
         console.error(e);

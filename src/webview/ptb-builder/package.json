@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "@mysten/sui": "^1.16.0",
-    "@mysten/zklogin": "^0.8.0",
+    "@mysten/sui": "^1.18.0",
+    "@mysten/zklogin": "^0.8.1",
     "@vscode/webview-ui-toolkit": "^1.4.0",
-    "@zktx.io/ptb-builder": "^0.0.14",
+    "@zktx.io/ptb-builder": "^0.0.16",
     "jose": "^5.9.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -47,6 +47,6 @@
     "@types/vscode-webview": "^1.57.5",
     "react-scripts": "5.0.1",
     "rewire": "^7.0.0",
-    "typescript": "^4.9.5"
+    "typescript": "^5.7.2"
   }
 }

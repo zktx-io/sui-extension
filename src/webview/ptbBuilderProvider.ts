@@ -98,13 +98,15 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
   }
 
   private updateTextDocument(document: vscode.TextDocument, text: string) {
-    const edit = new vscode.WorkspaceEdit();
-    edit.replace(
-      document.uri,
-      new vscode.Range(0, 0, document.lineCount, 0),
-      text,
-    );
-    return vscode.workspace.applyEdit(edit);
+    if (document.getText() !== text) {
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(
+        document.uri,
+        new vscode.Range(0, 0, document.lineCount, 0),
+        text,
+      );
+      vscode.workspace.applyEdit(edit);
+    }
   }
 
   private _getHtmlForWebview(

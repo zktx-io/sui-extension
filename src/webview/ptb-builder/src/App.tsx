@@ -5,7 +5,7 @@ import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
 import { decodeJwt } from 'jose';
-import { PTBBuilder } from '@zktx.io/ptb-builder';
+import { PTB_SCHEME, PTBBuilder } from '@zktx.io/ptb-builder';
 
 import './App.css';
 
@@ -114,14 +114,14 @@ function App() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <PTBBuilder
-        address={account?.zkAddress?.address}
+        wallet={account?.zkAddress?.address}
         network={account?.nonce?.network}
-        txbOrPtb={ptbJson}
-        options={{ isEditor: true }}
+        options={{ canEdit: true }}
         excuteTx={excuteTx}
-        update={(data: string) => {
+        restore={ptbJson ? JSON.parse(ptbJson) : {}}
+        update={(data: PTB_SCHEME) => {
           initialized.current &&
-            vscode.postMessage({ command: COMMENDS.SaveData, data });
+            vscode.postMessage({ command: COMMENDS.SaveData, data: JSON.stringify(data) });
         }}
       />
     </div>
