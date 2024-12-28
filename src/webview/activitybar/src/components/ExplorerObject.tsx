@@ -56,6 +56,12 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     cursor: 'pointer',
+    overflow: 'hidden',
+  },
+  title: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 
@@ -107,7 +113,7 @@ export const ExplorerObject = ({
         style={styles.header}
         onClick={() => setIsContentVisible(!isContentVisible)}
       >
-        <span>Object Explorer</span>
+        <span style={styles.title}>Object Explorer</span>
         <div
           style={{
             ...styles.arrow,

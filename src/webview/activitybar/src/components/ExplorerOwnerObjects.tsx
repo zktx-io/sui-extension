@@ -55,6 +55,12 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     cursor: 'pointer',
+    overflow: 'hidden',
+  },
+  title: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 
@@ -131,7 +137,7 @@ export const ExplorerOwnerObjects = ({
         style={styles.header}
         onClick={() => setIsContentVisible(!isContentVisible)}
       >
-        <span>Owner Objects Explorer</span>
+        <span style={styles.title}>Owner Objects Explorer</span>
         <div
           style={{
             ...styles.arrow,

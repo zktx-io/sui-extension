@@ -40,10 +40,14 @@ const styles = {
   titleContainer: {
     display: 'flex',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   title: {
     margin: '0',
     fontSize: '14px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   icon: {
     marginRight: '4px',
