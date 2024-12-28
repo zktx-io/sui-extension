@@ -38,7 +38,7 @@ export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
   }
 
   if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
-    return `TypeParameter ${paramType.TypeParameter}`;
+    return `T${paramType.TypeParameter}`;
   }
 
   if (typeof paramType === 'object' && 'Reference' in paramType) {
