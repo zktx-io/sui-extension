@@ -122,18 +122,15 @@ class PanelProvider implements vscode.WebviewViewProvider {
       'src',
       'webview',
       'panel',
-      'build',
-      'static',
-      'css',
-      'main.css',
+      'dist',
+      'assets',
+      'index.css',
     ]);
     const scriptUri = getUri(webview, extensionUri, [
       'src',
       'webview',
       'panel',
-      'build',
-      'static',
-      'js',
+      'dist',
       'main.js',
     ]);
     const nonce = getNonce();

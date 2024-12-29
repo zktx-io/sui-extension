@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const Skeleton = () => {
   const lineCount = Math.floor(Math.random() * (2 - 1 + 1)) + 1;
   return (
