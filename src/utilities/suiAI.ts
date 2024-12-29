@@ -13,7 +13,7 @@ const generateThreadId = async (): Promise<void> => {
     if (!response.ok) {
       vscode.window.showErrorMessage(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
+    const data: any = await response.json();
     threadId = data.thread._id;
     threadUUID = data.thread.uuid;
   } catch (error) {

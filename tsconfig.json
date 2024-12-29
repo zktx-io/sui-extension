@@ -1,18 +1,22 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "lib": ["es6", "dom"],
-    "sourceMap": true,
-    "rootDir": "src",
-    "outDir": "out",
-    "strict": true
+    "lib": ["ES2020"],
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",
     "src/webview/activitybar",
     "src/webview/panel",
     "src/webview/ptb-builder",
-    ".vscode-test-web"
+    "out",
+    ".vscode-test-web",
+    "vite.config.ts"
   ]
 }

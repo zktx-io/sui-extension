@@ -26,7 +26,7 @@
   "activationEvents": [
     "onLanguage:move"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/node/extension.js",
   "browser": "./out/web/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -121,17 +121,19 @@
   },
   "scripts": {
     "open-in-browser": "npm run build:all && vscode-test-web --extensionDevelopmentPath=. .",
-    "build:all": "npm run build:webview && npm run compile",
     "install:activitybar": "cd src/webview/activitybar && npm install",
+    "install:panel": "cd src/webview/panel && npm install",
     "install:ptb-builder": "cd src/webview/ptb-builder && npm install",
-    "install:all": "npm install && npm run install:activitybar && npm run install:ptb-builder",
+    "install:all": "npm install && npm run install:activitybar && npm run install:panel && npm run install:ptb-builder",
     "build:activitybar": "cd src/webview/activitybar && npm run build",
+    "build:panel": "cd src/webview/panel && npm run build",
     "build:ptb-builder": "cd src/webview/ptb-builder && npm run build",
-    "build:webview": "npm run build:activitybar && npm run build:ptb-builder",
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "build:webview": "npm run build:activitybar && npm run build:panel && npm run build:ptb-builder",
+    "build:node": "tsc -p ./tsconfig.node.json && vite build --mode node",
+    "build:web": "tsc -p ./tsconfig.web.json && vite build --mode web",
+    "build:all": "npm run build:webview && npm run build:node && npm run build:web",
+    "vscode:prepublish": "npm run build:all",
+    "watch": "vite build --watch",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -146,21 +148,11 @@
     "@typescript-eslint/eslint-plugin": "^7.14.1",
     "@typescript-eslint/parser": "^7.11.0",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
     "@vscode/test-web": "^0.0.64",
-    "copy-webpack-plugin": "^12.0.2",
     "eslint": "^8.57.0",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "terser-webpack-plugin": "^5.3.10",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.4.5",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "@mysten/prettier-plugin-move": "^0.1.1",
-    "prettier": "^3.3.2",
-    "web-tree-sitter": "^0.20.8"
+    "prettier": "^3.4.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6"
   }
 }

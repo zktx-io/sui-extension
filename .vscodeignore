@@ -7,12 +7,12 @@ out/test/**
 
 # Ignore source code
 src/**
-!src/webview/activitybar/build/
-!src/webview/activitybar/build/**
-!src/webview/panel/build/
-!src/webview/panel/build/**
-!src/webview/ptb-builder/build/
-!src/webview/ptb-builder/build/**
+!src/webview/activitybar/dist/
+!src/webview/activitybar/dist/**
+!src/webview/panel/dist/
+!src/webview/panel/dist/**
+!src/webview/ptb-builder/dist/
+!src/webview/ptb-builder/dist/**
 
 # Ignore Misc
 .yarnrc

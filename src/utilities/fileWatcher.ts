@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { COMMENDS } from '../webview/activitybar/src/utilities/commends';
 import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 
@@ -111,9 +110,9 @@ export class FileWathcer {
   private getRelativePath(uri: vscode.Uri): string {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
     if (workspaceFolder) {
-      return path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
+      return uri.path.replace(workspaceFolder.uri.path, '').replace(/^\//, '');
     }
-    return uri.fsPath;
+    return uri.path;
   }
 
   private getUriFromRelativePath(relativePath: string): vscode.Uri | null {
@@ -130,8 +129,7 @@ export class FileWathcer {
       const fileContent = await vscode.workspace.fs.readFile(uri);
       return fileContent;
     } catch (error) {
-      uri.path.split('/').pop() !== UpgradeToml &&
-        vscode.window.showErrorMessage(`Error reading file: ${error}`);
+      vscode.window.showErrorMessage(`Error reading file: ${error}`);
       return new Uint8Array();
     }
   }

@@ -72,9 +72,6 @@ jobs:
       # Install vsce globally
       - run: npm i -g vsce
 
-      # Build the extension
-      - run: npm run build:webview
-
       # Publish the extension
       - name: Publish
         run: vsce publish -p ${{ secrets.VSCE_PAT }} --allow-missing-repository

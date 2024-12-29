@@ -27,7 +27,7 @@ const exchangeAuthCodeForJwt = async (
     });
 
     if (tokenResponse.ok) {
-      const tokenData = await tokenResponse.json();
+      const tokenData: any = await tokenResponse.json();
       return tokenData.id_token;
     } else {
       vscode.window.showErrorMessage('Failed to exchange auth code for token.');
@@ -50,7 +50,7 @@ export const exchangeToken = (
   const intervalId = setInterval(async () => {
     try {
       const tokenResponse = await fetch(`${UrlAuthCode}?state=${state}`);
-      const { authCode } = await tokenResponse.json();
+      const { authCode }: any = await tokenResponse.json();
 
       if (authCode) {
         clearInterval(intervalId);
