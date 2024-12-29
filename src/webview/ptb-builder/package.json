@@ -1,52 +1,36 @@
 {
   "name": "ptb-builder",
-  "version": "0.0.1",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@mysten/sui": "^1.18.0",
     "@mysten/zklogin": "^0.8.1",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "@zktx.io/ptb-builder": "^0.0.16",
+    "buffer": "^6.0.3",
     "jose": "^5.9.6",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "EXTEND_ESLINT=true react-scripts start",
-    "build": "node ./scripts/build-react-no-split.js",
-    "test": "EXTEND_ESLINT=true react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.121",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@eslint/js": "^9.17.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@types/vscode-webview": "^1.57.5",
-    "react-scripts": "5.0.1",
-    "rewire": "^7.0.0",
-    "typescript": "^5.7.2"
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
+    "vite": "^6.0.5"
   }
 }

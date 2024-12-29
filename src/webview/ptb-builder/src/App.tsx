@@ -121,7 +121,10 @@ function App() {
         restore={ptbJson ? JSON.parse(ptbJson) : {}}
         update={(data: PTB_SCHEME) => {
           initialized.current &&
-            vscode.postMessage({ command: COMMENDS.SaveData, data: JSON.stringify(data) });
+            vscode.postMessage({
+              command: COMMENDS.SaveData,
+              data: JSON.stringify(data),
+            });
         }}
       />
     </div>

@@ -117,18 +117,15 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
       'src',
       'webview',
       'ptb-builder',
-      'build',
-      'static',
-      'css',
-      'main.css',
+      'dist',
+      'assets',
+      'index.css',
     ]);
     const scriptUri = getUri(webview, extensionUri, [
       'src',
       'webview',
       'ptb-builder',
-      'build',
-      'static',
-      'js',
+      'dist',
       'main.js',
     ]);
     const nonce = getNonce();
