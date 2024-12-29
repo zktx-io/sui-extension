@@ -7,7 +7,7 @@ import {
   VSCodeDropdown,
   VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react';
-import { SuiClient } from '@mysten/sui/dist/cjs/client';
+import { SuiClient } from '@mysten/sui/client';
 import { vscode } from '../utilities/vscode';
 import { COMMENDS } from '../utilities/commends';
 import { SpinButton } from './SpinButton';
@@ -171,7 +171,7 @@ export const Workspace = ({
         }}
       >
         <VSCodeButton
-          style={{ width: '100%' }}
+          style={{ flex: 1, marginRight: '2px' }}
           disabled={
             !hasTerminal ||
             !state.account ||
@@ -188,17 +188,8 @@ export const Workspace = ({
         >
           Build
         </VSCodeButton>
-      </div>
-
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '4px',
-        }}
-      >
         <VSCodeButton
-          style={{ flex: 1, marginRight: '2px' }}
+          style={{ flex: 1, marginLeft: '2px' }}
           disabled={
             !hasTerminal ||
             !state.account ||
@@ -214,25 +205,6 @@ export const Workspace = ({
           }}
         >
           Test
-        </VSCodeButton>
-
-        <VSCodeButton
-          style={{ flex: 1, marginLeft: '2px' }}
-          disabled={
-            !hasTerminal ||
-            !state.account ||
-            !state.account.zkAddress ||
-            !state.path
-          }
-          onClick={() => {
-            state.path &&
-              vscode.postMessage({
-                command: COMMENDS.FMT,
-                data: state.path,
-              });
-          }}
-        >
-          Format
         </VSCodeButton>
       </div>
 

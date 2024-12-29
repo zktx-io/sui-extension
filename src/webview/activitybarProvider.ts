@@ -7,7 +7,6 @@ import { FileWathcer } from '../utilities/fileWatcher';
 import { accountLoad, accountStore } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
-import { format } from '../utilities/format';
 import {
   COMPILER,
   COMPILER_URL,
@@ -129,16 +128,6 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
               this.runTerminal(data);
             }
             break;
-          case COMMENDS.FMT:
-            {
-              const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-              workspaceFolder &&
-                format(
-                  vscode.Uri.joinPath(workspaceFolder.uri, `${data}/sources`),
-                  this._context,
-                );
-            }
-            break;
           case COMMENDS.Deploy:
             {
               const dumpByte = await this._fileWatcher?.getByteCodeDump(data);
@@ -160,6 +149,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
           case COMMENDS.OutputError:
             printOutputChannel(`[ERROR]\n${data}`);
             break;
+          case COMMENDS.FMT:
           default:
             vscode.window.showErrorMessage(
               `Unknown command received : ${command}`,
@@ -178,18 +168,15 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
       'src',
       'webview',
       'activitybar',
-      'build',
-      'static',
-      'css',
-      'main.css',
+      'dist',
+      'assets',
+      'index.css',
     ]);
     const scriptUri = getUri(webview, extensionUri, [
       'src',
       'webview',
       'activitybar',
-      'build',
-      'static',
-      'js',
+      'dist',
       'main.js',
     ]);
     const nonce = getNonce();

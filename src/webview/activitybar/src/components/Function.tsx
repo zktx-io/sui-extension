@@ -219,7 +219,7 @@ export const Function = ({
             }}
           >
             {typeArguments.length > 0 &&
-              typeArguments.map((item, key) => (
+              typeArguments.map((_item, key) => (
                 <div key={key}>
                   <label style={{ fontSize: '11px', color: 'GrayText' }}>
                     {`T${key}`}
