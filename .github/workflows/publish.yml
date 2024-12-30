@@ -74,4 +74,6 @@ jobs:
 
       # Publish the extension
       - name: Publish
+        env:
+          SOURCE_MAP: false
         run: vsce publish -p ${{ secrets.VSCE_PAT }} --allow-missing-repository
