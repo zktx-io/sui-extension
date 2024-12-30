@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { IAccount } from '../webview/activitybar/src/recoil';
 
+export const AccountStateUpdate = 'sui-extension.accountStateUpdate';
+
 export const accountStore = async (
   context: vscode.ExtensionContext,
   account: IAccount | undefined,

@@ -4,7 +4,11 @@ import { getNonce } from '../utilities/getNonce';
 import { hasTerminal } from '../utilities/hasTerminal';
 import { COMMENDS } from './activitybar/src/utilities/commends';
 import { FileWathcer } from '../utilities/fileWatcher';
-import { accountLoad, accountStore } from '../utilities/account';
+import {
+  accountLoad,
+  AccountStateUpdate,
+  accountStore,
+} from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
 import {
@@ -118,6 +122,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
             break;
           case COMMENDS.StoreAccount:
             await accountStore(this._context, data);
+            vscode.commands.executeCommand(AccountStateUpdate);
             break;
           case COMMENDS.CLI:
             if (!hasTerminal()) {

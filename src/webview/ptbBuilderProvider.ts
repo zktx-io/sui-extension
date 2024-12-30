@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
 import { COMMENDS } from './ptb-builder/src/utilities/commends';
-import { accountLoad } from '../utilities/account';
+import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 
 export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
@@ -10,10 +10,26 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
 
   private readonly _context;
   private readonly _extensionUri: vscode.Uri;
+  private _webviewPanel?: vscode.WebviewPanel;
+  private _document?: vscode.TextDocument;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
     this._extensionUri = context.extensionUri;
+  }
+
+  public updateWebview(accountOnly?: boolean) {
+    if (this._webviewPanel && this._document) {
+      if (!this._document.isDirty) {
+        this._webviewPanel.webview.postMessage({
+          command: COMMENDS.LoadData,
+          data: {
+            account: accountLoad(this._context),
+            ptb: accountOnly ? undefined : this._document.getText(),
+          },
+        });
+      }
+    }
   }
 
   public async resolveCustomTextEditor(
@@ -21,6 +37,9 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
+    this._webviewPanel = webviewPanel;
+    this._document = document;
+
     webviewPanel.webview.options = {
       enableScripts: true,
     };
@@ -30,23 +49,11 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
       this._extensionUri,
     );
 
-    const updateWebview = () => {
-      if (!document.isDirty) {
-        webviewPanel.webview.postMessage({
-          command: COMMENDS.LoadData,
-          data: {
-            account: accountLoad(this._context),
-            ptb: document.getText(),
-          },
-        });
-      }
-    };
-
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
       (e) => {
         if (e.document.uri.toString() === document.uri.toString()) {
           if (document.isDirty) {
-            updateWebview();
+            this.updateWebview();
             webviewPanel.title = document.fileName;
           }
         }
@@ -70,7 +77,7 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
       async ({ command, data }: { command: COMMENDS; data: any }) => {
         switch (command) {
           case COMMENDS.LoadData:
-            updateWebview();
+            this.updateWebview();
             break;
           case COMMENDS.SaveData:
             this.updateTextDocument(document, data);
@@ -156,6 +163,11 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
       PTBBuilderProvider.viewType,
       provider,
     ),
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(AccountStateUpdate, () => {
+      provider.updateWebview(true);
+    }),
   );
 
   context.subscriptions.push(
