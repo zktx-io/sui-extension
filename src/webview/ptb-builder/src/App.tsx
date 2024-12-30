@@ -38,9 +38,6 @@ function App() {
           decodedJwt.sub!,
           decodedJwt.aud as string,
         ).toString();
-        transaction.setSender(account.zkAddress.address);
-        transaction.setGasOwner(account.zkAddress.address);
-        transaction.setGasBudget(10000000);
         const { bytes, signature: userSignature } = await transaction.sign({
           client,
           signer: Ed25519Keypair.fromSecretKey(fromBase64(privateKey)),
@@ -126,6 +123,9 @@ function App() {
               data: JSON.stringify(data),
             });
         }}
+        enqueueToast={(message, options) =>
+          postMessage(message, { variant: options.variant })
+        }
       />
     </div>
   );
