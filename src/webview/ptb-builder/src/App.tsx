@@ -90,7 +90,11 @@ function App() {
       switch (message.command) {
         case COMMENDS.LoadData:
           setAccount(message.data.account);
-          setPtb(message.data.ptb ? JSON.parse(message.data.ptb) : {});
+          setPtb(
+            message.data.ptb !== undefined && message.data.ptb !== ''
+              ? JSON.parse(message.data.ptb)
+              : { version: '2', modules: {} },
+          );
           initialized.current = true;
           break;
         default:
@@ -115,7 +119,7 @@ function App() {
         network={account?.nonce?.network}
         options={{ canEdit: true }}
         excuteTx={excuteTx}
-        restore={ptb || { version: '2', modules: {} }}
+        restore={ptb}
         update={(data: PTB_SCHEME) => {
           initialized.current &&
             vscode.postMessage({
