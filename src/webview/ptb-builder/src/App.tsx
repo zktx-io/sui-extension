@@ -61,7 +61,7 @@ function App() {
             digest,
             options: { showObjectChanges: true },
           });
-          if (!!res.errors) {
+          if (res.errors) {
             postMessage(`${res.errors}`, { variant: 'error' });
             vscode.postMessage({
               command: COMMENDS.OutputError,
@@ -90,7 +90,7 @@ function App() {
       switch (message.command) {
         case COMMENDS.LoadData:
           setAccount(message.data.account);
-          !!message.data.ptb && setPtbJson(message.data.ptb);
+          setPtbJson(message.data.ptb);
           initialized.current = true;
           break;
         default:
@@ -115,7 +115,7 @@ function App() {
         network={account?.nonce?.network}
         options={{ canEdit: true }}
         excuteTx={excuteTx}
-        restore={ptbJson ? JSON.parse(ptbJson) : {}}
+        restore={ptbJson && JSON.parse(ptbJson)}
         update={(data: PTB_SCHEME) => {
           initialized.current &&
             vscode.postMessage({
