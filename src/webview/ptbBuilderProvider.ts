@@ -20,15 +20,13 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
 
   public updateWebview(accountOnly?: boolean) {
     if (this._webviewPanel && this._document) {
-      if (!this._document.isDirty) {
-        this._webviewPanel.webview.postMessage({
-          command: COMMENDS.LoadData,
-          data: {
-            account: accountLoad(this._context),
-            ptb: accountOnly ? undefined : this._document.getText(),
-          },
-        });
-      }
+      this._webviewPanel.webview.postMessage({
+        command: COMMENDS.LoadData,
+        data: {
+          account: accountLoad(this._context),
+          ptb: accountOnly ? undefined : this._document.getText(),
+        },
+      });
     }
   }
 
@@ -60,17 +58,8 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
       },
     );
 
-    const saveDocumentSubscription = vscode.workspace.onDidSaveTextDocument(
-      (savedDocument) => {
-        if (savedDocument.uri.toString() === document.uri.toString()) {
-          // Prevent updateWebview on save
-        }
-      },
-    );
-
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
-      saveDocumentSubscription.dispose();
     });
 
     webviewPanel.webview.onDidReceiveMessage(
