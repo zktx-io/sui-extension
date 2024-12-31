@@ -115,7 +115,7 @@ function App() {
         network={account?.nonce?.network}
         options={{ canEdit: true }}
         excuteTx={excuteTx}
-        restore={ptb || ({} as PTB_SCHEME)}
+        restore={ptb || { version: '2', modules: {} }}
         update={(data: PTB_SCHEME) => {
           initialized.current &&
             vscode.postMessage({
