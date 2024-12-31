@@ -16,7 +16,7 @@ import { postMessage } from './utilities/postMessage';
 
 function App() {
   const initialized = useRef<boolean>(false);
-  const [ptbJson, setPtbJson] = React.useState<string | undefined>(undefined);
+  const [ptb, setPtb] = React.useState<PTB_SCHEME | undefined>(undefined);
   const [account, setAccount] = React.useState<IAccount | undefined>(undefined);
 
   const excuteTx = async (transaction: Transaction | undefined) => {
@@ -90,7 +90,7 @@ function App() {
       switch (message.command) {
         case COMMENDS.LoadData:
           setAccount(message.data.account);
-          setPtbJson(message.data.ptb);
+          setPtb(message.data.ptb ? JSON.parse(message.data.ptb) : {});
           initialized.current = true;
           break;
         default:
@@ -115,7 +115,7 @@ function App() {
         network={account?.nonce?.network}
         options={{ canEdit: true }}
         excuteTx={excuteTx}
-        restore={ptbJson && JSON.parse(ptbJson)}
+        restore={ptb || ({} as PTB_SCHEME)}
         update={(data: PTB_SCHEME) => {
           initialized.current &&
             vscode.postMessage({
