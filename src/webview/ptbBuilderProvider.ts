@@ -18,17 +18,26 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
     this._extensionUri = context.extensionUri;
   }
 
-  public async updateWebview(accountOnly?: boolean) {
+  public async updateState() {
+    this._webviewPanel &&
+      this._webviewPanel.webview.postMessage({
+        command: COMMENDS.UpdateState,
+        data: {
+          account: accountLoad(this._context),
+        },
+      });
+  }
+
+  public async updateWebview() {
     if (this._webviewPanel && this._document) {
-      let ptbData: string | undefined;
-  
-      if (accountOnly) {
-        ptbData = undefined;
-      } else if (this._document.isDirty) {
+       let ptbData: string | undefined;
+      if (this._document.isDirty) {
         ptbData = this._document.getText();
       } else {
         try {
-          const fileData = await vscode.workspace.fs.readFile(this._document.uri);
+          const fileData = await vscode.workspace.fs.readFile(
+            this._document.uri,
+          );
           ptbData = Buffer.from(fileData).toString('utf8');
         } catch (error) {
           vscode.window.showErrorMessage(`Failed to read file: ${error}`);
@@ -75,6 +84,7 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
+      this._document = undefined;
     });
 
     webviewPanel.webview.onDidReceiveMessage(
@@ -170,7 +180,7 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(AccountStateUpdate, () => {
-      provider.updateWebview(true);
+      provider.updateState();
     }),
   );
 
