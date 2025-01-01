@@ -5,17 +5,100 @@ import { COMMENDS } from './ptb-builder/src/utilities/commends';
 import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 
-export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
+class PTBDocument implements vscode.CustomDocument {
+  private _content: string = '';
+
+  private readonly _onDidDispose = new vscode.EventEmitter<void>();
+  public readonly onDidDispose = this._onDidDispose.event;
+
+  constructor(
+    public readonly uri: vscode.Uri,
+    initialContent: string,
+  ) {
+    this._content = initialContent;
+  }
+
+  public getText(): string {
+    return this._content;
+  }
+
+  public setText(newContent: string) {
+    this._content = newContent;
+  }
+
+  public async save(): Promise<void> {
+    const data = Buffer.from(this._content, 'utf8');
+    await vscode.workspace.fs.writeFile(this.uri, data);
+  }
+
+  public async saveAs(targetResource: vscode.Uri): Promise<void> {
+    const data = Buffer.from(this._content, 'utf8');
+    await vscode.workspace.fs.writeFile(targetResource, data);
+  }
+
+  public async revert(): Promise<void> {
+    const data = await vscode.workspace.fs.readFile(this.uri);
+    this.setText(Buffer.from(data).toString('utf8'));
+  }
+
+  public async backup(
+    destination: vscode.Uri,
+    _token: vscode.CancellationToken,
+  ): Promise<vscode.CustomDocumentBackup> {
+    await this.saveAs(destination);
+    return {
+      id: destination.toString(),
+      delete: async () => {
+        try {
+          await vscode.workspace.fs.delete(destination);
+        } catch {
+          /* ignore */
+        }
+      },
+    };
+  }
+
+  dispose(): void {
+    this._onDidDispose.fire();
+    this._onDidDispose.dispose();
+  }
+}
+
+export class PTBBuilderProvider
+  implements vscode.CustomEditorProvider<PTBDocument>
+{
   public static readonly viewType = 'sui-extension.ptb-builder';
 
-  private readonly _context;
-  private readonly _extensionUri: vscode.Uri;
+  private readonly _context: vscode.ExtensionContext;
   private _webviewPanel?: vscode.WebviewPanel;
-  private _document?: vscode.TextDocument;
+
+  private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
+    vscode.CustomDocumentEditEvent<PTBDocument>
+  >();
+  public readonly onDidChangeCustomDocument =
+    this._onDidChangeCustomDocument.event;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
-    this._extensionUri = context.extensionUri;
+  }
+
+  public async openCustomDocument(
+    uri: vscode.Uri,
+    openContext: { backupId?: string },
+    _token: vscode.CancellationToken,
+  ): Promise<PTBDocument> {
+    const fileToRead = openContext.backupId
+      ? vscode.Uri.parse(openContext.backupId)
+      : uri;
+    let content = '';
+    try {
+      const data = await vscode.workspace.fs.readFile(fileToRead);
+      content = Buffer.from(data).toString('utf8');
+    } catch {
+      content = '';
+    }
+
+    return new PTBDocument(uri, content);
   }
 
   public async updateState() {
@@ -28,112 +111,118 @@ export class PTBBuilderProvider implements vscode.CustomTextEditorProvider {
       });
   }
 
-  public async updateWebview() {
-    if (this._webviewPanel && this._document) {
-       let ptbData: string | undefined;
-      if (this._document.isDirty) {
-        ptbData = this._document.getText();
-      } else {
-        try {
-          const fileData = await vscode.workspace.fs.readFile(
-            this._document.uri,
-          );
-          ptbData = Buffer.from(fileData).toString('utf8');
-        } catch (error) {
-          vscode.window.showErrorMessage(`Failed to read file: ${error}`);
-          return;
-        }
-      }
-      this._webviewPanel.webview.postMessage({
-        command: COMMENDS.LoadData,
-        data: {
-          account: accountLoad(this._context),
-          ptb: ptbData,
-        },
-      });
-    }
-  }
-
-  public async resolveCustomTextEditor(
-    document: vscode.TextDocument,
+  public async resolveCustomEditor(
+    document: PTBDocument,
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
     this._webviewPanel = webviewPanel;
-    this._document = document;
 
     webviewPanel.webview.options = {
       enableScripts: true,
     };
+    webviewPanel.webview.html = this._getHtmlForWebview(webviewPanel.webview);
 
-    webviewPanel.webview.html = this._getHtmlForWebview(
-      webviewPanel.webview,
-      this._extensionUri,
-    );
-
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
-      (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          if (document.isDirty) {
-            this.updateWebview();
-            webviewPanel.title = document.fileName;
-          }
+    webviewPanel.webview.onDidReceiveMessage(async (msg) => {
+      const { command, data } = msg;
+      switch (command) {
+        case COMMENDS.UpdateState: {
+          this.updateState();
+          break;
         }
-      },
-    );
-
-    webviewPanel.onDidDispose(() => {
-      changeDocumentSubscription.dispose();
-      this._document = undefined;
+        case COMMENDS.LoadData: {
+          await this._updateWebview(document, webviewPanel);
+          break;
+        }
+        case COMMENDS.SaveData: {
+          this._updateTextDocument(document, data);
+          break;
+        }
+        case COMMENDS.MsgInfo:
+          vscode.window.showInformationMessage(data);
+          break;
+        case COMMENDS.MsgError:
+          vscode.window.showErrorMessage(data);
+          break;
+        case COMMENDS.OutputInfo:
+          printOutputChannel(data);
+          break;
+        case COMMENDS.OutputError:
+          printOutputChannel(`[ERROR]\n${data}`);
+          break;
+        default:
+          vscode.window.showErrorMessage(`Unknown command: ${command}`);
+          break;
+      }
     });
 
-    webviewPanel.webview.onDidReceiveMessage(
-      async ({ command, data }: { command: COMMENDS; data: any }) => {
-        switch (command) {
-          case COMMENDS.LoadData:
-            this.updateWebview();
-            break;
-          case COMMENDS.SaveData:
-            this.updateTextDocument(document, data);
-            break;
-          case COMMENDS.MsgInfo:
-            vscode.window.showInformationMessage(data);
-            break;
-          case COMMENDS.MsgError:
-            vscode.window.showErrorMessage(data);
-            break;
-          case COMMENDS.OutputInfo:
-            printOutputChannel(data);
-            break;
-          case COMMENDS.OutputError:
-            printOutputChannel(`[ERROR]\n${data}`);
-            break;
-          default:
-            vscode.window.showErrorMessage(
-              `Unknown command received: ${command}, ${data}`,
-            );
-            break;
-        }
-      },
-    );
+    await this._updateWebview(document, webviewPanel);
+
+    webviewPanel.title = document.uri.fsPath.split('/').pop() || 'PTB Document';
+
+    webviewPanel.onDidDispose(() => {
+      // TODO
+    });
   }
 
-  private updateTextDocument(document: vscode.TextDocument, text: string) {
-    if (document.getText() !== text) {
-      const edit = new vscode.WorkspaceEdit();
-      edit.replace(
-        document.uri,
-        new vscode.Range(0, 0, document.lineCount, 0),
-        text,
-      );
-      vscode.workspace.applyEdit(edit);
+  private async _updateWebview(
+    document: PTBDocument,
+    panel: vscode.WebviewPanel,
+  ) {
+    panel.webview.postMessage({
+      command: COMMENDS.LoadData,
+      data: {
+        account: accountLoad(this._context),
+        ptb: document.getText(),
+      },
+    });
+  }
+
+  private _updateTextDocument(document: PTBDocument, newContent: string) {
+    if (document.getText() !== newContent) {
+      document.setText(newContent);
+
+      this._onDidChangeCustomDocument.fire({
+        document,
+        label: 'PTB Edit',
+        undo: async () => {},
+        redo: async () => {},
+      });
     }
   }
 
-  private _getHtmlForWebview(
-    webview: vscode.Webview,
-    extensionUri: vscode.Uri,
-  ) {
+  public async saveCustomDocument(
+    document: PTBDocument,
+    _cancellation: vscode.CancellationToken,
+  ): Promise<void> {
+    await document.save();
+  }
+
+  public async saveCustomDocumentAs(
+    document: PTBDocument,
+    targetResource: vscode.Uri,
+    _cancellation: vscode.CancellationToken,
+  ): Promise<void> {
+    await document.saveAs(targetResource);
+  }
+
+  public async revertCustomDocument(
+    document: PTBDocument,
+    _cancellation: vscode.CancellationToken,
+  ): Promise<void> {
+    await document.revert();
+  }
+
+  public async backupCustomDocument(
+    document: PTBDocument,
+    context: vscode.CustomDocumentBackupContext,
+    cancellation: vscode.CancellationToken,
+  ): Promise<vscode.CustomDocumentBackup> {
+    return document.backup(context.destination, cancellation);
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    const extensionUri = this._context.extensionUri;
     const stylesUri = getUri(webview, extensionUri, [
       'src',
       'webview',
@@ -176,6 +265,9 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
     vscode.window.registerCustomEditorProvider(
       PTBBuilderProvider.viewType,
       provider,
+      {
+        supportsMultipleEditorsPerDocument: true,
+      },
     ),
   );
   context.subscriptions.push(
