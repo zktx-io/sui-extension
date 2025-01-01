@@ -61,10 +61,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
       enableCommandUris: true,
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(
-      webviewView.webview,
-      this._extensionUri,
-    );
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(
       async ({ command, data }: { command: COMMENDS; data: any }) => {
@@ -165,10 +162,8 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  private _getHtmlForWebview(
-    webview: vscode.Webview,
-    extensionUri: vscode.Uri,
-  ) {
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    const extensionUri = this._extensionUri;
     const stylesUri = getUri(webview, extensionUri, [
       'src',
       'webview',
