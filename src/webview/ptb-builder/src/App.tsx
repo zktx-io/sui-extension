@@ -97,6 +97,9 @@ function App() {
           );
           initialized.current = true;
           break;
+        case COMMENDS.UpdateState:
+          setAccount(message.data.account);
+          break;
         default:
           break;
       }
@@ -110,7 +113,7 @@ function App() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [account, ptb]);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
