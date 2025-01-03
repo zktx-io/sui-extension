@@ -119,7 +119,7 @@ export const ExplorerOwnerObjects = ({
   const handleNext = async () => {
     if (currentPage < objectsInfo.length - 1) {
       setCurrentPage(currentPage + 1);
-    } else if (!!next) {
+    } else if (next) {
       await loadOwnerObjecs(next);
       setCurrentPage(currentPage + 1);
     }

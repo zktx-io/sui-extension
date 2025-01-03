@@ -85,7 +85,12 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
       setState((oldState) => ({ ...oldState, balance }));
     };
 
-    const handleMessage = async (event: any) => {
+    const handleMessage = async (
+      event: MessageEvent<{
+        command: COMMENDS;
+        data: string;
+      }>,
+    ) => {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.LoginJwt:

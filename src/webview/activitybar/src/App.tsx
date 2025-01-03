@@ -11,7 +11,7 @@ import { ExplorerObject } from './components/ExplorerObject';
 import { ExplorerPackage } from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
 import { COMMENDS } from './utilities/commends';
-import { STATE } from './recoil';
+import { IAccount, STATE } from './recoil';
 
 function App() {
   const initialized = useRef<boolean>(false);
@@ -20,7 +20,15 @@ function App() {
   const [state, setState] = useRecoilState(STATE);
 
   useEffect(() => {
-    const handleMessage = async (event: any) => {
+    const handleMessage = async (
+      event: MessageEvent<{
+        command: COMMENDS;
+        data: {
+          hasTerminal: boolean;
+          account?: IAccount;
+        };
+      }>,
+    ) => {
       const message = event.data;
       switch (message.command) {
         case COMMENDS.Env:

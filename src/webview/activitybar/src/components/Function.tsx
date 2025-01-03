@@ -130,7 +130,7 @@ export const Function = ({
   ) => {
     try {
       setIsLoading(true);
-      let errors: boolean[] = [...new Array(inputValues.length).fill(false)];
+      const errors: boolean[] = [...new Array(inputValues.length).fill(false)];
       for (let i = 0; i < inputValues.length; i++) {
         if (state.account) {
           const filtered = deleteTxContext(func);

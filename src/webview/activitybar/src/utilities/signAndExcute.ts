@@ -46,7 +46,7 @@ export const signAndExcute = async (
         digest,
         options: { showObjectChanges: true },
       });
-      if (!!res.errors) {
+      if (res.errors) {
         vscode.postMessage({
           command: COMMENDS.MsgError,
           data: `error: ${res.errors.toString()}`,
