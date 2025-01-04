@@ -98,7 +98,7 @@ export const validateInput = async (
       // TODO
     }
     return false;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

@@ -9,7 +9,7 @@ export const faucet = async (account: IAccount): Promise<boolean> => {
         recipient: account.zkAddress?.address,
       });
       return !res.error;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

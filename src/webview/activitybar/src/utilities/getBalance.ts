@@ -22,7 +22,7 @@ export const getBalance = async (
         -1 * SUI_DECIMALS,
       );
       return `${bn.toFormat()} SUI`;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   } else {
