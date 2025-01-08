@@ -2,7 +2,7 @@ import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
+import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
 import { decodeJwt } from 'jose';
 import { IAccount } from '../recoil';
 import { vscode } from './vscode';

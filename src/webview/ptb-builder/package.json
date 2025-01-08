@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@mysten/sui": "^1.18.0",
-    "@mysten/zklogin": "^0.8.1",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "@zktx.io/ptb-builder": "^0.1.9",
     "buffer": "^6.0.3",

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
+import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { fromBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';

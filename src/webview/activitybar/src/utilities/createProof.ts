@@ -1,4 +1,4 @@
-import { getExtendedEphemeralPublicKey, jwtToAddress } from '@mysten/zklogin';
+import { getExtendedEphemeralPublicKey, jwtToAddress } from '@mysten/sui/zklogin';
 import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 import { INonce, NETWORK } from '../recoil';
 import { getEnokiSalt } from './enoki/getSault';
