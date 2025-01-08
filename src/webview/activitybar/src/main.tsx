@@ -5,7 +5,9 @@ import { RecoilRoot } from 'recoil';
 
 import App from './App.tsx';
 
-window.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = Buffer;
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
