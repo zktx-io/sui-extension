@@ -110,7 +110,10 @@ export class FileWathcer {
   private getRelativePath(uri: vscode.Uri): string {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
     if (workspaceFolder) {
-      return uri.path.replace(workspaceFolder.uri.path, '').replace(/^\//, '');
+      const relativePath = uri.path
+        .replace(workspaceFolder.uri.path, '')
+        .replace(/^\//, '');
+      return relativePath === MoveToml ? `./${MoveToml}` : relativePath;
     }
     return uri.path;
   }
