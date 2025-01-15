@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RequestData } from '../webview/panel/src/utilities/commends';
+import { RequestData } from '../webview/panel/src/utilities/commands';
 
 const generateThreadId = async (): Promise<void> => {
   try {

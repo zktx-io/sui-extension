@@ -5,7 +5,7 @@ import {
 import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 import { INonce, NETWORK } from '../recoil';
 import { getEnokiSalt } from './enoki/getSault';
-import { Enoki } from './commends';
+import { Enoki } from './commands';
 
 const getProverUrl = (network: NETWORK): string => {
   switch (network) {

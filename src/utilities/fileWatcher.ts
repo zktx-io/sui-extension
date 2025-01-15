@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { COMMENDS } from '../webview/activitybar/src/utilities/commends';
+import { COMMANDS } from '../webview/activitybar/src/utilities/commands';
 import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 
 const MoveToml = 'Move.toml';
@@ -139,7 +139,7 @@ export class FileWathcer {
 
   private updateWebview() {
     this._view.webview.postMessage({
-      command: COMMENDS.PackageList,
+      command: COMMANDS.PackageList,
       data: this._packages.map(({ path, content }) => {
         return {
           path,

@@ -6,7 +6,7 @@ import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
 import { decodeJwt } from 'jose';
 import { IAccount } from '../recoil';
 import { vscode } from './vscode';
-import { COMMENDS } from './commends';
+import { COMMANDS } from './commands';
 
 export const signAndExcute = async (
   account: IAccount,
@@ -48,27 +48,27 @@ export const signAndExcute = async (
       });
       if (res.errors) {
         vscode.postMessage({
-          command: COMMENDS.MsgError,
+          command: COMMANDS.MsgError,
           data: `error: ${res.errors.toString()}`,
         });
         vscode.postMessage({
-          command: COMMENDS.OutputError,
+          command: COMMANDS.OutputError,
           data: JSON.stringify(res, null, 4),
         });
         throw new Error(`${res.errors.toString()}`);
       }
       vscode.postMessage({
-        command: COMMENDS.MsgInfo,
+        command: COMMANDS.MsgInfo,
         data: `success: ${account.nonce.network}:${res.digest}`,
       });
       vscode.postMessage({
-        command: COMMENDS.OutputInfo,
+        command: COMMANDS.OutputInfo,
         data: JSON.stringify(res, null, 4),
       });
       return res;
     } catch (error) {
       vscode.postMessage({
-        command: COMMENDS.MsgError,
+        command: COMMANDS.MsgError,
         data: `${error}`,
       });
       throw new Error(`${error}`);

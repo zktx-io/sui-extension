@@ -13,7 +13,7 @@ import { NETWORK, NETWORKS, STATE } from '../recoil';
 import { createNonce } from '../utilities/createNonce';
 import { googleLogin } from '../utilities/googleLogin';
 import { vscode } from '../utilities/vscode';
-import { COMMENDS } from '../utilities/commends';
+import { COMMANDS } from '../utilities/commands';
 import { getBalance } from '../utilities/getBalance';
 import { createProof } from '../utilities/createProof';
 import { faucet } from '../utilities/faucet';
@@ -51,7 +51,7 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
 
   const handleLogout = async () => {
     vscode.postMessage({
-      command: COMMENDS.StoreAccount,
+      command: COMMANDS.StoreAccount,
       data: undefined,
     });
     setState(() => ({ packages: {} }));
@@ -69,7 +69,7 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
       }
     } catch (error) {
       vscode.postMessage({
-        command: COMMENDS.MsgError,
+        command: COMMANDS.MsgError,
         data: `${error}`,
       });
     } finally {
@@ -87,13 +87,13 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
 
     const handleMessage = async (
       event: MessageEvent<{
-        command: COMMENDS;
+        command: COMMANDS;
         data: string;
       }>,
     ) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.LoginJwt:
+        case COMMANDS.LoginJwt:
           if (state.account && message.data) {
             try {
               const { address, proof, salt } = await createProof(
@@ -113,7 +113,7 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
                 },
               }));
               vscode.postMessage({
-                command: COMMENDS.StoreAccount,
+                command: COMMANDS.StoreAccount,
                 data: {
                   ...state.account,
                   zkAddress: {
@@ -126,7 +126,7 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
               });
             } catch (error) {
               vscode.postMessage({
-                command: COMMENDS.MsgError,
+                command: COMMANDS.MsgError,
                 data: `${error}`,
               });
             } finally {

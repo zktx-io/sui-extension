@@ -9,7 +9,7 @@ import { PTB_SCHEME, PTBBuilder } from '@zktx.io/ptb-builder';
 
 import './App.css';
 
-import { COMMENDS } from './utilities/commends';
+import { COMMANDS } from './utilities/commands';
 import { vscode } from './utilities/vscode';
 import { IAccount } from './utilities/account';
 import { postMessage } from './utilities/postMessage';
@@ -64,7 +64,7 @@ function App() {
           if (res.errors) {
             postMessage(`${res.errors}`, { variant: 'error' });
             vscode.postMessage({
-              command: COMMENDS.OutputError,
+              command: COMMANDS.OutputError,
               data: JSON.stringify(res, null, 4),
             });
           }
@@ -72,7 +72,7 @@ function App() {
             variant: 'success',
           });
           vscode.postMessage({
-            command: COMMENDS.OutputInfo,
+            command: COMMANDS.OutputInfo,
             data: JSON.stringify(res, null, 4),
           });
         }
@@ -88,7 +88,7 @@ function App() {
     const handleMessage = (event: any) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.LoadData:
+        case COMMANDS.LoadData:
           setAccount(message.data.account);
           setPtb(
             message.data.ptb !== undefined && message.data.ptb !== ''
@@ -97,7 +97,7 @@ function App() {
           );
           initialized.current = true;
           break;
-        case COMMENDS.UpdateState:
+        case COMMANDS.UpdateState:
           setAccount(message.data.account);
           break;
         default:
@@ -107,7 +107,7 @@ function App() {
     window.addEventListener('message', handleMessage);
 
     if (!initialized.current) {
-      vscode.postMessage({ command: COMMENDS.LoadData });
+      vscode.postMessage({ command: COMMANDS.LoadData });
     }
 
     return () => {
@@ -126,7 +126,7 @@ function App() {
         update={(data: PTB_SCHEME) => {
           initialized.current &&
             vscode.postMessage({
-              command: COMMENDS.SaveData,
+              command: COMMANDS.SaveData,
               data: JSON.stringify(data),
             });
         }}

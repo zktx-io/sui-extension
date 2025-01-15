@@ -3,7 +3,7 @@ import SHA256 from 'crypto-js/sha256';
 import Base64 from 'crypto-js/enc-base64';
 import * as querystring from 'querystring';
 import { vscode } from './vscode';
-import { ClientId, COMMENDS, UrlCallback } from './commends';
+import { ClientId, COMMANDS, UrlCallback } from './commands';
 
 const generateLoginUrl = (
   state: string,
@@ -31,7 +31,7 @@ export const googleLogin = async (nonce: string) => {
     .replace(/=+$/, '');
 
   vscode.postMessage({
-    command: COMMENDS.Login,
+    command: COMMANDS.Login,
     data: {
       url: generateLoginUrl(state, codeChallenge, nonce),
       state,

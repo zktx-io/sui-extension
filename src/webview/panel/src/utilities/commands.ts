@@ -1,4 +1,4 @@
-export enum COMMENDS {
+export enum COMMANDS {
   Env = 'env',
   AiHistory = 'ai:history',
   AiQuestion = 'ai:question',

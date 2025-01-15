@@ -9,7 +9,7 @@ import {
 } from '@vscode/webview-ui-toolkit/react';
 import { SuiClient } from '@mysten/sui/client';
 import { vscode } from '../utilities/vscode';
-import { COMMENDS } from '../utilities/commends';
+import { COMMANDS } from '../utilities/commands';
 import { SpinButton } from './SpinButton';
 import { STATE } from '../recoil';
 import { packageUpgrade } from '../utilities/packageUpgrade';
@@ -41,7 +41,7 @@ export const Workspace = ({
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.PackageList:
+        case COMMANDS.PackageList:
           {
             const temp = (
               message.data as { path: string; content: string }[]
@@ -70,7 +70,7 @@ export const Workspace = ({
             }
           }
           break;
-        case COMMENDS.Deploy:
+        case COMMANDS.Deploy:
           try {
             if (!!state.account?.zkAddress && !!client) {
               if (!upgradeToml) {
@@ -181,7 +181,7 @@ export const Workspace = ({
           onClick={() => {
             state.path &&
               vscode.postMessage({
-                command: COMMENDS.CLI,
+                command: COMMANDS.CLI,
                 data: runBuild(state.path),
               });
           }}
@@ -199,7 +199,7 @@ export const Workspace = ({
           onClick={() => {
             state.path &&
               vscode.postMessage({
-                command: COMMENDS.CLI,
+                command: COMMANDS.CLI,
                 data: runTest(state.path),
               });
           }}
@@ -225,7 +225,7 @@ export const Workspace = ({
           if (selected) {
             setIsLoading(true);
             vscode.postMessage({
-              command: COMMENDS.Deploy,
+              command: COMMANDS.Deploy,
               data: selected.path,
             });
           }

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
 import { hasTerminal } from '../utilities/hasTerminal';
-import { COMMENDS } from './activitybar/src/utilities/commends';
+import { COMMANDS } from './activitybar/src/utilities/commands';
 import { FileWathcer } from '../utilities/fileWatcher';
 import {
   accountLoad,
@@ -64,9 +64,9 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(
-      async ({ command, data }: { command: COMMENDS; data: any }) => {
+      async ({ command, data }: { command: COMMANDS; data: any }) => {
         switch (command) {
-          case COMMENDS.Env:
+          case COMMANDS.Env:
             {
               this._view?.webview.postMessage({
                 command,
@@ -78,7 +78,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
               await this._fileWatcher?.initializePackageList();
             }
             break;
-          case COMMENDS.Login:
+          case COMMANDS.Login:
             {
               const {
                 url,
@@ -98,30 +98,30 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
                   codeVerifier,
                   (data) => {
                     this._view?.webview.postMessage({
-                      command: COMMENDS.LoginJwt,
+                      command: COMMANDS.LoginJwt,
                       data,
                     });
                   },
                   () => {
                     this._view?.webview.postMessage({
-                      command: COMMENDS.LoginJwt,
+                      command: COMMANDS.LoginJwt,
                       data: '',
                     });
                   },
                 );
               } else {
                 this._view?.webview.postMessage({
-                  command: COMMENDS.LoginJwt,
+                  command: COMMANDS.LoginJwt,
                   data: '',
                 });
               }
             }
             break;
-          case COMMENDS.StoreAccount:
+          case COMMANDS.StoreAccount:
             await accountStore(this._context, data);
             vscode.commands.executeCommand(AccountStateUpdate);
             break;
-          case COMMENDS.CLI:
+          case COMMANDS.CLI:
             if (!hasTerminal()) {
               vscode.window.showErrorMessage(
                 'This environment does not support terminal operations.',
@@ -130,28 +130,28 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
               this.runTerminal(data);
             }
             break;
-          case COMMENDS.Deploy:
+          case COMMANDS.Deploy:
             {
               const dumpByte = await this._fileWatcher?.getByteCodeDump(data);
               this._view?.webview.postMessage({
-                command: COMMENDS.Deploy,
+                command: COMMANDS.Deploy,
                 data: dumpByte || '',
               });
             }
             break;
-          case COMMENDS.MsgInfo:
+          case COMMANDS.MsgInfo:
             vscode.window.showInformationMessage(data);
             break;
-          case COMMENDS.MsgError:
+          case COMMANDS.MsgError:
             vscode.window.showErrorMessage(data);
             break;
-          case COMMENDS.OutputInfo:
+          case COMMANDS.OutputInfo:
             printOutputChannel(data);
             break;
-          case COMMENDS.OutputError:
+          case COMMANDS.OutputError:
             printOutputChannel(`[ERROR]\n${data}`);
             break;
-          case COMMENDS.FMT:
+          case COMMANDS.FMT:
           default:
             vscode.window.showErrorMessage(
               `Unknown command received : ${command}`,

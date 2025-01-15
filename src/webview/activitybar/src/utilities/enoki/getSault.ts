@@ -1,4 +1,4 @@
-import { Enoki } from '../commends';
+import { Enoki } from '../commands';
 
 export const getEnokiSalt = async (
   jwt: string,

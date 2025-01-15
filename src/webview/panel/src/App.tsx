@@ -3,7 +3,7 @@ import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 
 import './App.css';
 
-import { COMMENDS, RequestData } from './utilities/commends';
+import { COMMANDS, RequestData } from './utilities/commands';
 import { vscode } from './utilities/vscode';
 import { User } from './components/User';
 import { Bot } from './components/Bot';
@@ -36,7 +36,7 @@ function App() {
             '',
           ]);
           break;
-        case COMMENDS.AiHistory:
+        case COMMANDS.AiHistory:
           const temp: (string | RequestData)[] = [];
           message.data.forEach((item: { user: RequestData; bot: string }) => {
             temp.push(item.user, item.bot);
@@ -50,10 +50,10 @@ function App() {
           }
           initialized.current = true;
           break;
-        case COMMENDS.AiStream:
+        case COMMANDS.AiStream:
           setHtmlHistory((old) => [...old.slice(0, -1), message.data]);
           break;
-        case COMMENDS.AiStreamEnd:
+        case COMMANDS.AiStreamEnd:
           setIsLoading(() => false);
           break;
         default:
@@ -62,7 +62,7 @@ function App() {
     };
 
     if (!initialized.current) {
-      vscode.postMessage({ command: COMMENDS.Env });
+      vscode.postMessage({ command: COMMANDS.Env });
     }
 
     window.addEventListener('message', handleMessage);
@@ -137,7 +137,7 @@ function App() {
             const value = (event.target as any)?.value || '';
             if (event.key === 'Enter' && value && !isLoading) {
               vscode.postMessage({
-                command: COMMENDS.AiQuestion,
+                command: COMMANDS.AiQuestion,
                 data: value,
               });
               setInput('');

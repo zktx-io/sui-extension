@@ -10,7 +10,7 @@ import { ExplorerOwnerObjects } from './components/ExplorerOwnerObjects';
 import { ExplorerObject } from './components/ExplorerObject';
 import { ExplorerPackage } from './components/ExplorerPackage';
 import { Workspace } from './components/Workspace';
-import { COMMENDS } from './utilities/commends';
+import { COMMANDS } from './utilities/commands';
 import { IAccount, STATE } from './recoil';
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
   useEffect(() => {
     const handleMessage = async (
       event: MessageEvent<{
-        command: COMMENDS;
+        command: COMMANDS;
         data: {
           hasTerminal: boolean;
           account?: IAccount;
@@ -31,7 +31,7 @@ function App() {
     ) => {
       const message = event.data;
       switch (message.command) {
-        case COMMENDS.Env:
+        case COMMANDS.Env:
           {
             const { hasTerminal: terminal, account: loaddedAccount } =
               message.data;
@@ -51,7 +51,7 @@ function App() {
 
     if (!initialized.current) {
       initialized.current = true;
-      vscode.postMessage({ command: COMMENDS.Env });
+      vscode.postMessage({ command: COMMANDS.Env });
     }
 
     return () => {

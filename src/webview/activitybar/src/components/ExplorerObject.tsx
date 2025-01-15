@@ -9,7 +9,7 @@ import { SuiClient, SuiObjectResponse } from '@mysten/sui/client';
 import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
-import { COMMENDS } from '../utilities/commends';
+import { COMMANDS } from '../utilities/commands';
 import { SuiObject } from './SuiObject';
 
 const styles = {
@@ -91,18 +91,18 @@ export const ExplorerObject = ({
         });
         if (res.error) {
           vscode.postMessage({
-            command: COMMENDS.MsgError,
+            command: COMMANDS.MsgError,
             data: `${JSON.stringify(res.error)}`,
           });
         } else {
           setObjectInfo(res);
           vscode.postMessage({
-            command: COMMENDS.OutputInfo,
+            command: COMMANDS.OutputInfo,
             data: JSON.stringify(res, null, 4),
           });
         }
       } catch (error) {
-        vscode.postMessage({ command: COMMENDS.MsgError, data: `${error}` });
+        vscode.postMessage({ command: COMMANDS.MsgError, data: `${error}` });
       }
     }
   };

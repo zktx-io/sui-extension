@@ -1,4 +1,4 @@
-export enum COMMENDS {
+export enum COMMANDS {
   Env = 'env',
   Login = 'google:login',
   LoginJwt = 'google:jwt',

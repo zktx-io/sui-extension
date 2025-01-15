@@ -1,6 +1,6 @@
 import { SuiClient, SuiMoveNormalizedModules } from '@mysten/sui/client';
 import { vscode } from './vscode';
-import { COMMENDS } from './commends';
+import { COMMANDS } from './commands';
 
 export const loadPackageData = async (
   client: SuiClient | undefined,
@@ -15,14 +15,14 @@ export const loadPackageData = async (
       return modules;
     } catch (error) {
       vscode.postMessage({
-        command: COMMENDS.MsgError,
+        command: COMMANDS.MsgError,
         data: `${error}`,
       });
       return undefined;
     }
   }
   vscode.postMessage({
-    command: COMMENDS.MsgError,
+    command: COMMANDS.MsgError,
     data: 'client is undefined',
   });
   return undefined;

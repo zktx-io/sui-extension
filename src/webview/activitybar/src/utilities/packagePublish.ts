@@ -1,7 +1,7 @@
 import { SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { vscode } from './vscode';
-import { COMMENDS } from './commends';
+import { COMMANDS } from './commands';
 import { signAndExcute } from './signAndExcute';
 import { IAccount } from '../recoil';
 
@@ -35,7 +35,7 @@ export const packagePublish = async (
       );
       if (!published[0]) {
         vscode.postMessage({
-          command: COMMENDS.MsgError,
+          command: COMMANDS.MsgError,
           data: JSON.stringify(res, null, 2),
         });
         throw new Error('publish error');

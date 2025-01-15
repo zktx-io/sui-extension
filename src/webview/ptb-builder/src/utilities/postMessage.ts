@@ -1,4 +1,4 @@
-import { COMMENDS } from './commends';
+import { COMMANDS } from './commands';
 import { vscode } from './vscode';
 
 export type ToastVariant = 'error' | 'info' | 'success' | 'warning';
@@ -10,11 +10,11 @@ export const postMessage = (
   switch (variant) {
     case 'info':
     case 'success':
-      vscode.postMessage({ command: COMMENDS.MsgInfo, data: message });
+      vscode.postMessage({ command: COMMANDS.MsgInfo, data: message });
       break;
     case 'error':
     case 'warning':
-      vscode.postMessage({ command: COMMENDS.MsgError, data: message });
+      vscode.postMessage({ command: COMMANDS.MsgError, data: message });
       break;
     default:
       break;

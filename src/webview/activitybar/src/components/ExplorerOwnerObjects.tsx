@@ -8,7 +8,7 @@ import { SuiClient, SuiObjectResponse } from '@mysten/sui/client';
 import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 import { vscode } from '../utilities/vscode';
-import { COMMENDS } from '../utilities/commends';
+import { COMMANDS } from '../utilities/commands';
 import { SuiObject } from './SuiObject';
 
 const styles = {
@@ -107,11 +107,11 @@ export const ExplorerOwnerObjects = ({
         );
         setObjectsInfo((oldState) => [...oldState, ...res.data]);
         vscode.postMessage({
-          command: COMMENDS.OutputInfo,
+          command: COMMANDS.OutputInfo,
           data: JSON.stringify(res, null, 4),
         });
       } catch (error) {
-        vscode.postMessage({ command: COMMENDS.MsgError, data: `${error}` });
+        vscode.postMessage({ command: COMMANDS.MsgError, data: `${error}` });
       }
     }
   };

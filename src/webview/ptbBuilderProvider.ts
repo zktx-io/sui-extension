@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
-import { COMMENDS } from './ptb-builder/src/utilities/commends';
+import { COMMANDS } from './ptb-builder/src/utilities/commands';
 import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 
@@ -104,7 +104,7 @@ export class PTBBuilderProvider
   public async updateState() {
     this._webviewPanel &&
       this._webviewPanel.webview.postMessage({
-        command: COMMENDS.UpdateState,
+        command: COMMANDS.UpdateState,
         data: {
           account: accountLoad(this._context),
         },
@@ -126,28 +126,28 @@ export class PTBBuilderProvider
     webviewPanel.webview.onDidReceiveMessage(async (msg) => {
       const { command, data } = msg;
       switch (command) {
-        case COMMENDS.UpdateState: {
+        case COMMANDS.UpdateState: {
           this.updateState();
           break;
         }
-        case COMMENDS.LoadData: {
+        case COMMANDS.LoadData: {
           await this._updateWebview(document, webviewPanel);
           break;
         }
-        case COMMENDS.SaveData: {
+        case COMMANDS.SaveData: {
           this._updateTextDocument(document, data);
           break;
         }
-        case COMMENDS.MsgInfo:
+        case COMMANDS.MsgInfo:
           vscode.window.showInformationMessage(data);
           break;
-        case COMMENDS.MsgError:
+        case COMMANDS.MsgError:
           vscode.window.showErrorMessage(data);
           break;
-        case COMMENDS.OutputInfo:
+        case COMMANDS.OutputInfo:
           printOutputChannel(data);
           break;
-        case COMMENDS.OutputError:
+        case COMMANDS.OutputError:
           printOutputChannel(`[ERROR]\n${data}`);
           break;
         default:
@@ -170,7 +170,7 @@ export class PTBBuilderProvider
     panel: vscode.WebviewPanel,
   ) {
     panel.webview.postMessage({
-      command: COMMENDS.LoadData,
+      command: COMMANDS.LoadData,
       data: {
         account: accountLoad(this._context),
         ptb: document.getText(),
