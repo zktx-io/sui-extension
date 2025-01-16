@@ -251,7 +251,11 @@ export const Function = ({
                             ? `Invalid value for type ${getTypeName(item)}`
                             : undefined
                         }
-                        paramType={(item as any).Vector}
+                        paramType={
+                          (item as any).Vector ||
+                          (item as any).Reference?.Vector ||
+                          (item as any).MutableReference?.Vector
+                        }
                         update={(params: string[]) => {
                           handleInputChange(key, params);
                         }}

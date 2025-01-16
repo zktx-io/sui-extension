@@ -9,12 +9,13 @@ export const getInterfaceType = (
   if (typeof paramType === 'object' && 'Vector' in paramType) {
     return 'vector';
   }
-  if (
-    typeof paramType === 'object' &&
-    ('Struct' in paramType ||
-      'Reference' in paramType ||
-      'MutableReference' in paramType)
-  ) {
+  if (typeof paramType === 'object' && 'Reference' in paramType) {
+    return getInterfaceType(paramType.Reference);
+  }
+  if (typeof paramType === 'object' && 'MutableReference' in paramType) {
+    return getInterfaceType(paramType.MutableReference);
+  }
+  if (typeof paramType === 'object' && 'Struct' in paramType) {
     return 'complex';
   }
   return 'other';
@@ -74,28 +75,46 @@ export const validateInput = async (
         default:
           break;
       }
-    }
-
-    if (typeof paramType === 'object' && 'Vector' in paramType) {
-      if (typeof value !== 'string') {
-        let result = true;
-        for (const item of value) {
-          result &&= await validateInput(account, paramType.Vector, item);
+    } else if (typeof paramType === 'object' && 'Vector' in paramType && Array.isArray(value)) {
+      let result = true;
+      for (const item of value) {
+        switch (paramType.Vector) {
+          case 'U8':
+          case 'U16':
+          case 'U32':
+          case 'U64':
+          case 'U128':
+          case 'U256':
+            return /^0[xX][0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(item);
+          case 'Bool':
+            return /^(true|false)$/.test(item.toLowerCase());
+          case 'Address':
+            return /^0x[a-fA-F0-9]{64}$/.test(item);
+          default:
+            break;
         }
+        result &&= await validateInput(account, paramType.Vector, item);
+      }
+      return result;
+    } else if (!Array.isArray(value)) {
+      if (typeof paramType === 'object' && 'Struct' in paramType) {
+        const typeName = getTypeName(paramType);
+        const objectType = await getObjectType(account, value);
+        return typeName === objectType;
+      }
+      if (typeof paramType === 'object' && 'MutableReference' in paramType) {
+        const objectType = await getObjectType(account, value);
+        const result = await validateInput(account, paramType.MutableReference, objectType);
         return result;
       }
-    } else if (
-      typeof paramType === 'object' &&
-      ('Struct' in paramType ||
-        'MutableReference' in paramType ||
-        'Reference' in paramType) &&
-      typeof value === 'string'
-    ) {
-      const typeName = getTypeName(paramType);
-      const objectType = await getObjectType(account, value);
-      return typeName === objectType;
-    } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
-      // TODO
+      if (typeof paramType === 'object' && 'Reference' in paramType) {
+        const objectType = await getObjectType(account, value);
+        const result = await validateInput(account, paramType.Reference, objectType);
+        return result;
+      }
+      if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
+        // const n = paramType.TypeParameter;
+      }
     }
     return false;
   } catch {
@@ -146,36 +165,61 @@ export const makeParams = (
       default:
         break;
     }
-  }
-
-  if (typeof paramType === 'object' && 'Vector' in paramType) {
-    if (typeof value !== 'string') {
-      const temp = getVecterType(paramType.Vector);
-      return transaction.makeMoveVec(
-        temp
-          ? {
-              type: temp,
-              elements: value.map((item) =>
-                makeParams(transaction, paramType.Vector, item),
-              ),
-            }
-          : {
-              elements: value.map((item) =>
-                makeParams(transaction, paramType.Vector, item),
-              ),
-            },
-      );
+  } else if (typeof paramType === 'object' && 'Vector' in paramType && Array.isArray(value)) {
+    const results: (string | number | boolean)[] = [];
+    let type: 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'bool' | 'address' | undefined;
+    for (const item of value) {
+      switch (paramType.Vector) {
+        case 'U8':
+          type = 'u8';
+          results.push(parseInt(item, 16));
+          break;
+        case 'U16':
+          type = 'u16';
+          results.push(parseInt(item, 16));
+          break;
+        case 'U32':
+          type = 'u32';
+          results.push(parseInt(item, 16));
+          break;
+        case 'U64':
+          type = 'u64';
+          results.push(parseInt(item, 16));
+          break;
+        case 'U128':
+          type = 'u128';
+          results.push(parseInt(item, 16));
+          break;
+        case 'U256':
+          type = 'u256';
+          results.push(parseInt(item, 16));
+          break;
+        case 'Bool':
+          type = 'bool';
+          results.push(item.toLowerCase() === 'true');
+          break;
+        case 'Address':
+          type = 'address';
+          results.push(item);
+          break;
+        default:
+          break;
+      }
     }
-  } else if (
-    typeof paramType === 'object' &&
-    ('Struct' in paramType ||
-      'MutableReference' in paramType ||
-      'Reference' in paramType) &&
-    typeof value === 'string'
-  ) {
-    return transaction.object(value);
-  } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
-    // TODO
+    return type ? transaction.pure.vector(type, results) : undefined;
+  } else if (!Array.isArray(value)) {
+    if (typeof paramType === 'object' && 'Struct' in paramType) {
+      return transaction.object(value);
+    }
+    if (typeof paramType === 'object' && 'MutableReference' in paramType) {
+      return makeParams(transaction, paramType.MutableReference, value);
+    }
+    if (typeof paramType === 'object' && 'Reference' in paramType) {
+      return makeParams(transaction, paramType.Reference, value);
+    }
+    if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
+      // const n = paramType.TypeParameter;
+    }
   }
   return;
 };
