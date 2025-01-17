@@ -153,11 +153,11 @@ export const makeParams = (
       case 'U32':
         return transaction.pure('u32', parseInt(value));
       case 'U64':
-        return transaction.pure('u64', parseInt(value));
+        return transaction.pure('u64', BigInt(value));
       case 'U128':
-        return transaction.pure('u128', parseInt(value));
+        return transaction.pure('u128', BigInt(value));
       case 'U256':
-        return transaction.pure('u256', parseInt(value));
+        return transaction.pure('u256', BigInt(value));
       case 'Bool':
         return transaction.pure('bool', value.toLowerCase() === 'true');
       case 'Address':
@@ -166,33 +166,33 @@ export const makeParams = (
         break;
     }
   } else if (typeof paramType === 'object' && 'Vector' in paramType && Array.isArray(value)) {
-    const results: (string | number | boolean)[] = [];
+    const results: (string | boolean)[] = [];
     let type: 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'bool' | 'address' | undefined;
     for (const item of value) {
       switch (paramType.Vector) {
         case 'U8':
           type = 'u8';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'U16':
           type = 'u16';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'U32':
           type = 'u32';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'U64':
           type = 'u64';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'U128':
           type = 'u128';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'U256':
           type = 'u256';
-          results.push(parseInt(item, 16));
+          results.push(BigInt(`0x${item}`).toString());
           break;
         case 'Bool':
           type = 'bool';
