@@ -104,7 +104,7 @@ export const VectorInputFields = ({
       paramType === 'U64' ||
       paramType === 'U128' ||
       paramType === 'U256' ? (
-        <div style={{ flexDirection: 'column', padding: '8px' }}>
+        <div style={{ flexDirection: 'column' }}>
           <VSCodeTextArea
             rows={3}
             style={{ width: '100%' }}
