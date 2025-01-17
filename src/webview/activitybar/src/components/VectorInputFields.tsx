@@ -143,12 +143,15 @@ export const VectorInputFields = ({
                 key={index}
                 style={{
                   display: 'flex',
+                  alignItems: 'center',
+                  flexDirection: 'row',
                   marginBottom: '8px',
                   width: '100%',
                 }}
               >
+                {`[${index}]`}
                 <VSCodeTextField
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', paddingLeft: '4px' }}
                   value={value}
                   placeholder={getTypeName(paramType)}
                   onInput={(e) =>
