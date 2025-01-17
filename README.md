@@ -6,41 +6,6 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 
 - **Compile Sui Smart Contracts**: Easily compile your Sui smart contracts from within VS Code.
 - **Deploy and Test**: Deploy and test your smart contracts using the zkLogin-generated wallet, all from within the extension.
-- **Format Sui Smart Contracts**: Format your Move smart contracts with Prettier, using `@mysten/prettier-plugin-move` for clean, readable, and consistent code.
-
-  > Note: The extension supports formatting configurations defined in a `.prettierrc.json` file located in your project. These configurations allow you to customize the formatting rules for your Move files. If no configuration is found, the extension falls back to its default settings:
-
-  ```json
-  {
-    "tabWidth": 4,
-    "printWidth": 100,
-    "useModuleLabel": true,
-    "autoGroupImports": "module",
-    "enableErrorDebug": false,
-    "wrapComments": false
-  }
-  ```
-
-  > Customize: To use a custom configuration, create a .prettierrc.json file in the root of your project directory with your preferred settings. For example:
-
-  - Configuration Options:
-  - tabWidth: Number of spaces per tab (default: 4).
-  - printWidth: Maximum line length before wrapping (default: 100).
-  - useModuleLabel: Converts old module blocks to a module label (default: true).
-  - autoGroupImports: Controls how imports are grouped. Options: "module" (default) or "package".
-  - enableErrorDebug: Enables debug information for formatting errors (default: false).
-  - wrapComments: Wraps comments to adhere to the printWidth (default: false).
-
-  ```json
-  {
-    "tabWidth": 2,
-    "printWidth": 80,
-    "useModuleLabel": false,
-    "autoGroupImports": "package",
-    "wrapComments": true
-  }
-  ```
-
 - **GitHub Codespaces Integration**: Increase the efficiency of your development workflow with full support for GitHub Codespaces.
 - **Unified Development**: Manage both front-end and back-end code in a single repository for streamlined development.
 - **Upgrade Smart Contracts**: Seamlessly upgrade and test your smart contracts.
@@ -63,6 +28,9 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 1. **Object Explorer**: This section of the interface allows you to load and inspect objects, one of the key features of Sui. By loading an object, you can check its `type` to verify that it contains the appropriate information required for the function arguments of a deployed smart contract.
 1. **Package Explorer**: This section of the user interface allows you to test smart contracts. When you deploy a Smart Contract, it is automatically registered here. You can also manually enter the address of a previously deployed Smart Contract to register it. If the smart contract is loaded correctly, you will see a list of functions available to interact with the contract.
 1. **Output**: In this section, you can view the transaction execution data in raw format. Please select `Sui Extension` in the Task.
+1. **PTB-Builder**: **PTB Builder** is a visual development tool for **Programmable Transaction Blocks (PTBs)**, a core technology of the Sui blockchain. Designed to create a powerful synergy with Sui’s PTB capabilities, this tool allows both developers and non-developers to easily construct and manage complex transactions, maximizing the potential of this advanced technology and making it more accessible to a broader audience.
+
+![ptb-builder-editor.png](https://docs.zktx.io/images/ptb-builder-editor.png)
 
 ## Requirements
 
