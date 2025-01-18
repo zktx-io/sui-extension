@@ -174,7 +174,7 @@ const processAndConvertVectors = (data: any, paramType: string): any => {
       case 'U8':
       case 'U16':
       case 'U32':
-        return parseInt(data).toString();
+        return parseInt(data);
       case 'U64':
       case 'U128':
       case 'U256':
