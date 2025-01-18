@@ -29,13 +29,13 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 1. **Package Explorer**: This section of the user interface allows you to test smart contracts. When you deploy a Smart Contract, it is automatically registered here. You can also manually enter the address of a previously deployed Smart Contract to register it. If the smart contract is loaded correctly, you will see a list of functions available to interact with the contract.
 1. **Move Call**: Input Format for Multi-Vectors Using JSON Strings. When working with multi-vectors, the input must be provided in JSON string format. JSON is ideal for representing nested structures and allows handling multi-dimensional arrays effectively.
 
-    |Type|JSON|
-    |------|-------|
-    |`Vector<U8>` | [1, 2, 3, 255]|
-    |`Vector<Vector<U128>>`|[["1", "555"], ["123", "456", "789"]]|
-    |`Vector<Vector<Vector<Bool>>>`|[[[true, false], [true]], [[false, true]]]|
+   | Type                           | JSON                                       |
+   | ------------------------------ | ------------------------------------------ |
+   | `Vector<U8>`                   | [1, 2, 3, 255]                             |
+   | `Vector<Vector<U128>>`         | [["1", "555"], ["123", "456", "789"]]      |
+   | `Vector<Vector<Vector<Bool>>>` | [[[true, false], [true]], [[false, true]]] |
 
-    ![Vector](https://docs.zktx.io/images/sui-extension-vector.png)
+   ![Vector](https://docs.zktx.io/images/sui-extension-vector.png)
 
 1. **Output**: In this section, you can view the transaction execution data in raw format. Please select `Sui Extension` in the Task.
 1. **PTB-Builder**: **PTB Builder** is a visual development tool for **Programmable Transaction Blocks (PTBs)**, a core technology of the Sui blockchain. Designed to create a powerful synergy with Sui’s PTB capabilities, this tool allows both developers and non-developers to easily construct and manage complex transactions, maximizing the potential of this advanced technology and making it more accessible to a broader audience.
