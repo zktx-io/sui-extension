@@ -55,9 +55,9 @@ export const getTypeName = (paramType: SuiMoveNormalizedType): string => {
 
 const validateVectors = (input: string, type: string): boolean => {
   try {
-    const data = JSON.parse(input);
+    const parsed = JSON.parse(input);
 
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(parsed)) {
       return false;
     }
 
@@ -95,7 +95,7 @@ const validateVectors = (input: string, type: string): boolean => {
         return false;
       }
     };
-    return validateVector(data, type, 0);
+    return validateVector(parsed, type, 0);
   } catch {
     return false;
   }
