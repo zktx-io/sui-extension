@@ -14,7 +14,6 @@ import {
   validateInput,
 } from '../utilities/helper';
 import { deleteTxContext } from '../utilities/deleteTxContext';
-import { VectorInputFields } from './VectorInputFields';
 import { STATE } from '../recoil';
 import { SpinButton } from './SpinButton';
 
@@ -99,7 +98,7 @@ export const Function = ({
   onExcute: (
     name: string,
     func: SuiMoveNormalizedFunction,
-    inputValues: Array<string | string[]>,
+    inputValues: Array<string>,
     typeArguments: string[],
   ) => Promise<void>;
 }) => {
@@ -107,7 +106,7 @@ export const Function = ({
   const [parameters, setParameters] = useState<SuiMoveNormalizedType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [typeArguments, setTypeArguments] = useState<string[]>([]);
-  const [inputValues, setInputValues] = useState<Array<string | string[]>>([]);
+  const [inputValues, setInputValues] = useState<Array<string>>([]);
   const [inputErrors, setInputErrors] = useState<boolean[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -117,7 +116,7 @@ export const Function = ({
     setTypeArguments(newTypeValues);
   };
 
-  const handleInputChange = (index: number, value: string | string[]) => {
+  const handleInputChange = (index: number, value: string) => {
     const newInputValues = [...inputValues];
     newInputValues[index] = value;
     setInputValues(newInputValues);
@@ -126,7 +125,7 @@ export const Function = ({
   const handleExcute = async (
     name: string,
     func: SuiMoveNormalizedFunction,
-    inputValues: Array<string | string[]>,
+    inputValues: Array<string>,
   ) => {
     try {
       setIsLoading(true);
@@ -245,21 +244,32 @@ export const Function = ({
                       {`Arg ${key}`}
                     </label>
                     {getInterfaceType(item) === 'vector' && (
-                      <VectorInputFields
-                        error={
-                          inputErrors[key]
-                            ? `Invalid value for type ${getTypeName(item)}`
-                            : undefined
-                        }
-                        paramType={
-                          (item as any).Vector ||
-                          (item as any).Reference?.Vector ||
-                          (item as any).MutableReference?.Vector
-                        }
-                        update={(params: string[]) => {
-                          handleInputChange(key, params);
-                        }}
-                      />
+                      <>
+                        <VSCodeTextArea
+                          rows={3}
+                          style={{ width: '100%' }}
+                          placeholder={`${getTypeName(item)} - JSON`}
+                          value={inputValues[key] as string}
+                          onInput={(e) =>
+                            handleInputChange(
+                              key,
+                              (e.target as HTMLTextAreaElement).value,
+                            )
+                          }
+                        />
+                        {inputErrors[key] && (
+                          <span
+                            style={{
+                              color: 'red',
+                              fontSize: '11px',
+                              wordWrap: 'break-word',
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            Invalid value for type {getTypeName(item)}
+                          </span>
+                        )}
+                      </>
                     )}
                     {getInterfaceType(item) === 'complex' && (
                       <>

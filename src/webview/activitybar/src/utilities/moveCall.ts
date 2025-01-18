@@ -9,7 +9,7 @@ export const moveCall = async (
   account: IAccount,
   target: string,
   func: SuiMoveNormalizedFunction,
-  inputValues: Array<string | string[]>,
+  inputValues: Array<string>,
   typeArguments: string[],
 ): Promise<void> => {
   if (account.nonce.privateKey && account.zkAddress) {

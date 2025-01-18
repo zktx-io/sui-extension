@@ -79,7 +79,7 @@ export const Package = ({
   const onExcute = async (
     name: string,
     func: SuiMoveNormalizedFunction,
-    inputValues: Array<string | string[]>,
+    inputValues: Array<string>,
     typeArguments: string[],
   ) => {
     if (client && state.account && state.account.zkAddress && module) {
