@@ -4,9 +4,63 @@ import { getNonce } from '../utilities/getNonce';
 import { COMMANDS } from './ptb-builder/src/utilities/commands';
 import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
+import { splitTemplateJson, mergeTemplateJson } from './ptbTemplates';
 
+// Minimal inbound message shape from the webview
+type InboundMsg =
+  | { command: COMMANDS.LoadData; data?: unknown }
+  | { command: COMMANDS.SaveData; data?: unknown }
+  | { command: COMMANDS.UpdateState; data?: unknown }
+  | { command: COMMANDS.MsgInfo; data?: unknown }
+  | { command: COMMANDS.MsgError; data?: unknown }
+  | { command: COMMANDS.OutputInfo; data?: unknown }
+  | { command: COMMANDS.OutputError; data?: unknown }
+  | { command?: string; data?: unknown };
+
+// Create a .ptb file from a template object and open it with our custom editor.
+async function createPTBFileFromTemplate(
+  uri: vscode.Uri | undefined,
+  defaultName: string,
+  templateContent: object,
+) {
+  // Ask file name
+  const fileName = await vscode.window.showInputBox({
+    prompt: 'Enter the name of the new PTB file',
+    value: defaultName,
+  });
+  if (!fileName) return;
+
+  // Build target path
+  const completeFileName = fileName.endsWith('.ptb')
+    ? fileName
+    : `${fileName}.ptb`;
+  const directoryUri = uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
+  if (!directoryUri) {
+    vscode.window.showErrorMessage(
+      'No directory selected and no workspace is open.',
+    );
+    return;
+  }
+  const fileUri = vscode.Uri.joinPath(directoryUri, completeFileName);
+
+  // Write initial JSON content
+  const encoder = new TextEncoder();
+  await vscode.workspace.fs.writeFile(
+    fileUri,
+    encoder.encode(JSON.stringify(templateContent, null, 2)),
+  );
+
+  // Open with our custom editor
+  await vscode.commands.executeCommand(
+    'vscode.openWith',
+    fileUri,
+    PTBBuilderProvider.viewType,
+  );
+}
+
+// Simple CustomDocument that stores raw JSON text of the .ptb
 class PTBDocument implements vscode.CustomDocument {
-  private _content: string = '';
+  private _content = '';
 
   private readonly _onDidDispose = new vscode.EventEmitter<void>();
   public readonly onDidDispose = this._onDidDispose.event;
@@ -26,19 +80,20 @@ class PTBDocument implements vscode.CustomDocument {
     this._content = newContent;
   }
 
+  // Always use TextEncoder to write (Uint8Array) for compatibility.
   public async save(): Promise<void> {
-    const data = Buffer.from(this._content, 'utf8');
+    const data = new TextEncoder().encode(this._content);
     await vscode.workspace.fs.writeFile(this.uri, data);
   }
 
   public async saveAs(targetResource: vscode.Uri): Promise<void> {
-    const data = Buffer.from(this._content, 'utf8');
+    const data = new TextEncoder().encode(this._content);
     await vscode.workspace.fs.writeFile(targetResource, data);
   }
 
   public async revert(): Promise<void> {
     const data = await vscode.workspace.fs.readFile(this.uri);
-    this.setText(Buffer.from(data).toString('utf8'));
+    this.setText(new TextDecoder('utf-8').decode(data));
   }
 
   public async backup(
@@ -71,6 +126,7 @@ export class PTBBuilderProvider
 
   private readonly _context: vscode.ExtensionContext;
 
+  // Track all panels per document
   private _panelsByDoc = new Map<string, Set<vscode.WebviewPanel>>();
 
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
@@ -94,14 +150,14 @@ export class PTBBuilderProvider
     let content = '';
     try {
       const data = await vscode.workspace.fs.readFile(fileToRead);
-      content = Buffer.from(data).toString('utf8');
+      content = new TextDecoder('utf-8').decode(data);
     } catch {
       content = '';
     }
-
     return new PTBDocument(uri, content);
   }
 
+  // Broadcast to all panels (all docs)
   private _broadcastToAllPanels(message: any) {
     for (const set of this._panelsByDoc.values()) {
       for (const panel of set) {
@@ -110,6 +166,7 @@ export class PTBBuilderProvider
     }
   }
 
+  // Broadcast to all panels of a specific document (optionally skip one)
   private _broadcastDoc(
     document: PTBDocument,
     message: any,
@@ -117,13 +174,36 @@ export class PTBBuilderProvider
   ) {
     const key = document.uri.toString();
     const set = this._panelsByDoc.get(key);
-    if (!set) {
-      return;
-    }
+    if (!set) return;
     for (const panel of set) {
       if (except && panel === except) continue;
       panel.webview.postMessage(message);
     }
+  }
+
+  // Build a unified payload for LoadData messages
+  private _buildLoadPayload(document: PTBDocument) {
+    return {
+      command: COMMANDS.LoadData,
+      data: {
+        account: accountLoad(this._context),
+        ptb: document.getText(),
+      },
+    };
+  }
+
+  // Send current doc state to a single panel
+  private async _updateWebview(
+    document: PTBDocument,
+    panel: vscode.WebviewPanel,
+  ) {
+    panel.webview.postMessage(this._buildLoadPayload(document));
+  }
+
+  // Apply text and broadcast to all panels of the document
+  private _applyAndBroadcast(document: PTBDocument, text: string) {
+    document.setText(text);
+    this._broadcastDoc(document, this._buildLoadPayload(document));
   }
 
   public async updateState() {
@@ -152,9 +232,10 @@ export class PTBBuilderProvider
     };
     webviewPanel.webview.html = this._getHtmlForWebview(webviewPanel.webview);
 
-    webviewPanel.webview.onDidReceiveMessage(async (msg) => {
+    // Handle messages from webview
+    webviewPanel.webview.onDidReceiveMessage(async (msg: InboundMsg) => {
       const { command, data } = msg;
-      console.log(1, msg);
+
       switch (command) {
         case COMMANDS.UpdateState: {
           this.updateState();
@@ -165,42 +246,40 @@ export class PTBBuilderProvider
           break;
         }
         case COMMANDS.SaveData: {
+          // Webview may send a stringified JSON (recommended) or an object; normalize to string.
           const text = typeof data === 'string' ? data : JSON.stringify(data);
           this._updateTextDocument(document, text);
 
+          // Sync latest content to other panels for this doc (skip sender)
           this._broadcastDoc(
             document,
-            {
-              command: COMMANDS.LoadData,
-              data: {
-                account: accountLoad(this._context),
-                ptb: document.getText(),
-              },
-            },
+            this._buildLoadPayload(document),
             webviewPanel,
           );
           break;
         }
         case COMMANDS.MsgInfo:
-          vscode.window.showInformationMessage(data);
+          vscode.window.showInformationMessage(String(data ?? ''));
           break;
         case COMMANDS.MsgError:
-          vscode.window.showErrorMessage(data);
+          vscode.window.showErrorMessage(String(data ?? ''));
           break;
         case COMMANDS.OutputInfo:
-          printOutputChannel(data);
+          printOutputChannel(String(data ?? ''));
           break;
         case COMMANDS.OutputError:
-          printOutputChannel(`[ERROR]\n${data}`);
+          printOutputChannel(`[ERROR]\n${String(data ?? '')}`);
           break;
         default:
-          vscode.window.showErrorMessage(`Unknown command: ${command}`);
+          vscode.window.showErrorMessage(`Unknown command: ${String(command)}`);
           break;
       }
     });
 
+    // Title
     webviewPanel.title = document.uri.fsPath.split('/').pop() || 'PTB Document';
 
+    // Cleanup on dispose
     webviewPanel.onDidDispose(() => {
       const s = this._panelsByDoc.get(key);
       if (s) {
@@ -210,58 +289,30 @@ export class PTBBuilderProvider
         }
       }
     });
+
+    // Note: Initial content push can be initiated from the webview (it posts LoadData on mount).
+    // If you want the extension to push immediately as well, uncomment below:
+    // await this._updateWebview(document, webviewPanel);
   }
 
-  private async _updateWebview(
-    document: PTBDocument,
-    panel: vscode.WebviewPanel,
-  ) {
-    panel.webview.postMessage({
-      command: COMMANDS.LoadData,
-      data: {
-        account: accountLoad(this._context),
-        ptb: document.getText(),
-      },
-    });
-  }
-
-  // Apply text to document and broadcast to all panels for this document.
-  private _applyAndBroadcast(document: PTBDocument, text: string) {
-    document.setText(text);
-    this._broadcastDoc(document, {
-      command: COMMANDS.LoadData,
-      data: {
-        account: accountLoad(this._context),
-        ptb: document.getText(),
-      },
-    });
-  }
-
+  // Update document content and wire undo/redo
   private _updateTextDocument(document: PTBDocument, newContent: string) {
     const prev = document.getText();
-    if (prev === newContent) {
-      return; // No-op edit
-    }
+    if (prev === newContent) return;
 
-    // Detect initial bootstrap (empty file -> first valid doc from webview)
+    // Initial bootstrap (empty -> first content): save immediately to avoid dirty badge.
     const isInitialBootstrap = prev === '' && newContent.length > 0;
-
     if (isInitialBootstrap) {
-      // Persist immediately to avoid a dirty badge on first load.
-      // Do NOT add to undo stack.
       document.setText(newContent);
       document.save().catch(() => {
         /* ignore initial save errors */
       });
-      // Optionally sync other panels (rare multi-open right after create)
-      this._broadcastDoc(document, {
-        command: COMMANDS.LoadData,
-        data: { account: accountLoad(this._context), ptb: document.getText() },
-      });
+      // Optional: sync other panels in rare multi-open cases
+      this._broadcastDoc(document, this._buildLoadPayload(document));
       return;
     }
 
-    // Normal edit: apply now, and provide undo/redo closures to VS Code
+    // Normal edit: set text and provide undo/redo closures
     document.setText(newContent);
 
     const oldText = prev;
@@ -270,12 +321,8 @@ export class PTBBuilderProvider
     this._onDidChangeCustomDocument.fire({
       document,
       label: 'PTB Edit',
-      undo: async () => {
-        this._applyAndBroadcast(document, oldText);
-      },
-      redo: async () => {
-        this._applyAndBroadcast(document, newText);
-      },
+      undo: async () => this._applyAndBroadcast(document, oldText),
+      redo: async () => this._applyAndBroadcast(document, newText),
     });
   }
 
@@ -299,22 +346,17 @@ export class PTBBuilderProvider
     _cancellation: vscode.CancellationToken,
   ): Promise<void> {
     await document.revert();
-    // Broadcast reverted content to all panels for this document.
-    this._broadcastDoc(document, {
-      command: COMMANDS.LoadData,
-      data: {
-        account: accountLoad(this._context),
-        ptb: document.getText(),
-      },
-    });
+    // After revert, sync to all panels for this doc.
+    this._broadcastDoc(document, this._buildLoadPayload(document));
   }
 
   public async backupCustomDocument(
     document: PTBDocument,
     context: vscode.CustomDocumentBackupContext,
-    cancellation: vscode.CancellationToken,
+    _token: vscode.CancellationToken,
   ): Promise<vscode.CustomDocumentBackup> {
-    return document.backup(context.destination, cancellation);
+    // Delegate to the document's own backup implementation
+    return document.backup(context.destination, _token);
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
@@ -336,6 +378,7 @@ export class PTBBuilderProvider
     ]);
     const nonce = getNonce();
 
+    // CSP tuned for built assets + https RPC calls
     return /*html*/ `
     <!DOCTYPE html>
     <html lang="en">
@@ -364,8 +407,10 @@ export class PTBBuilderProvider
   }
 }
 
+// Register provider and commands
 export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
   const provider = new PTBBuilderProvider(context);
+
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
       PTBBuilderProvider.viewType,
@@ -375,12 +420,14 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
       },
     ),
   );
+
   context.subscriptions.push(
-    vscode.commands.registerCommand(AccountStateUpdate, () => {
-      provider.updateState();
-    }),
+    vscode.commands.registerCommand(AccountStateUpdate, () =>
+      provider.updateState(),
+    ),
   );
 
+  // New empty PTB
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'sui-extension.ptbBuilder.new',
@@ -389,27 +436,18 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
           prompt: 'Enter the name of the new PTB file',
           value: 'new-file',
           validateInput: (text) => {
-            if (!text || text.trim() === '') {
-              return 'File name cannot be empty';
-            }
-            if (text.includes('/') || text.includes('\\')) {
+            if (!text || text.trim() === '') return 'File name cannot be empty';
+            if (text.includes('/') || text.includes('\\'))
               return 'File name cannot contain directory separators';
-            }
             return null;
           },
         });
-
-        if (!fileName) {
-          return;
-        }
+        if (!fileName) return;
 
         const completeFileName = fileName.endsWith('.ptb')
           ? fileName
           : `${fileName}.ptb`;
-
-        const directoryUri = uri
-          ? uri
-          : vscode.workspace.workspaceFolders?.[0].uri;
+        const directoryUri = uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
         if (!directoryUri) {
           vscode.window.showErrorMessage(
             'No directory selected and no workspace is open.',
@@ -437,6 +475,26 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
     ),
   );
 
+  // New from templates
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'sui-extension.ptbBuilder.new.split',
+      async (uri) => {
+        await createPTBFileFromTemplate(uri, 'split.ptb', splitTemplateJson);
+      },
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'sui-extension.ptbBuilder.new.merge',
+      async (uri) => {
+        await createPTBFileFromTemplate(uri, 'merge.ptb', mergeTemplateJson);
+      },
+    ),
+  );
+
+  // Open existing PTB
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'sui-extension.ptbBuilder.open',
@@ -445,11 +503,10 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
           canSelectMany: false,
           filters: { 'PTB Builder Files': ['ptb'] },
         });
-        if (uris && uris.length > 0) {
-          const uri = uris[0];
+        if (uris?.length) {
           await vscode.commands.executeCommand(
             'vscode.openWith',
-            uri,
+            uris[0],
             PTBBuilderProvider.viewType,
           );
         }

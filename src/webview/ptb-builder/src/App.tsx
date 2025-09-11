@@ -14,7 +14,37 @@ import { vscode } from './utilities/vscode';
 import { IAccount } from './utilities/account';
 import { postMessage } from './utilities/postMessage';
 
-export const PTBBridge = ({ incomingDoc }: { incomingDoc?: PTBDoc | Chain }) => {
+// Typed payloads for inbound messages.
+type LoadDataPayload = { account?: IAccount; ptb?: string };
+type UpdateStatePayload = { account?: IAccount };
+
+// Union for inbound webview messages we handle.
+type InboundMessage =
+  | { command: COMMANDS.LoadData; data?: LoadDataPayload }
+  | { command: COMMANDS.UpdateState; data?: UpdateStatePayload }
+  | { command?: string; data?: unknown };
+
+// Type guards for runtime narrowing.
+function isLoadData(
+  msg: unknown,
+): msg is { command: COMMANDS.LoadData; data?: LoadDataPayload } {
+  if (typeof msg !== 'object' || msg === null) return false;
+  return (msg as { command?: unknown }).command === COMMANDS.LoadData;
+}
+
+function isUpdateState(
+  msg: unknown,
+): msg is { command: COMMANDS.UpdateState; data?: UpdateStatePayload } {
+  if (typeof msg !== 'object' || msg === null) return false;
+  return (msg as { command?: unknown }).command === COMMANDS.UpdateState;
+}
+
+// Bridge that only calls loadFromDoc when a new incomingDoc arrives.
+export const PTBBridge = ({
+  incomingDoc,
+}: {
+  incomingDoc?: PTBDoc | Chain;
+}) => {
   const { loadFromDoc } = usePTB();
   useEffect(() => {
     if (!incomingDoc) return;
@@ -30,12 +60,14 @@ function App() {
     undefined,
   );
 
+  // Sui execution adapter
   const executeTx = async (
     chain: Chain,
     transaction?: Transaction,
   ): Promise<{ digest?: string; error?: string }> => {
     try {
       if (!transaction) return { error: 'empty transaction' };
+
       const parts = String(chain).split(':');
       const net = (parts[1] ?? '') as 'mainnet' | 'testnet' | 'devnet';
       if (!net) return { error: `invalid chain: ${chain}` };
@@ -104,48 +136,49 @@ function App() {
       });
       return { digest: res.digest };
     } catch (error) {
-      postMessage(`${error}`, { variant: 'error' });
-      return { error: `${error}` };
+      postMessage(String(error), { variant: 'error' });
+      return { error: String(error) };
     }
   };
 
-  // Receive messages from extension
+  // Receive messages from the extension (typed)
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const message = (event.data ?? {}) as { command?: string; data?: any };
-      switch (message.command) {
-        case COMMANDS.LoadData: {
-          try {
-            const acc = message.data?.account as IAccount | undefined;
-            const ptbRaw = message.data?.ptb as string | undefined;
-            setAccount(acc);
-            if (acc) {
-              const doc = !ptbRaw
-                ? `sui:${acc.nonce.network}`
-                : JSON.parse(ptbRaw);
-              setIncomingDoc(doc);
-            }
-            initializedRef.current = true;
-          } catch (error) {
-            postMessage(`${error}`, { variant: 'error' });
-          }
-          break;
-        }
-        case COMMANDS.UpdateState: {
+    const handleMessage = (event: MessageEvent<InboundMessage>) => {
+      const message = event.data;
+
+      if (isLoadData(message)) {
+        try {
           const acc = message.data?.account as IAccount | undefined;
+          const ptbRaw = message.data?.ptb as string | undefined;
           setAccount(acc);
-          break;
+          if (acc) {
+            const doc = !ptbRaw
+              ? (`sui:${acc.nonce.network}` as Chain)
+              : (JSON.parse(ptbRaw) as PTBDoc);
+            setIncomingDoc(doc);
+          }
+          initializedRef.current = true;
+        } catch (error) {
+          postMessage(String(error), { variant: 'error' });
         }
-        default:
-          break;
+        return;
       }
+
+      if (isUpdateState(message)) {
+        const acc = message.data?.account as IAccount | undefined;
+        setAccount(acc);
+        return;
+      }
+
+      // Ignore unknown commands silently
     };
 
-    window.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleMessage as EventListener);
     if (!initializedRef.current) {
       vscode.postMessage({ command: COMMANDS.LoadData });
     }
-    return () => window.removeEventListener('message', handleMessage);
+    return () =>
+      window.removeEventListener('message', handleMessage as EventListener);
   }, []);
 
   return (
@@ -157,6 +190,7 @@ function App() {
         executeTx={executeTx}
         address={account?.zkAddress?.address}
         onDocChange={(doc) => {
+          // Single source of truth for persistence: stringify once and send to extension.
           vscode.postMessage({
             command: COMMANDS.SaveData,
             data: JSON.stringify(doc),

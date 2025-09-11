@@ -69,7 +69,15 @@
       },
       {
         "command": "sui-extension.ptbBuilder.new",
-        "title": "New PTB Builder (beta)"
+        "title": "New PTB Builder"
+      },
+      {
+        "command": "sui-extension.ptbBuilder.new.split",
+        "title": "New PTB Builder (Split)"
+      },
+      {
+        "command": "sui-extension.ptbBuilder.new.merge",
+        "title": "New PTB Builder (Merge)"
       },
       {
         "command": "sui-extension.ptbBuilder.open",
@@ -87,6 +95,14 @@
       "explorer/context": [
         {
           "command": "sui-extension.ptbBuilder.new",
+          "group": "sui-extension"
+        },
+        {
+          "command": "sui-extension.ptbBuilder.new.split",
+          "group": "sui-extension"
+        },
+        {
+          "command": "sui-extension.ptbBuilder.new.merge",
           "group": "sui-extension"
         }
       ]
