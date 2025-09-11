@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mysten/sui": "^1.18.0",
+    "@mysten/sui": "^1.37.6",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "bignumber.js": "^9.1.2",
     "buffer": "^6.0.3",

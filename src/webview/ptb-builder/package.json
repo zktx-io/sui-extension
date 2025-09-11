@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mysten/sui": "^1.18.0",
+    "@mysten/sui": "^1.37.6",
     "@vscode/webview-ui-toolkit": "^1.4.0",
-    "@zktx.io/ptb-builder": "^0.1.10",
+    "@zktx.io/ptb-builder": "^0.3.7",
     "buffer": "^6.0.3",
     "jose": "^5.9.6",
     "react": "^18.3.1",
