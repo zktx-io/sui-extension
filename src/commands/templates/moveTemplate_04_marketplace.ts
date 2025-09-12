@@ -29,13 +29,21 @@ const MARKETPLACE_MOVE = `
 
 module marketplace::marketplace;
 
-use sui::bag::{Self, Bag};
+// ---------------------- ORIGINAL IMPORTS (kept for reference) ----------------------
+// use sui::bag::{Self, Bag};
+// use sui::coin::Coin;
+// use sui::dynamic_object_field as dof;
+// use sui::table::{Self, Table};
+// use sui::object;
+// use sui::transfer;
+// use sui::tx_context::{self, TxContext};
+// -----------------------------------------------------------------------------------
+
+// Only keep local names we actually need; call the rest with fully-qualified paths.
+use sui::bag::{Self as bag, Bag};
+use sui::table::{Self as table, Table};
 use sui::coin::Coin;
 use sui::dynamic_object_field as dof;
-use sui::table::{Self, Table};
-use sui::object;
-use sui::transfer;
-use sui::tx_context::{self, TxContext};
 
 /// For when amount paid does not match the expected.
 const EAmountIncorrect: u64 = 0;
@@ -60,11 +68,11 @@ public struct Listing has key, store {
 }
 
 /// Create a new shared Marketplace.
-public fun create<COIN>(ctx: &mut TxContext) {
-    let id = object::new(ctx);
+public fun create<COIN>(ctx: &mut sui::tx_context::TxContext) {
+    let id = sui::object::new(ctx);
     let items = bag::new(ctx);
     let payments = table::new<address, Coin<COIN>>(ctx);
-    transfer::share_object(Marketplace<COIN> { id, items, payments })
+    sui::transfer::share_object(Marketplace<COIN> { id, items, payments })
 }
 
 /// List an item at the Marketplace.
@@ -72,13 +80,13 @@ public fun list<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>,
     item: T,
     ask: u64,
-    ctx: &mut TxContext,
+    ctx: &mut sui::tx_context::TxContext,
 ) {
-    let item_id = object::id(&item);
+    let item_id = sui::object::id(&item);
     let mut listing = Listing {
         ask,
-        id: object::new(ctx),
-        owner: tx_context::sender(ctx),
+        id: sui::object::new(ctx),
+        owner: sui::tx_context::sender(ctx),
     };
 
     dof::add(&mut listing.id, true, item);
@@ -89,10 +97,10 @@ public fun list<T: key + store, COIN>(
 fun delist<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>,
     item_id: ID,
-    ctx: &TxContext,
+    ctx: &sui::tx_context::TxContext,
 ): T {
     let Listing { mut id, owner, .. } = bag::remove(&mut marketplace.items, item_id);
-    assert!(tx_context::sender(ctx) == owner, ENotOwner);
+    assert!(sui::tx_context::sender(ctx) == owner, ENotOwner);
     let item = dof::remove(&mut id, true);
     id.delete();
     item
@@ -102,10 +110,10 @@ fun delist<T: key + store, COIN>(
 public fun delist_and_take<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>,
     item_id: ID,
-    ctx: &mut TxContext,
+    ctx: &mut sui::tx_context::TxContext,
 ) {
     let item = delist<T, COIN>(marketplace, item_id, ctx);
-    transfer::public_transfer(item, tx_context::sender(ctx));
+    sui::transfer::public_transfer(item, sui::tx_context::sender(ctx));
 }
 
 /// Internal function to purchase an item using a known Listing. Payment is in \`Coin<COIN>\`.
@@ -135,26 +143,32 @@ public fun buy_and_take<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>,
     item_id: ID,
     paid: Coin<COIN>,
-    ctx: &mut TxContext,
+    ctx: &mut sui::tx_context::TxContext,
 ) {
-    transfer::public_transfer(buy<T, COIN>(marketplace, item_id, paid), tx_context::sender(ctx))
+    sui::transfer::public_transfer(
+        buy<T, COIN>(marketplace, item_id, paid),
+        sui::tx_context::sender(ctx),
+    )
 }
 
 /// Internal function to take profits from selling items on the \`Marketplace\`.
 fun take_profits<COIN>(
     marketplace: &mut Marketplace<COIN>,
-    ctx: &TxContext,
+    ctx: &sui::tx_context::TxContext,
 ): Coin<COIN> {
-    marketplace.payments.remove(tx_context::sender(ctx))
+    marketplace.payments.remove(sui::tx_context::sender(ctx))
 }
 
 #[lint_allow(self_transfer)]
-/// Call [\`take_profits\`] and transfer Coin object to the sender.
+/// Call \`take_profits\` and transfer Coin object to the sender.
 public fun take_profits_and_keep<COIN>(
     marketplace: &mut Marketplace<COIN>,
-    ctx: &mut TxContext,
+    ctx: &mut sui::tx_context::TxContext,
 ) {
-    transfer::public_transfer(take_profits(marketplace, ctx), tx_context::sender(ctx))
+    sui::transfer::public_transfer(
+        take_profits(marketplace, ctx),
+        sui::tx_context::sender(ctx),
+    )
 }
 `.trimStart();
 
@@ -166,18 +180,20 @@ const WIDGET_MOVE = `
 // https://github.com/MystenLabs/sui/blob/main/sui_programmability/examples/nfts/sources/marketplace.move
 module marketplace::widget;
 
-use sui::object;
-use sui::transfer;
-use sui::tx_context::{self, TxContext};
+// ---------------- ORIGINAL (kept for reference) ----------------
+// use sui::object;
+// use sui::transfer;
+// use sui::tx_context::{self, TxContext};
+// ---------------------------------------------------------------
 
 public struct Widget has key, store {
     id: UID,
 }
 
 #[lint_allow(self_transfer)]
-public fun mint(ctx: &mut TxContext) {
-    let object = Widget { id: object::new(ctx) };
-    transfer::public_transfer(object, tx_context::sender(ctx));
+public fun mint(ctx: &mut sui::tx_context::TxContext) {
+    let object = Widget { id: sui::object::new(ctx) };
+    sui::transfer::public_transfer(object, sui::tx_context::sender(ctx));
 }
 `.trimStart();
 

@@ -34,10 +34,16 @@ function files(pkg: string, _network: SuiNetwork): FileMap {
 /// contrast to ordinary modules, which use camel case.
 module ${pkg}::managed;
 
-use std::option;
-use sui::coin::{self, Coin, TreasuryCap};
-use sui::transfer;
-use sui::tx_context::{self, TxContext};
+// --------------------------------------------------------------------------------------
+// ORIGINAL IMPORTS (kept for reference; commented out to avoid duplicate-alias warnings)
+// use std::option;
+// use sui::coin::{self, Coin, TreasuryCap};
+// use sui::transfer;
+// use sui::tx_context::{self, TxContext};
+// --------------------------------------------------------------------------------------
+
+// We only import types. Function calls use fully-qualified module paths.
+use sui::coin::{Coin, TreasuryCap};
 
 /// Name of the coin. By convention, this type has the same name as its parent
 /// module and has no fields. The full type of the coin defined by this module will be
@@ -46,19 +52,19 @@ public struct MANAGED has drop {}
 
 /// Register the managed currency to acquire its \`TreasuryCap\`.
 /// Because this is a module initializer, it ensures the currency only gets registered once.
-fun init(witness: MANAGED, ctx: &mut TxContext) {
+fun init(witness: MANAGED, ctx: &mut sui::tx_context::TxContext) {
     // Get a treasury cap for the coin and give it to the transaction sender
-    let (treasury_cap, metadata) = coin::create_currency<MANAGED>(
+    let (treasury_cap, metadata) = sui::coin::create_currency<MANAGED>(
         witness,
-        2,                  // decimals
-        b"MANAGED",         // name
-        b"MNG",             // symbol
-        b"",                // description
-        option::none(),     // icon url
+        2,                         // decimals
+        b"MANAGED",                // name
+        b"MNG",                    // symbol
+        b"",                       // description
+        std::option::none(),       // icon url
         ctx,
     );
-    transfer::public_freeze_object(metadata);
-    transfer::public_transfer(treasury_cap, tx_context::sender(ctx));
+    sui::transfer::public_freeze_object(metadata);
+    sui::transfer::public_transfer(treasury_cap, sui::tx_context::sender(ctx));
 }
 
 /// Manager can mint new coins
@@ -66,7 +72,7 @@ public fun mint(
     treasury_cap: &mut TreasuryCap<MANAGED>,
     amount: u64,
     recipient: address,
-    ctx: &mut TxContext,
+    ctx: &mut sui::tx_context::TxContext,
 ) {
     treasury_cap.mint_and_transfer(amount, recipient, ctx)
 }
@@ -78,7 +84,7 @@ public fun burn(treasury_cap: &mut TreasuryCap<MANAGED>, coin: Coin<MANAGED>) {
 
 #[test_only]
 /// Wrapper of module initializer for testing
-public fun test_init(ctx: &mut TxContext) {
+public fun test_init(ctx: &mut sui::tx_context::TxContext) {
     init(MANAGED {}, ctx)
 }
 `.trimStart(),

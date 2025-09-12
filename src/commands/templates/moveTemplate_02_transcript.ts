@@ -33,10 +33,13 @@ function files(pkg: string, _network: SuiNetwork): FileMap {
 /// https://github.com/sui-foundation/sui-move-intro-course
 module ${pkg}::transcript;
 
+// Only keep what we need explicitly.
+// NOTE: 'object', 'transfer', 'tx_context', and 'TxContext' are available via prelude,
+// so importing them again triggers duplicate-alias warnings.
 use sui::event;
-use sui::object;
-use sui::transfer;
-use sui::tx_context::{self, TxContext};
+// use sui::object;                // (removed) provided by default
+// use sui::transfer;              // (removed) provided by default
+// use sui::tx_context::{self, TxContext}; // (removed) 'tx_context' & 'TxContext' are provided by default
 
 public struct WrappableTranscript has key, store {
     id: UID,
@@ -134,6 +137,8 @@ public fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
 /// https://github.com/sui-foundation/sui-move-intro-course
 module ${pkg}::transcript;
 
+// NOTE: prelude already provides object/transfer/tx_context/TxContext.
+
 public struct Transcript { history: u8, math: u8, literature: u8 }
 
 public struct TranscriptObject has key {
@@ -173,6 +178,8 @@ public fun delete_transcript(transcript_object: TranscriptObject) {
 /// A basic object example for Sui Move, part of the Sui Move intro course:
 /// https://github.com/sui-foundation/sui-move-intro-course
 module ${pkg}::transcript;
+
+// NOTE: prelude already provides object/transfer/tx_context/TxContext.
 
 public struct WrappableTranscript has key, store {
     id: UID,
@@ -235,6 +242,8 @@ public fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
 /// A basic object example for Sui Move, part of the Sui Move intro course:
 /// https://github.com/sui-foundation/sui-move-intro-course
 module ${pkg}::transcript;
+
+// NOTE: prelude already provides object/transfer/tx_context/TxContext.
 
 public struct WrappableTranscript has key, store {
     id: UID,
