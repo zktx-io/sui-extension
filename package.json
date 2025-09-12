@@ -61,27 +61,21 @@
     "commands": [
       {
         "command": "sui-extension.openDocs",
-        "title": "docs",
-        "icon": {
-          "dark": "media/docs-dark.svg",
-          "light": "media/docs-light.svg"
-        }
+        "title": "Sui Docs",
+        "category": "Sui Extension",
+        "icon": "media/icon-ptb.svg"
       },
       {
-        "command": "sui-extension.ptbBuilder.new",
-        "title": "New PTB Builder"
+        "command": "sui-extension.ptbBuilder.new.pick",
+        "title": "New PTB File...",
+        "category": "Sui Extension",
+        "icon": "media/icon-ptb.svg"
       },
       {
-        "command": "sui-extension.ptbBuilder.new.split",
-        "title": "New PTB Builder (Split)"
-      },
-      {
-        "command": "sui-extension.ptbBuilder.new.merge",
-        "title": "New PTB Builder (Merge)"
-      },
-      {
-        "command": "sui-extension.ptbBuilder.open",
-        "title": "Open PTB Builder"
+        "command": "sui-extension.move.new.pick",
+        "title": "New Move Project...",
+        "category": "Sui Extension",
+        "icon": "media/icon-ptb.svg"
       }
     ],
     "menus": {
@@ -94,16 +88,14 @@
       ],
       "explorer/context": [
         {
-          "command": "sui-extension.ptbBuilder.new",
-          "group": "sui-extension"
+          "command": "sui-extension.ptbBuilder.new.pick",
+          "group": "sui-extension@1",
+          "when": "explorerResourceIsFolder"
         },
         {
-          "command": "sui-extension.ptbBuilder.new.split",
-          "group": "sui-extension"
-        },
-        {
-          "command": "sui-extension.ptbBuilder.new.merge",
-          "group": "sui-extension"
+          "command": "sui-extension.move.new.pick",
+          "group": "sui-extension@2",
+          "when": "explorerResourceIsFolder"
         }
       ]
     },

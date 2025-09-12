@@ -4,7 +4,6 @@ import { getNonce } from '../utilities/getNonce';
 import { COMMANDS } from './ptb-builder/src/utilities/commands';
 import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
-import { splitTemplateJson, mergeTemplateJson } from './ptbTemplates';
 
 // Minimal inbound message shape from the webview
 type InboundMsg =
@@ -28,7 +27,9 @@ async function createPTBFileFromTemplate(
     prompt: 'Enter the name of the new PTB file',
     value: defaultName,
   });
-  if (!fileName) return;
+  if (!fileName) {
+    return;
+  }
 
   // Build target path
   const completeFileName = fileName.endsWith('.ptb')
@@ -174,9 +175,13 @@ export class PTBBuilderProvider
   ) {
     const key = document.uri.toString();
     const set = this._panelsByDoc.get(key);
-    if (!set) return;
+    if (!set) {
+      return;
+    }
     for (const panel of set) {
-      if (except && panel === except) continue;
+      if (except && panel === except) {
+        continue;
+      }
       panel.webview.postMessage(message);
     }
   }
@@ -298,7 +303,9 @@ export class PTBBuilderProvider
   // Update document content and wire undo/redo
   private _updateTextDocument(document: PTBDocument, newContent: string) {
     const prev = document.getText();
-    if (prev === newContent) return;
+    if (prev === newContent) {
+      return;
+    }
 
     // Initial bootstrap (empty -> first content): save immediately to avoid dirty badge.
     const isInitialBootstrap = prev === '' && newContent.length > 0;
@@ -424,93 +431,6 @@ export const initPTBBuilderProvider = (context: vscode.ExtensionContext) => {
   context.subscriptions.push(
     vscode.commands.registerCommand(AccountStateUpdate, () =>
       provider.updateState(),
-    ),
-  );
-
-  // New empty PTB
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'sui-extension.ptbBuilder.new',
-      async (uri: vscode.Uri) => {
-        const fileName = await vscode.window.showInputBox({
-          prompt: 'Enter the name of the new PTB file',
-          value: 'new-file',
-          validateInput: (text) => {
-            if (!text || text.trim() === '') return 'File name cannot be empty';
-            if (text.includes('/') || text.includes('\\'))
-              return 'File name cannot contain directory separators';
-            return null;
-          },
-        });
-        if (!fileName) return;
-
-        const completeFileName = fileName.endsWith('.ptb')
-          ? fileName
-          : `${fileName}.ptb`;
-        const directoryUri = uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
-        if (!directoryUri) {
-          vscode.window.showErrorMessage(
-            'No directory selected and no workspace is open.',
-          );
-          return;
-        }
-
-        const fileUri = vscode.Uri.joinPath(directoryUri, completeFileName);
-
-        try {
-          await vscode.workspace.fs.stat(fileUri);
-          vscode.window.showErrorMessage(
-            `A file named ${completeFileName} already exists in the selected directory.`,
-          );
-        } catch {
-          const encoder = new TextEncoder();
-          await vscode.workspace.fs.writeFile(fileUri, encoder.encode(''));
-          await vscode.commands.executeCommand(
-            'vscode.openWith',
-            fileUri,
-            PTBBuilderProvider.viewType,
-          );
-        }
-      },
-    ),
-  );
-
-  // New from templates
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'sui-extension.ptbBuilder.new.split',
-      async (uri) => {
-        await createPTBFileFromTemplate(uri, 'split.ptb', splitTemplateJson);
-      },
-    ),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'sui-extension.ptbBuilder.new.merge',
-      async (uri) => {
-        await createPTBFileFromTemplate(uri, 'merge.ptb', mergeTemplateJson);
-      },
-    ),
-  );
-
-  // Open existing PTB
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'sui-extension.ptbBuilder.open',
-      async () => {
-        const uris = await vscode.window.showOpenDialog({
-          canSelectMany: false,
-          filters: { 'PTB Builder Files': ['ptb'] },
-        });
-        if (uris?.length) {
-          await vscode.commands.executeCommand(
-            'vscode.openWith',
-            uris[0],
-            PTBBuilderProvider.viewType,
-          );
-        }
-      },
     ),
   );
 };
