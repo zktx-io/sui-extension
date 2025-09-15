@@ -1,15 +1,5 @@
 import * as vscode from 'vscode';
-export type SuiNetwork = 'testnet' | 'devnet' | 'mainnet';
-
-export type FileMap = Record<string, string>;
-
-export interface MoveTemplate {
-  id: string;
-  title: string;
-  defaultName: string;
-  description?: string;
-  files: (pkgName: string, network: SuiNetwork) => FileMap;
-}
+import { FileMap, MoveTemplate, SuiNetwork } from './templates/types';
 
 // fs helpers (same as before)
 async function exists(uri: vscode.Uri) {
@@ -97,7 +87,7 @@ export function registerMoveTemplatePicker(
       // 1) pick network
       const netPick = await vscode.window.showQuickPick(
         [{ label: 'testnet' }, { label: 'devnet' }, { label: 'mainnet' }],
-        { title: 'Select Sui network for dependency revision' },
+        { title: 'Select Sui network', ignoreFocusOut: true },
       );
       if (!netPick) {
         return;
@@ -107,14 +97,17 @@ export function registerMoveTemplatePicker(
       // 2) pick template
       const picked = await vscode.window.showQuickPick(
         templates.map((t) => ({
-          label: t.title,
+          label: t.label,
           description: t.description,
+          detail: t.detail,
           template: t,
         })),
         {
-          placeHolder: 'Select a Move project template',
+          title: 'Select a Move template',
+          placeHolder: 'Choose a scaffold',
           matchOnDescription: true,
           matchOnDetail: true,
+          ignoreFocusOut: true,
         },
       );
       if (!picked) {
@@ -125,10 +118,12 @@ export function registerMoveTemplatePicker(
 
       // 3) name
       const name = await vscode.window.showInputBox({
-        prompt: `Project name for "${t.title}"`,
+        title: 'Project name',
+        prompt: `Project name for "${t.label}"`,
         value: t.defaultName,
         validateInput: (v) =>
           !v?.trim() ? 'Folder name cannot be empty' : null,
+        ignoreFocusOut: true,
       });
       if (!name) {
         return;
@@ -138,5 +133,3 @@ export function registerMoveTemplatePicker(
     }),
   );
 }
-
-export { moveTemplates } from './templates';

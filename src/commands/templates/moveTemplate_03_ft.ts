@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from '../moveFiles';
+import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
 > This template is adapted from the Sui Foundation's intro course (Unit 3).
@@ -93,8 +93,9 @@ public fun test_init(ctx: &mut sui::tx_context::TxContext) {
 
 export const MoveTemplate_FT: MoveTemplate = {
   id: 'fungible_tokens',
-  title: 'Fungible Token (Managed)',
+  label: 'Fungible Token (Managed)',
   defaultName: 'fungible_tokens',
-  description: 'TreasuryCap-mint/burn managed coin',
+  description: 'Managed coin',
+  detail: 'Init gives `TreasuryCap`; holder can `mint`/`burn`.',
   files,
 };

@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from '../moveFiles';
+import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
 > This template is adapted from the Sui Foundation intro course (Unit 4).
@@ -208,8 +208,9 @@ function files(pkg: string, _network: SuiNetwork): FileMap {
 
 export const MoveTemplate_Marketplace: MoveTemplate = {
   id: 'marketplace',
-  title: 'Marketplace',
+  label: 'Marketplace',
   defaultName: 'marketplace',
-  description: 'Shared marketplace with list/buy/delist/profits',
+  description: 'Shared marketplace',
+  detail: 'Create `Marketplace<COIN>`; list, buy, delist, withdraw. Includes `Widget`.',
   files,
 };

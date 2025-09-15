@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from '../moveFiles';
+import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
 # Hello World (Sui Move Intro Course)
@@ -57,8 +57,9 @@ public fun mint(ctx: &mut TxContext) {
 
 export const MoveTemplate_HelloWorld: MoveTemplate = {
   id: 'hello_world',
-  title: 'Hello World',
+  label: 'Hello World',
   defaultName: 'hello_world',
-  description: 'Basic Hello World object example',
+  description: 'Mint a HelloWorldObject',
+  detail: 'Mint object with text "Hello World!". First call: `mint`.',
   files,
 };

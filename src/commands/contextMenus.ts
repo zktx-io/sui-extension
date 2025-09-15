@@ -1,7 +1,8 @@
 // src/commands/contextMenus.ts
 import * as vscode from 'vscode';
-import { registerPTBTemplatePicker, ptbTemplates } from './ptbFiles';
-import { registerMoveTemplatePicker, moveTemplates } from './moveFiles';
+import { registerPTBTemplatePicker } from './ptbFiles';
+import { registerMoveTemplatePicker } from './moveFiles';
+import { moveTemplates, ptbTemplates } from './templates';
 
 /** Register only commands. Keep view/editor code elsewhere. */
 export function initContextMenus(context: vscode.ExtensionContext) {

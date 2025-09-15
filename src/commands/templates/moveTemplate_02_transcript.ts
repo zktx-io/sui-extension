@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from '../moveFiles';
+import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
 > This template is adapted from the Sui Foundation's intro course (Unit 2).
@@ -320,8 +320,9 @@ public fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
 
 export const MoveTemplate_Transcript: MoveTemplate = {
   id: 'transcript',
-  title: 'Transcript (Objects & Wrapping)',
+  label: 'Transcript (Objects & Wrapping)',
   defaultName: 'transcript',
-  description: 'Owned object, capability, wrap/unpack, event',
+  description: 'Transcript with wrap/unpack',
+  detail: '`TeacherCap` mints transcript, wrap via `request`, unpack via `unpack`.',
   files,
 };
