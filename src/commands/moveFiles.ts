@@ -71,7 +71,7 @@ export async function scaffoldMoveProject(
   vscode.window.showInformationMessage(`Created Move project: ${projectName}`);
 }
 
-// QuickPick launcher with network selection
+// QuickPick launcher (template picker)
 export function registerMoveTemplatePicker(
   context: vscode.ExtensionContext,
   commandId: string,
