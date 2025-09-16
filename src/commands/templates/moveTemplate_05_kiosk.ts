@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from './types';
+import { FileMap, MoveTemplate } from './types';
 
 const README = `
 # Kiosk (Sui Move Intro Course)
@@ -8,7 +8,7 @@ A simple Kiosk example with a \`TShirt\` type, supporting place, withdraw, list,
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-five/example_projects/kiosk
 `.trim();
 
-const moveToml = (pkg: string, _network: SuiNetwork) =>
+const moveToml = (pkg: string) =>
   `
 [package]
 name = "${pkg}"
@@ -50,9 +50,9 @@ sui = "0x2"
 # alice = "0xB0B"
 `.trim();
 
-function files(pkg: string, network: SuiNetwork): FileMap {
+function files(pkg: string): FileMap {
   return {
-    'Move.toml': moveToml(pkg, network),
+    'Move.toml': moveToml(pkg),
 
     'sources/kiosk.move': `
 /// Kiosk module with a demo object and basic functions

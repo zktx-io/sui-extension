@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { FileMap, MoveTemplate, SuiNetwork } from './templates/types';
+import { FileMap, MoveTemplate } from './templates/types';
 
 // fs helpers (same as before)
 async function exists(uri: vscode.Uri) {
@@ -84,17 +84,7 @@ export function registerMoveTemplatePicker(
         return;
       }
 
-      // 1) pick network
-      const netPick = await vscode.window.showQuickPick(
-        [{ label: 'testnet' }, { label: 'devnet' }, { label: 'mainnet' }],
-        { title: 'Select Sui network', ignoreFocusOut: true },
-      );
-      if (!netPick) {
-        return;
-      }
-      const network = netPick.label as SuiNetwork;
-
-      // 2) pick template
+      // 1) Select template
       const picked = await vscode.window.showQuickPick(
         templates.map((t) => ({
           label: t.label,
@@ -116,7 +106,7 @@ export function registerMoveTemplatePicker(
 
       const t = picked.template as MoveTemplate;
 
-      // 3) name
+      // 2) Enter file name
       const name = await vscode.window.showInputBox({
         title: 'Project name',
         prompt: `Project name for "${t.label}"`,
@@ -129,7 +119,7 @@ export function registerMoveTemplatePicker(
         return;
       }
 
-      await scaffoldMoveProject(uri, name, t.files(name, network));
+      await scaffoldMoveProject(uri, name, t.files(name));
     }),
   );
 }

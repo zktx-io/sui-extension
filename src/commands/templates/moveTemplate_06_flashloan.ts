@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from './types';
+import { FileMap, MoveTemplate } from './types';
 
 const README = `
 # Flashloan (Sui Move Intro Course)
@@ -8,7 +8,7 @@ A simple flashloan pool supporting deposit, borrow/repay within a PTB, and NFT m
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-five/example_projects/flashloan
 `.trim();
 
-const moveToml = (pkg: string, _network: SuiNetwork) =>
+const moveToml = (pkg: string) =>
   `
 [package]
 name = "${pkg}"
@@ -51,9 +51,9 @@ ${pkg} = "0x0"
 # alice = "0xB0B"
 `.trim();
 
-function files(pkg: string, network: SuiNetwork): FileMap {
+function files(pkg: string): FileMap {
   return {
-    'Move.toml': moveToml(pkg, network),
+    'Move.toml': moveToml(pkg),
 
     'sources/flashloan.move': `
 // Copyright (c) Sui Foundation, Inc.

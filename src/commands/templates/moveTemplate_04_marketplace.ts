@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from './types';
+import { FileMap, MoveTemplate } from './types';
 
 const README = `
 # Marketplace (Sui Move Intro Course)
@@ -198,7 +198,7 @@ public fun mint(ctx: &mut sui::tx_context::TxContext) {
 }
 `.trimStart();
 
-function files(pkg: string, _network: SuiNetwork): FileMap {
+function files(pkg: string): FileMap {
   return {
     'Move.toml': MOVE_TOML(pkg),
     'README.md': README,

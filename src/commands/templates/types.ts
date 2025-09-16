@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 
-export type SuiNetwork = 'testnet' | 'devnet' | 'mainnet';
-
 export type FileMap = Record<string, string>;
 
 export interface MoveTemplate {
@@ -10,7 +8,7 @@ export interface MoveTemplate {
   defaultName: string;
   description: string;
   detail: string;
-  files: (pkgName: string, network: SuiNetwork) => FileMap;
+  files: (pkgName: string) => FileMap;
 }
 
 /** Picker item shape */

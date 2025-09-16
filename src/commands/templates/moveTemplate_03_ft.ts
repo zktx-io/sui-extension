@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from './types';
+import { FileMap, MoveTemplate } from './types';
 
 const README = `
 # Fungible Tokens (Sui Move Intro Course)
@@ -21,7 +21,7 @@ edition = "2024.beta"
 ${pkg} = "0x0"
 `.trimStart();
 
-function files(pkg: string, _network: SuiNetwork): FileMap {
+function files(pkg: string): FileMap {
   return {
     'Move.toml': moveToml(pkg),
     'README.md': README,

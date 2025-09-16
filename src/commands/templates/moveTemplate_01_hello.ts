@@ -1,4 +1,4 @@
-import { FileMap, MoveTemplate, SuiNetwork } from './types';
+import { FileMap, MoveTemplate } from './types';
 
 const README = `
 # Hello World (Sui Move Intro Course)
@@ -8,7 +8,7 @@ Official example from the Sui Move Intro Course demonstrating a simple \`HelloWo
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-one/example_projects/hello_world
 `.trim();
 
-const moveToml = (pkg: string, _network: SuiNetwork) =>
+const moveToml = (pkg: string) =>
   `
 [package]
 name = "${pkg}"
@@ -21,9 +21,9 @@ edition = "2024.beta"
 ${pkg} = "0x0"
 `.trim();
 
-function files(pkg: string, network: SuiNetwork): FileMap {
+function files(pkg: string): FileMap {
   return {
-    'Move.toml': moveToml(pkg, network),
+    'Move.toml': moveToml(pkg),
     'sources/hello_world.move': `
 // Copyright (c) Sui Foundation, Inc.
 // SPDX-License-Identifier: Apache-2.0
