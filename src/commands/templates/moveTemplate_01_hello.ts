@@ -3,7 +3,7 @@ import { FileMap, MoveTemplate, SuiNetwork } from './types';
 const README = `
 # Hello World (Sui Move Intro Course)
 
-Official example from the Sui Move Intro Course.
+Official example from the Sui Move Intro Course demonstrating a simple \`HelloWorldObject\` mint.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-one/example_projects/hello_world
 `.trim();

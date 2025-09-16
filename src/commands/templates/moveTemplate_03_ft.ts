@@ -1,10 +1,11 @@
 import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
-> This template is adapted from the Sui Foundation's intro course (Unit 3).
-> Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-three/example_projects/fungible_tokens
+# Fungible Tokens (Sui Move Intro Course)
 
-This project shows a managed fungible token with a TreasuryCap that can mint/burn.
+This project shows a managed fungible token with a \`TreasuryCap\` that can mint and burn.
+
+Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-three/example_projects/fungible_tokens
 `.trim();
 
 const moveToml = (pkg: string) =>

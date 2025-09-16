@@ -1,10 +1,11 @@
 import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
-> This template is adapted from the Sui Foundation's intro course (Unit 2).
-> Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-two/example_projects/transcript
+# Working with Sui Objects (Sui Move Intro Course)
 
 This project demonstrates object capabilities (view/update/delete), wrapping/unwrapping, and simple capability gating.
+
+Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-two/example_projects/transcript
 `.trim();
 
 const moveToml = (pkg: string) =>
@@ -323,6 +324,7 @@ export const MoveTemplate_Transcript: MoveTemplate = {
   label: 'Transcript (Objects & Wrapping)',
   defaultName: 'transcript',
   description: 'Transcript with wrap/unpack',
-  detail: '`TeacherCap` mints transcript, wrap via `request`, unpack via `unpack`.',
+  detail:
+    '`TeacherCap` mints transcript, wrap via `request`, unpack via `unpack`.',
   files,
 };

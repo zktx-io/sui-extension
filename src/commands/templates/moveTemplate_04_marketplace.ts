@@ -1,10 +1,11 @@
 import { FileMap, MoveTemplate, SuiNetwork } from './types';
 
 const README = `
-> This template is adapted from the Sui Foundation intro course (Unit 4).
-> Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-four/example_projects/marketplace
+# Marketplace (Sui Move Intro Course)
 
-A simple shared marketplace supporting list/buy/delist and profit withdrawal.
+A simple shared marketplace supporting list, buy, delist, and profit withdrawal.
+
+Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-four/example_projects/marketplace
 `.trim();
 
 const MOVE_TOML = (pkg: string) =>
@@ -211,6 +212,7 @@ export const MoveTemplate_Marketplace: MoveTemplate = {
   label: 'Marketplace',
   defaultName: 'marketplace',
   description: 'Shared marketplace',
-  detail: 'Create `Marketplace<COIN>`; list, buy, delist, withdraw. Includes `Widget`.',
+  detail:
+    'Create `Marketplace<COIN>`; list, buy, delist, withdraw. Includes `Widget`.',
   files,
 };
