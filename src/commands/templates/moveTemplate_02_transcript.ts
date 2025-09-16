@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Working with Sui Objects (Sui Move Intro Course)
 
 This project demonstrates object capabilities (view/update/delete), wrapping/unwrapping, and simple capability gating.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-two/example_projects/transcript
-`.trim();
+
+## Next steps
+1. Explore \`sources/transcript.move\` to see object wrapping/unwrapping logic.
+2. Try \`sui move build\` to compile.
+3. Use \`sui client publish .\` and test the wrap/unpack flow.
+`);
 
 const moveToml = (pkg: string) =>
   `

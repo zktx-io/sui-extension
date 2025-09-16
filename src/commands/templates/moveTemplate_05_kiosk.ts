@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Kiosk (Sui Move Intro Course)
 
 A simple Kiosk example with a \`TShirt\` type, supporting place, withdraw, list, buy, and Transfer Policy rules (fixed royalty, dummy).
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-five/example_projects/kiosk
-`.trim();
+
+## Next steps
+1. Open \`sources/kiosk.move\` and supporting rule files.
+2. Build the package with \`sui move build\`.
+3. Deploy with \`sui client publish .\` and test kiosk operations.
+`);
 
 const moveToml = (pkg: string) =>
   `

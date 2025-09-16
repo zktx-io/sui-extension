@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Marketplace (Sui Move Intro Course)
 
 A simple shared marketplace supporting list, buy, delist, and profit withdrawal.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-four/example_projects/marketplace
-`.trim();
+
+## Next steps
+1. Review \`sources/marketplace.move\`.
+2. Run \`sui move build\` to compile.
+3. Deploy with \`sui client publish .\` and experiment with listing and buying items.
+`);
 
 const MOVE_TOML = (pkg: string) =>
   `

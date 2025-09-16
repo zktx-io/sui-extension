@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Hello World (Sui Move Intro Course)
 
 Official example from the Sui Move Intro Course demonstrating a simple \`HelloWorldObject\` mint.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-one/example_projects/hello_world
-`.trim();
+
+## Next steps
+1. Open \`sources/hello_world.move\`.
+2. Run \`sui move build\` to compile the package.
+3. Call the \`mint\` function with \`sui client call\` to mint your first object.
+`);
 
 const moveToml = (pkg: string) =>
   `

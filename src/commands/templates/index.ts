@@ -5,9 +5,11 @@ import { MoveTemplate_FT } from './moveTemplate_03_ft';
 import { MoveTemplate_Marketplace } from './moveTemplate_04_marketplace';
 import { MoveTemplate_Kiosk } from './moveTemplate_05_kiosk';
 import { MoveTemplate_Flashloan } from './moveTemplate_06_flashloan';
+import { MoveTemplate_Empty } from './MoveTemplate_Empty';
 import { mergeTemplateJson, splitTemplateJson } from './ptbTemplates';
 
 export const moveTemplates: MoveTemplate[] = [
+  MoveTemplate_Empty,
   MoveTemplate_HelloWorld,
   MoveTemplate_Transcript,
   MoveTemplate_FT,

@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Flashloan (Sui Move Intro Course)
 
 A simple flashloan pool supporting deposit, borrow/repay within a PTB, and NFT mint/sell.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-five/example_projects/flashloan
-`.trim();
+
+## Next steps
+1. Inspect \`sources/flashloan.move\` for loan logic.
+2. Compile with \`sui move build\`.
+3. Deploy with \`sui client publish .\` and test borrowing and repaying in a single PTB.
+`);
 
 const moveToml = (pkg: string) =>
   `

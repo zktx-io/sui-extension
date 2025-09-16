@@ -1,12 +1,17 @@
-import { FileMap, MoveTemplate } from './types';
+import { FileMap, MoveTemplate, withCommon } from './types';
 
-const README = `
+export const README = withCommon(`
 # Fungible Tokens (Sui Move Intro Course)
 
 This project shows a managed fungible token with a \`TreasuryCap\` that can mint and burn.
 
 Source: https://github.com/sui-foundation/sui-move-intro-course/tree/main/unit-three/example_projects/fungible_tokens
-`.trim();
+
+## Next steps
+1. Open \`sources/fungible_tokens.move\`.
+2. Build with \`sui move build\`.
+3. Try minting and burning tokens after deploying with \`sui client publish .\`.
+`);
 
 const moveToml = (pkg: string) =>
   `
