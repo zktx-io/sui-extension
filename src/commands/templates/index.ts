@@ -29,6 +29,10 @@ import { MoveTemplate_Mysten_Token } from './moveTemplate_24_token';
 import { MoveTemplate_Mysten_TrustedSwap } from './moveTemplate_26_trusted_swap';
 import { MoveTemplate_Mysten_USDC_Usage } from './moveTemplate_27_usdc_usage';
 import { MoveTemplate_Mysten_VDF_Lottery } from './moveTemplate_28_vdf';
+import { MoveTemplate_Mysten_NFTRental } from './moveTemplate_16_nft-rental';
+import { MoveTemplate_Mysten_Random_Raffles } from './moveTemplate_21_random_raffles';
+import { MoveTemplate_Mysten_Random_NFT } from './moveTemplate_21_random_random_nft';
+import { MoveTemplate_Mysten_Random_SlotMachine } from './moveTemplate_21_random_slot_machine';
 
 export const moveTemplates: MoveTemplate[] = [
   MoveTemplate_Empty,
@@ -47,10 +51,14 @@ export const moveTemplates: MoveTemplate[] = [
   MoveTemplate_Mysten_FlashLender,
   MoveTemplate_Mysten_Hero,
   MoveTemplate_Mysten_LockedStake,
+  MoveTemplate_Mysten_NFTRental,
   MoveTemplate_Mysten_SoulboundNFT,
   MoveTemplate_Mysten_NFT,
   MoveTemplate_Mysten_ObjectBound,
   MoveTemplate_Mysten_Profiles,
+  MoveTemplate_Mysten_Random_Raffles,
+  MoveTemplate_Mysten_Random_NFT,
+  MoveTemplate_Mysten_Random_SlotMachine,
   MoveTemplate_Mysten_ReviewsRating,
   MoveTemplate_Mysten_SimpleWarrior,
   MoveTemplate_Mysten_Token,
