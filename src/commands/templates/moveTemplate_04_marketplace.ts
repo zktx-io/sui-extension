@@ -212,12 +212,12 @@ function files(pkg: string): FileMap {
   };
 }
 
-export const MoveTemplate_Marketplace: MoveTemplate = {
+export const MoveTemplate_Intro_Marketplace: MoveTemplate = {
   id: 'marketplace',
   label: 'Sui Move Intro Course: Marketplace',
   defaultName: 'marketplace',
   description: 'Shared marketplace',
   detail:
-    'Create `Marketplace<COIN>`; list, buy, delist, withdraw. Includes `Widget`.',
+    'Deploy Marketplace<COIN> to list, buy, delist, and withdraw with a sample widget.',
   files,
 };

@@ -166,13 +166,12 @@ public fun sell_nft(nft: NFT, ctx: &mut TxContext): Coin<SUI> {
   };
 }
 
-export const MoveTemplate_Flashloan: MoveTemplate = {
+export const MoveTemplate_Intro_Flashloan: MoveTemplate = {
   id: 'flashloan',
   label: 'Sui Move Intro Course: Flashloan',
   defaultName: 'flashloan',
-  description:
-    'Shared loan pool with borrow/repay enforced within a single PTB.',
+  description: 'Flashloan pool',
   detail:
-    'Deposit into a shared pool, borrow SUI, use it, and repay before the PTB ends. Includes a minimal NFT mint/sell flow.',
+    'Deposit, borrow, use, and repay SUI in one PTB. Includes simple NFT trade demo.',
   files,
 };

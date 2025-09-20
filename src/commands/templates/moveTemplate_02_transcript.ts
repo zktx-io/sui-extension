@@ -324,12 +324,12 @@ public fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
   };
 }
 
-export const MoveTemplate_Transcript: MoveTemplate = {
+export const MoveTemplate_Intro_Transcript: MoveTemplate = {
   id: 'transcript',
   label: 'Sui Move Intro Course: Transcript (Objects & Wrapping)',
   defaultName: 'transcript',
   description: 'Transcript with wrap/unpack',
   detail:
-    '`TeacherCap` mints transcript, wrap via `request`, unpack via `unpack`.',
+    'TeacherCap issues transcript, wrap with request, and unpack with unpack.',
   files,
 };

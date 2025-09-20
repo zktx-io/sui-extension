@@ -97,11 +97,12 @@ public fun test_init(ctx: &mut sui::tx_context::TxContext) {
   };
 }
 
-export const MoveTemplate_FT: MoveTemplate = {
+export const MoveTemplate_Intro_FT: MoveTemplate = {
   id: 'fungible_tokens',
   label: 'Sui Move Intro Course: Fungible Token (Managed)',
   defaultName: 'fungible_tokens',
-  description: 'Managed coin',
-  detail: 'Init gives `TreasuryCap`; holder can `mint`/`burn`.',
+  description: 'Managed coin example',
+  detail:
+    'Init grants TreasuryCap; holder can mint or burn through simple calls.',
   files,
 };

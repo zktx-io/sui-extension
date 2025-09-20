@@ -224,12 +224,12 @@ public fun pay<T>(tp: &mut TransferPolicy<T>, req: &mut TransferRequest<T>, paym
   };
 }
 
-export const MoveTemplate_Kiosk: MoveTemplate = {
+export const MoveTemplate_Intro_Kiosk: MoveTemplate = {
   id: 'kiosk',
   label: 'Sui Move Intro Course: Kiosk',
   defaultName: 'kiosk',
-  description: 'Kiosk + Transfer Policy example',
+  description: 'Kiosk and transfer policy',
   detail:
-    'Demonstrates TShirt type lifecycle with Kiosk and Transfer Policies (royalty and dummy rules).',
+    'Demonstrates TShirt lifecycle with kiosk plus royalty and dummy transfer rules.',
   files,
 };
