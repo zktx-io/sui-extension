@@ -6,7 +6,10 @@ import { MoveTemplate_Marketplace } from './moveTemplate_04_marketplace';
 import { MoveTemplate_Kiosk } from './moveTemplate_05_kiosk';
 import { MoveTemplate_Flashloan } from './moveTemplate_06_flashloan';
 import { MoveTemplate_Empty } from './MoveTemplate_Empty';
-import { mergeTemplateJson, splitTemplateJson } from './ptbTemplates';
+import { PTBTemplate_merge } from './PTBTemplate_merge';
+import { PTBTemplate_split } from './PTBTemplate_split';
+import { PTBTemplate_exchange_all_for_wal } from './PTBTemplate_exchange_all_for_wal';
+import { PTBTemplate_exchange_all_for_sui } from './PTBTemplate_exchange_all_for_sui';
 
 export const moveTemplates: MoveTemplate[] = [
   MoveTemplate_Empty,
@@ -27,20 +30,8 @@ export const ptbTemplates: PTBTemplateItem[] = [
     detail: 'Start with a blank PTB file.',
     file: () => '',
   },
-  {
-    id: 'split',
-    label: 'Split Template',
-    description: 'Sample split pipeline',
-    defaultName: 'split.ptb',
-    detail: 'Split a Coin into parts (SplitCoins).',
-    file: () => JSON.stringify(splitTemplateJson, null, 2),
-  },
-  {
-    id: 'merge',
-    label: 'Merge Template',
-    description: 'Sample merge pipeline',
-    defaultName: 'merge.ptb',
-    detail: 'Merge multiple Coins (MergeCoins).',
-    file: () => JSON.stringify(mergeTemplateJson, null, 2),
-  },
+  PTBTemplate_split,
+  PTBTemplate_merge,
+  PTBTemplate_exchange_all_for_wal,
+  PTBTemplate_exchange_all_for_sui,
 ];
