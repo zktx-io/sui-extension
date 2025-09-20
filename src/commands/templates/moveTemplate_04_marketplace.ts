@@ -214,7 +214,7 @@ function files(pkg: string): FileMap {
 
 export const MoveTemplate_Marketplace: MoveTemplate = {
   id: 'marketplace',
-  label: 'Marketplace',
+  label: 'Sui Move Intro Course: Marketplace',
   defaultName: 'marketplace',
   description: 'Shared marketplace',
   detail:

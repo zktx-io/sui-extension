@@ -168,7 +168,7 @@ public fun sell_nft(nft: NFT, ctx: &mut TxContext): Coin<SUI> {
 
 export const MoveTemplate_Flashloan: MoveTemplate = {
   id: 'flashloan',
-  label: 'Flashloan',
+  label: 'Sui Move Intro Course: Flashloan',
   defaultName: 'flashloan',
   description:
     'Shared loan pool with borrow/repay enforced within a single PTB.',

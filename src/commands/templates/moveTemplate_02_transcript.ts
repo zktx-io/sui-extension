@@ -326,7 +326,7 @@ public fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
 
 export const MoveTemplate_Transcript: MoveTemplate = {
   id: 'transcript',
-  label: 'Transcript (Objects & Wrapping)',
+  label: 'Sui Move Intro Course: Transcript (Objects & Wrapping)',
   defaultName: 'transcript',
   description: 'Transcript with wrap/unpack',
   detail:

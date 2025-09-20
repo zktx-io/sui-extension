@@ -62,7 +62,7 @@ public fun mint(ctx: &mut TxContext) {
 
 export const MoveTemplate_HelloWorld: MoveTemplate = {
   id: 'hello_world',
-  label: 'Hello World',
+  label: 'Sui Move Intro Course: Hello World',
   defaultName: 'hello_world',
   description: 'Mint a HelloWorldObject',
   detail: 'Mint object with text "Hello World!". First call: `mint`.',

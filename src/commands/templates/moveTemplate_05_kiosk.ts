@@ -226,7 +226,7 @@ public fun pay<T>(tp: &mut TransferPolicy<T>, req: &mut TransferRequest<T>, paym
 
 export const MoveTemplate_Kiosk: MoveTemplate = {
   id: 'kiosk',
-  label: 'Kiosk',
+  label: 'Sui Move Intro Course: Kiosk',
   defaultName: 'kiosk',
   description: 'Kiosk + Transfer Policy example',
   detail:
