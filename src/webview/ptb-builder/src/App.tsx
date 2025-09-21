@@ -7,6 +7,7 @@ import { Transaction } from '@mysten/sui/transactions';
 import { decodeJwt } from 'jose';
 import { Chain, PTBBuilder, PTBDoc, usePTB } from '@zktx.io/ptb-builder';
 
+import '@zktx.io/ptb-builder/index.css';
 import './App.css';
 
 import { COMMANDS } from './utilities/commands';
