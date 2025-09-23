@@ -69,11 +69,40 @@ jobs:
           git commit -m "Bump version to ${{ env.RELEASE_VERSION }}"
           git push origin HEAD:main
 
-      # Install vsce globally
-      - run: npm i -g vsce
+      # Install CLIs
+      - run: npm i -g vsce ovsx
 
-      # Publish the extension
-      - name: Publish
+      # Build single VSIX artifact (reuse for both VSCE/OVSX)
+      - name: Package VSIX
         env:
           SOURCE_MAP: false
-        run: vsce publish -p ${{ secrets.VSCE_PAT }} --allow-missing-repository
+        run: |
+          # vsce package will run "vscode:prepublish" (your build) and create a .vsix
+          vsce package --no-yarn
+          # Figure out the generated filename
+          NAME=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          FILE="${NAME}-${VER}.vsix"
+          echo "VSIX_FILE=$FILE" >> $GITHUB_ENV
+          ls -l "$FILE"
+
+      # (Optional) Upload artifact for debugging/traceability
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: ${{ env.VSIX_FILE }}
+
+      # Publish to Microsoft VS Code Marketplace
+      - name: Publish to VS Code Marketplace
+        env:
+          SOURCE_MAP: false
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          vsce publish -p "$VSCE_PAT" --allow-missing-repository
+
+      # Publish to OpenVSX using the same VSIX
+      - name: Publish to OpenVSX
+        env:
+          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+        run: |
+          ovsx publish "${{ env.VSIX_FILE }}" --pat "$OVSX_TOKEN"
