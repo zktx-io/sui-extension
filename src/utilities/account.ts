@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IAccount } from '../webview/activitybar/src/recoil';
+import type { IAccount } from '../webview/activitybar/src/recoil';
 
 export const AccountStateUpdate = 'sui-extension.accountStateUpdate';
 

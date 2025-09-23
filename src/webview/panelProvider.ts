@@ -89,7 +89,7 @@ class PanelProvider implements vscode.WebviewViewProvider {
   public sendMessage(message: any) {
     switch (message.command) {
       case 'sui-extension.ask-sui.file':
-      case 'sui-extension.ask-su.folder':
+      case 'sui-extension.ask-sui.folder':
         this._view?.webview.postMessage({
           command: message.command,
           data: { code: true, content: '' },
@@ -161,14 +161,14 @@ export function initPanel(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'sui-extension.ask-su.file',
+      'sui-extension.ask-sui.file',
       async (uri: vscode.Uri) => {
         let code = '';
         const document = await vscode.workspace.openTextDocument(uri);
         code += `// ${vscode.workspace.asRelativePath(uri, false)}\n${document.getText()}`;
         (provider as any).sendMessage &&
           (provider as any).sendMessage({
-            command: 'sui-extension.ask-su.file',
+            command: 'sui-extension.ask-sui.file',
             data: `${AuditPrompt}\n${code}`,
           });
       },
@@ -176,7 +176,7 @@ export function initPanel(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'sui-extension.ask-su.folder',
+      'sui-extension.ask-sui.folder',
       async (uri: vscode.Uri) => {
         const files = await getMoveFilesFromFolder(uri);
         if (files.length > 0) {
@@ -187,7 +187,7 @@ export function initPanel(context: vscode.ExtensionContext) {
           }
           (provider as any).sendMessage &&
             (provider as any).sendMessage({
-              command: 'sui-extension.ask-su.folder',
+              command: 'sui-extension.ask-sui.folder',
               data: `${AuditPrompt}\n${code}`,
             });
         } else {

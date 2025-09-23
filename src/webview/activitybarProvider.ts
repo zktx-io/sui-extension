@@ -3,7 +3,7 @@ import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
 import { hasTerminal } from '../utilities/hasTerminal';
 import { COMMANDS } from './activitybar/src/utilities/commands';
-import { FileWathcer } from '../utilities/fileWatcher';
+import { FileWatcher } from '../utilities/fileWatcher';
 import {
   accountLoad,
   AccountStateUpdate,
@@ -23,17 +23,16 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
 
   private readonly _context;
   private readonly _extensionUri: vscode.Uri;
-  private _fileWatcher?: FileWathcer;
+  private _fileWatcher?: FileWatcher;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
     this._extensionUri = context.extensionUri;
   }
 
+  /** Launch compiler command in a terminal (cross-platform) */
   private runTerminal(runCommand: string) {
-    const checkCommand =
-      process.platform === 'win32' ? `where ${COMPILER}` : `which ${COMPILER}`;
-    const helpMessage = `echo -e \"\\e[31mThe program '${COMPILER}' is not installed.\nPlease install it first. (${COMPILER_URL})\\e[0m\"`;
+    const isWin = process.platform === 'win32';
 
     let terminal = vscode.window.terminals.find(
       (t) => t.name === `${COMPILER} compiler`,
@@ -42,9 +41,26 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
       terminal = vscode.window.createTerminal(`${COMPILER} compiler`);
     }
     terminal.show();
-    terminal.sendText(
-      `if ${checkCommand}; then ${runCommand}; else ${helpMessage}; fi`,
-    );
+
+    if (isWin) {
+      // PowerShell-safe branch (works for most default Windows shells)
+      const ps = `
+if (Get-Command ${COMPILER} -ErrorAction SilentlyContinue) {
+  ${runCommand}
+} else {
+  Write-Host "The program '${COMPILER}' is not installed. Please install it first. (${COMPILER_URL})"
+}`;
+      terminal.sendText(ps.trim());
+    } else {
+      // POSIX shells (bash/zsh)
+      const sh = `
+if which ${COMPILER} >/dev/null 2>&1; then
+  ${runCommand}
+else
+  printf "\\033[31mThe program '${COMPILER}' is not installed.\\nPlease install it first. (${COMPILER_URL})\\033[0m\\n"
+fi`;
+      terminal.sendText(sh.trim());
+    }
   }
 
   resolveWebviewView(
@@ -53,7 +69,7 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
     _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
-    this._fileWatcher = new FileWathcer(webviewView, this._context, MoveToml);
+    this._fileWatcher = new FileWatcher(webviewView, this._context, MoveToml);
 
     webviewView.webview.options = {
       enableScripts: true,

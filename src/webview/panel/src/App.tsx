@@ -27,8 +27,8 @@ function App() {
     const handleMessage = async (event: any) => {
       const message = event.data;
       switch (message.command) {
-        case 'sui-extension.ask-su.file':
-        case 'sui-extension.ask-su.folder':
+        case 'sui-extension.ask-sui.file':
+        case 'sui-extension.ask-sui.folder':
           setIsLoading(() => true);
           setHtmlHistory((old) => [
             ...old,
@@ -36,7 +36,7 @@ function App() {
             '',
           ]);
           break;
-        case COMMANDS.AiHistory:
+        case COMMANDS.AiHistory: {
           const temp: (string | RequestData)[] = [];
           message.data.forEach((item: { user: RequestData; bot: string }) => {
             temp.push(item.user, item.bot);
@@ -50,6 +50,7 @@ function App() {
           }
           initialized.current = true;
           break;
+        }
         case COMMANDS.AiStream:
           setHtmlHistory((old) => [...old.slice(0, -1), message.data]);
           break;

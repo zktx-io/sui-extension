@@ -5,7 +5,7 @@ import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 const MoveToml = 'Move.toml';
 const UpgradeToml = 'Upgrade.toml';
 
-export class FileWathcer {
+export class FileWatcher {
   private _view: vscode.WebviewView;
   private _packages: { uri: vscode.Uri; path: string; content: string }[] = [];
 

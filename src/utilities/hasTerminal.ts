@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 
 export const hasTerminal = (): boolean => {
-  const hasTerminal =
-    vscode.env.uiKind === vscode.UIKind.Desktop ||
-    vscode.env.remoteName === 'codespaces' ||
-    !!process.env.GITPOD_WORKSPACE_ID ||
-    !!process.env.CLOUD_ENV;
+  const isDesktop = vscode.env.uiKind === vscode.UIKind.Desktop;
+  const isCodespaces = vscode.env.remoteName === 'codespaces';
+  const hasCloudEnv =
+    typeof process !== 'undefined' &&
+    !!(process as any).env &&
+    (!!(process as any).env.GITPOD_WORKSPACE_ID ||
+      !!(process as any).env.CLOUD_ENV);
 
-  return hasTerminal;
+  return isDesktop || isCodespaces || hasCloudEnv;
 };
