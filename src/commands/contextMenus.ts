@@ -2,7 +2,8 @@
 import * as vscode from 'vscode';
 import { registerPTBTemplatePicker } from './ptbFiles';
 import { registerMoveTemplatePicker } from './moveFiles';
-import { moveTemplates, ptbTemplates } from './templates';
+import { registerWorkshopTemplatePicker } from './workshopFiles';
+import { moveTemplates, ptbTemplates, workshopTemplates } from './templates';
 
 /** Register only commands. Keep view/editor code elsewhere. */
 export function initContextMenus(context: vscode.ExtensionContext) {
@@ -18,5 +19,12 @@ export function initContextMenus(context: vscode.ExtensionContext) {
     context,
     'sui-extension.move.new.pick',
     moveTemplates,
+  );
+
+  // Workshop: single command with QuickPick of registered templates (zipped)
+  registerWorkshopTemplatePicker(
+    context,
+    'sui-extension.workshop.new.pick',
+    workshopTemplates,
   );
 }

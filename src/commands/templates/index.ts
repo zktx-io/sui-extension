@@ -81,3 +81,5 @@ export const ptbTemplates: PTBTemplateItem[] = [
   PTBTemplate_exchange_all_for_wal,
   PTBTemplate_exchange_all_for_sui,
 ];
+
+export { workshopTemplates } from '../workshop';

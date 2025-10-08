@@ -88,6 +88,12 @@
         "title": "New Move Project...",
         "category": "Sui Extension",
         "icon": "media/icon-ptb.svg"
+      },
+      {
+        "command": "sui-extension.workshop.new.pick",
+        "title": "New Sui Workshop...",
+        "category": "Sui Extension",
+        "icon": "media/icon-ptb.svg"
       }
     ],
     "menus": {
@@ -107,6 +113,11 @@
         {
           "command": "sui-extension.move.new.pick",
           "group": "sui-extension@2",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "sui-extension.workshop.new.pick",
+          "group": "sui-extension@3",
           "when": "explorerResourceIsFolder"
         }
       ]
@@ -174,5 +185,8 @@
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.6"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
   }
 }
