@@ -296,9 +296,7 @@ export function registerWorkshopTemplatePicker(
           /* ignore */
         }
       }
-      vscode.window.showInformationMessage(
-        `Workshop created: "${tpl.label}"`,
-      );
+      vscode.window.showInformationMessage(`Workshop created: "${tpl.label}"`);
     }),
   );
 }

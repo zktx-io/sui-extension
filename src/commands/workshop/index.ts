@@ -17,4 +17,13 @@ export const workshopTemplates: WorkshopTemplate[] = [
     zipPath: 'sui-japan/nft-mint-sample-main.zip',
     defaultProjectName: 'nft-mint-sample',
   },
+  {
+    id: 'mysten-react-e2e-counter',
+    label: 'Mysten: Distributed Counter (Fullstack)',
+    description: 'End-to-end example with React frontend and Move backend',
+    detail:
+      'A decentralized counter anyone can increment, but only the owner can reset. Includes Move code and a React + Vite + @mysten/dapp-kit frontend.',
+    zipPath: 'mysten/react-e2e-counter.zip',
+    defaultProjectName: 'distributed-counter',
+  },
 ];
