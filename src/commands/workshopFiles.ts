@@ -287,6 +287,21 @@ export function registerWorkshopTemplatePicker(
         return;
       }
 
+      // Write SOURCE.txt at the root (only if not present)
+      if (tpl.sourceUrl) {
+        const srcNote = `Source: ${tpl.sourceUrl}\n`;
+        const srcUri = vscode.Uri.joinPath(targetDir, 'SOURCE.txt');
+
+        try {
+          await vscode.workspace.fs.stat(srcUri); // exists → skip
+        } catch {
+          await vscode.workspace.fs.writeFile(
+            srcUri,
+            new TextEncoder().encode(srcNote),
+          );
+        }
+      }
+
       // 6) Open README if present; otherwise just notify
       const readmeUri = vscode.Uri.joinPath(targetDir, 'README.md');
       if (await exists(readmeUri)) {
