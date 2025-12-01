@@ -211,6 +211,16 @@ export class PTBBuilderProvider
     this._broadcastDoc(document, this._buildLoadPayload(document));
   }
 
+  // Normalize PTB JSON strings so semantically identical docs compare equal.
+  private _normalizeDocString(text: string) {
+    try {
+      // Stable stringify to avoid whitespace / key-order churn.
+      return JSON.stringify(JSON.parse(text));
+    } catch {
+      return text;
+    }
+  }
+
   public async updateState() {
     const payload = {
       command: COMMANDS.UpdateState,
@@ -252,7 +262,24 @@ export class PTBBuilderProvider
         }
         case COMMANDS.SaveData: {
           // Webview may send a stringified JSON (recommended) or an object; normalize to string.
-          const text = typeof data === 'string' ? data : JSON.stringify(data);
+          let text: string | undefined;
+          try {
+            text =
+              typeof data === 'string'
+                ? data
+                : data !== undefined
+                  ? JSON.stringify(data)
+                  : undefined;
+          } catch (error) {
+            vscode.window.showErrorMessage(
+              `Failed to serialize PTB document: ${String(error)}`,
+            );
+            break;
+          }
+          if (typeof text !== 'string') {
+            vscode.window.showErrorMessage('Received empty PTB document.');
+            break;
+          }
           this._updateTextDocument(document, text);
 
           // Sync latest content to other panels for this doc (skip sender)
@@ -303,23 +330,17 @@ export class PTBBuilderProvider
   // Update document content and wire undo/redo
   private _updateTextDocument(document: PTBDocument, newContent: string) {
     const prev = document.getText();
+    // Avoid churn on semantically identical JSON (prevents redo stack clearing).
     if (prev === newContent) {
       return;
     }
-
-    // Initial bootstrap (empty -> first content): save immediately to avoid dirty badge.
-    const isInitialBootstrap = prev === '' && newContent.length > 0;
-    if (isInitialBootstrap) {
-      document.setText(newContent);
-      document.save().catch(() => {
-        /* ignore initial save errors */
-      });
-      // Optional: sync other panels in rare multi-open cases
-      this._broadcastDoc(document, this._buildLoadPayload(document));
+    const normalizedPrev = this._normalizeDocString(prev);
+    const normalizedNew = this._normalizeDocString(newContent);
+    if (normalizedPrev === normalizedNew) {
       return;
     }
 
-    // Normal edit: set text and provide undo/redo closures
+    // Normal edit: set text and provide undo/redo closures for VS Code command integration
     document.setText(newContent);
 
     const oldText = prev;

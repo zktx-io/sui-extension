@@ -72,14 +72,12 @@ jobs:
       # Install CLIs
       - run: npm i -g vsce ovsx
 
-      # Build single VSIX artifact (reuse for both VSCE/OVSX)
+      # Build a single VSIX artifact (reuse for both marketplaces)
       - name: Package VSIX
         env:
           SOURCE_MAP: false
         run: |
-          # vsce package will run "vscode:prepublish" (your build) and create a .vsix
           vsce package --no-yarn
-          # Figure out the generated filename
           NAME=$(node -p "require('./package.json').name")
           VER=$(node -p "require('./package.json').version")
           FILE="${NAME}-${VER}.vsix"
@@ -92,13 +90,13 @@ jobs:
           name: vsix
           path: ${{ env.VSIX_FILE }}
 
-      # Publish to Microsoft VS Code Marketplace
+      # Publish to Microsoft VS Code Marketplace using the built VSIX
       - name: Publish to VS Code Marketplace
         env:
           SOURCE_MAP: false
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
-          vsce publish -p "$VSCE_PAT" --allow-missing-repository
+          vsce publish --packagePath "${{ env.VSIX_FILE }}" -p "$VSCE_PAT" --allow-missing-repository
 
       # Publish to OpenVSX using the same VSIX
       - name: Publish to OpenVSX

@@ -56,6 +56,7 @@ export const PTBBridge = ({
 
 function App() {
   const initializedRef = useRef<boolean>(false);
+  const lastDocKeyRef = useRef<string | undefined>(undefined);
   const [account, setAccount] = useState<IAccount | undefined>(undefined);
   const [incomingDoc, setIncomingDoc] = useState<PTBDoc | Chain | undefined>(
     undefined,
@@ -153,10 +154,14 @@ function App() {
           const ptbRaw = message.data?.ptb as string | undefined;
           setAccount(acc);
           if (acc) {
-            const doc = !ptbRaw
-              ? (`sui:${acc.nonce.network}` as Chain)
-              : (JSON.parse(ptbRaw) as PTBDoc);
-            setIncomingDoc(doc);
+            const docKey = ptbRaw ?? `sui:${acc.nonce.network}`;
+            if (docKey !== lastDocKeyRef.current) {
+              const doc = !ptbRaw
+                ? (`sui:${acc.nonce.network}` as Chain)
+                : (JSON.parse(ptbRaw) as PTBDoc);
+              lastDocKeyRef.current = docKey;
+              setIncomingDoc(doc);
+            }
           }
           initializedRef.current = true;
         } catch (error) {
@@ -191,10 +196,12 @@ function App() {
         executeTx={executeTx}
         address={account?.zkAddress?.address}
         onDocChange={(doc) => {
+          const serialized = JSON.stringify(doc);
+          lastDocKeyRef.current = serialized;
           // Single source of truth for persistence: stringify once and send to extension.
           vscode.postMessage({
             command: COMMANDS.SaveData,
-            data: JSON.stringify(doc),
+            data: serialized,
           });
         }}
       >
