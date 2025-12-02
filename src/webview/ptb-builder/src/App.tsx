@@ -17,7 +17,11 @@ import { IAccount } from './utilities/account';
 import { postMessage } from './utilities/postMessage';
 
 // Typed payloads for inbound messages.
-type LoadDataPayload = { account?: IAccount; ptb?: string };
+type LoadDataPayload = {
+  account?: IAccount;
+  ptb?: string;
+  suppressSave?: boolean;
+};
 type UpdateStatePayload = { account?: IAccount };
 
 // Union for inbound webview messages we handle.
@@ -58,6 +62,7 @@ export const PTBBridge = ({
 function App() {
   const initializedRef = useRef<boolean>(false);
   const lastDocKeyRef = useRef<string | undefined>(undefined);
+  const suppressNextSaveRef = useRef<boolean>(false);
   const [account, setAccount] = useState<IAccount | undefined>(undefined);
   const [incomingDoc, setIncomingDoc] = useState<PTBDoc | Chain | undefined>(
     undefined,
@@ -153,6 +158,7 @@ function App() {
         try {
           const acc = message.data?.account as IAccount | undefined;
           const ptbRaw = message.data?.ptb as string | undefined;
+          suppressNextSaveRef.current = Boolean(message.data?.suppressSave);
           setAccount(acc);
           if (acc) {
             const docKey = ptbRaw ?? `sui:${acc.nonce.network}`;
@@ -188,6 +194,49 @@ function App() {
       window.removeEventListener('message', handleMessage as EventListener);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isModifierPressed = event.metaKey || event.ctrlKey;
+      if (!isModifierPressed) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        const isTextInput =
+          target.isContentEditable ||
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          target.getAttribute('role') === 'textbox';
+        if (isTextInput) {
+          return;
+        }
+      }
+
+      const key = event.key.toLowerCase();
+      const isUndoKey = key === 'z';
+      const isRedoKey = key === 'y';
+
+      if (!isUndoKey && !isRedoKey) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (isUndoKey && !event.shiftKey) {
+        vscode.postMessage({ command: COMMANDS.RequestUndo });
+        return;
+      }
+
+      vscode.postMessage({ command: COMMANDS.RequestRedo });
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, []);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <PTBBuilder
@@ -199,6 +248,10 @@ function App() {
         onDocChange={(doc) => {
           const serialized = JSON.stringify(doc);
           lastDocKeyRef.current = serialized;
+          if (suppressNextSaveRef.current) {
+            suppressNextSaveRef.current = false;
+            return;
+          }
           // Single source of truth for persistence: stringify once and send to extension.
           vscode.postMessage({
             command: COMMANDS.SaveData,

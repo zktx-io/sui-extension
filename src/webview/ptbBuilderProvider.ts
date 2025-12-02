@@ -10,6 +10,8 @@ type InboundMsg =
   | { command: COMMANDS.LoadData; data?: unknown }
   | { command: COMMANDS.SaveData; data?: unknown }
   | { command: COMMANDS.UpdateState; data?: unknown }
+  | { command: COMMANDS.RequestUndo; data?: unknown }
+  | { command: COMMANDS.RequestRedo; data?: unknown }
   | { command: COMMANDS.MsgInfo; data?: unknown }
   | { command: COMMANDS.MsgError; data?: unknown }
   | { command: COMMANDS.OutputInfo; data?: unknown }
@@ -187,12 +189,16 @@ export class PTBBuilderProvider
   }
 
   // Build a unified payload for LoadData messages
-  private _buildLoadPayload(document: PTBDocument) {
+  private _buildLoadPayload(
+    document: PTBDocument,
+    options?: { suppressSave?: boolean },
+  ) {
     return {
       command: COMMANDS.LoadData,
       data: {
         account: accountLoad(this._context),
         ptb: document.getText(),
+        suppressSave: options?.suppressSave || undefined,
       },
     };
   }
@@ -206,9 +212,16 @@ export class PTBBuilderProvider
   }
 
   // Apply text and broadcast to all panels of the document
-  private _applyAndBroadcast(document: PTBDocument, text: string) {
+  private _applyAndBroadcast(
+    document: PTBDocument,
+    text: string,
+    options?: { suppressSave?: boolean },
+  ) {
     document.setText(text);
-    this._broadcastDoc(document, this._buildLoadPayload(document));
+    this._broadcastDoc(
+      document,
+      this._buildLoadPayload(document, options),
+    );
   }
 
   // Normalize PTB JSON strings so semantically identical docs compare equal.
@@ -290,6 +303,14 @@ export class PTBBuilderProvider
           );
           break;
         }
+        case COMMANDS.RequestUndo: {
+          await vscode.commands.executeCommand('undo');
+          break;
+        }
+        case COMMANDS.RequestRedo: {
+          await vscode.commands.executeCommand('redo');
+          break;
+        }
         case COMMANDS.MsgInfo:
           vscode.window.showInformationMessage(String(data ?? ''));
           break;
@@ -349,8 +370,10 @@ export class PTBBuilderProvider
     this._onDidChangeCustomDocument.fire({
       document,
       label: 'PTB Edit',
-      undo: async () => this._applyAndBroadcast(document, oldText),
-      redo: async () => this._applyAndBroadcast(document, newText),
+      undo: async () =>
+        this._applyAndBroadcast(document, oldText, { suppressSave: true }),
+      redo: async () =>
+        this._applyAndBroadcast(document, newText, { suppressSave: true }),
     });
   }
 
@@ -375,7 +398,10 @@ export class PTBBuilderProvider
   ): Promise<void> {
     await document.revert();
     // After revert, sync to all panels for this doc.
-    this._broadcastDoc(document, this._buildLoadPayload(document));
+    this._broadcastDoc(
+      document,
+      this._buildLoadPayload(document, { suppressSave: true }),
+    );
   }
 
   public async backupCustomDocument(
