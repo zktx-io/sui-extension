@@ -5,9 +5,18 @@ import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 const MoveToml = 'Move.toml';
 const UpgradeToml = 'Upgrade.toml';
 
+type WatchedPackage = {
+  uri: vscode.Uri;
+  /** Directory that contains the Move.toml */
+  path: string;
+  /** Relative path to the Move.toml itself (used for diffing). */
+  filePath: string;
+  content: string;
+};
+
 export class FileWatcher {
   private _view: vscode.WebviewView;
-  private _packages: { uri: vscode.Uri; path: string; content: string }[] = [];
+  private _packages: WatchedPackage[] = [];
 
   constructor(
     view: vscode.WebviewView,
@@ -37,19 +46,21 @@ export class FileWatcher {
       const files = await vscode.workspace.findFiles(`**/${MoveToml}`);
       this._packages = [];
       for (const uri of files) {
-        const path = this.getRelativePath(uri).replace(
-          'static/extensions/fs',
-          '',
+        const relativePath = this.normalizeRelativePath(
+          this.getRelativePath(uri),
         );
-        const temp = this.getUriFromRelativePath(path);
+        const temp = this.getUriFromRelativePath(relativePath);
         if (temp) {
           const content = await this.readFileContent(temp);
+          const filePath = relativePath;
+          const dirPath = relativePath.replace(
+            new RegExp(`(.*)(/\\b${MoveToml}\\b)(?!.*/\\b${MoveToml}\\b)`),
+            `$1`,
+          );
           this._packages.push({
             uri,
-            path: path.replace(
-              new RegExp(`(.*)(/\\b${MoveToml}\\b)(?!.*(/\\b${MoveToml}\\b))`),
-              `$1`,
-            ),
+            path: dirPath,
+            filePath,
             content: new TextDecoder().decode(content),
           });
         }
@@ -89,10 +100,18 @@ export class FileWatcher {
   private async handleFileChange(uri: vscode.Uri) {
     if (uri.fsPath.endsWith(MoveToml)) {
       const newContent = await this.readFileContent(uri);
-      this._packages = this._packages.map(({ uri, path, content }) =>
-        path !== this.getRelativePath(uri)
-          ? { uri, path, content }
-          : { uri, path, content: new TextDecoder().decode(newContent) },
+      const changedPath = this.normalizeRelativePath(
+        this.getRelativePath(uri),
+      );
+      this._packages = this._packages.map(({ uri: storedUri, path, filePath, content }) =>
+        filePath !== changedPath
+          ? { uri: storedUri, path, filePath, content }
+          : {
+              uri: storedUri,
+              path,
+              filePath,
+              content: new TextDecoder().decode(newContent),
+            },
       );
       this.updateWebview();
     }
@@ -100,8 +119,11 @@ export class FileWatcher {
 
   private handleFileDelete(uri: vscode.Uri) {
     if (uri.fsPath.endsWith(MoveToml)) {
+      const deletedPath = this.normalizeRelativePath(
+        this.getRelativePath(uri),
+      );
       this._packages = this._packages.filter(
-        ({ path }) => path !== this.getRelativePath(uri),
+        ({ filePath }) => filePath !== deletedPath,
       );
       this.updateWebview();
     }
@@ -125,6 +147,10 @@ export class FileWatcher {
       return null;
     }
     return vscode.Uri.joinPath(workspaceFolder.uri, relativePath);
+  }
+
+  private normalizeRelativePath(path: string) {
+    return path.replace('static/extensions/fs', '');
   }
 
   private async readFileContent(uri: vscode.Uri): Promise<Uint8Array> {
