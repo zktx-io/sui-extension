@@ -18,6 +18,20 @@ The Sui extension provides seamless support for compiling, deploying, and testin
   upgrade_cap = "The UpgradeCap is the central type responsible for coordinating package upgrades."
   ```
 
+## Requirements
+
+- **Sui CLI**: Install the Sui command-line interface to interact with the Sui blockchain.
+  > Note: If you are using GitHub Codespaces, please install Homebrew from https://brew.sh first to manage and [install the Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
+- **zkLogin**: Set up zkLogin to generate wallets for contract deployment and testing. A Google account is required.
+
+## Quick Start
+
+1. **Install prerequisites** – Make sure the Sui CLI and zkLogin requirements above are met.
+2. **Open a Sui workspace** – Any folder containing a `Move.toml` works, or scaffold one using the built-in templates (see [Templates & Workshops](#templates--workshops)).
+3. **Launch the Activity Bar** – Click the **Sui Extension** icon, log in via Google (zkLogin), and select a network.
+4. **Build/Test/Deploy** – Use the Workspace panel to run build/test or publish/upgrade with `Move.toml` + optional `Upgrade.toml`.
+5. **Explore & Iterate** – Inspect objects/packages, invoke Move functions, or jump into PTB Builder for programmable transaction blocks.
+
 ## Interface Overview
 
 ![Sui Extension](https://docs.zktx.io/images/sui-extension.png)
@@ -40,13 +54,47 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 1. **Output**: In this section, you can view the transaction execution data in raw format. Please select `Sui Extension` in the Task.
 1. **PTB-Builder**: **PTB Builder** is a visual development tool for **Programmable Transaction Blocks (PTBs)**, a core technology of the Sui blockchain. Designed to create a powerful synergy with Sui’s PTB capabilities, this tool allows both developers and non-developers to easily construct and manage complex transactions, maximizing the potential of this advanced technology and making it more accessible to a broader audience.
 
-![ptb-builder-editor.png](https://docs.zktx.io/images/ptb-builder-editor.png)
+![ptb-builder-editor.png](https://docs.zktx.io/images/sui-extension-menu-4.png)
 
-## Requirements
+## Templates & Workshops
 
-- **Sui CLI**: Install the Sui command-line interface to interact with the Sui blockchain.
-  > Note: If you are using GitHub Codespaces, please install Homebrew from https://brew.sh first to manage and [install the Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
-- **zkLogin**: Set up zkLogin to generate wallets for contract deployment and testing. A Google account is required.
+Jump‑start a new Move package, PTB file, or even a full-stack dApp directly from the Command Palette. All templates live under **Command Palette → “Sui Extension: …”** so you can scaffold into the currently selected folder or workspace root.
+
+![Templates & Workshops](https://docs.zktx.io/images/sui-extension-menu-1.png)
+
+- `Sui Extension: New Move Project…` (`sui-extension.move.new.pick`)
+- `Sui Extension: New PTB File…` (`sui-extension.ptbBuilder.new.pick`)
+- `Sui Extension: New Sui Workshop…` (`sui-extension.workshop.new.pick`)
+
+### Move templates
+
+More than 30 Move blueprints are bundled, ranging from basics to advanced Mysten Labs samples:
+
+![Move templates](https://docs.zktx.io/images/sui-extension-menu-2.png)
+
+- **Intro series**: Hello World, Transcript, FT, Marketplace, Kiosk, Flashloan.
+- **Mysten samples**: Coin, Color Object, Dynamic Fields, Entry Functions, First Package, Flash Lender, Hero RPG, Locked Stake, NFT Rental, Soulbound/NFT/Testnet templates, Object Bound, Profiles, Random Raffles/NFT/Slot Machine, Reviews & Ratings, Simple Warrior, Token, Trusted Swap, USDC Usage, VDF Lottery, and more.
+- **Empty template** for a clean Move package.
+
+### PTB templates
+
+![Move templates](https://docs.zktx.io/images/sui-extension-menu-5.png)
+
+- Empty PTB file.
+- Split/Merge programmable transaction blocks.
+- Exchange-all-for-wallet or all-for-SUI automation examples.
+
+### Workshop templates (Move + frontend)
+
+Each workshop unzips a ready-to-run project containing Move code, PTB samples, and a React/Vite frontend (with @mysten/dapp-kit where applicable):
+
+![Workshop templates](https://docs.zktx.io/images/sui-extension-menu-3.png)
+
+- **SuiJapan: NFT Mint Sample** – React UI wired to a pre-deployed NFT contract on Testnet.
+- **Mysten Labs: Distributed Counter** – Full Move + React counter app demonstrating write/read flows end to end.
+- **Mysten Labs: Coffee Club System** – Complete IoT-flavored dApp with memberships, blockchain events, and BLE coffee machine control.
+
+Scaffolding finishes with an optional `SOURCE.txt` plus automatic README opening so you can follow each workshop’s guide immediately.
 
 ## Extension Settings
 
