@@ -78,7 +78,7 @@ More than 30 Move blueprints are bundled, ranging from basics to advanced Mysten
 
 ### PTB templates
 
-![Move templates](https://docs.zktx.io/images/sui-extension-menu-5.png)
+![PTB templates](https://docs.zktx.io/images/sui-extension-menu-5.png)
 
 - Empty PTB file.
 - Split/Merge programmable transaction blocks.
