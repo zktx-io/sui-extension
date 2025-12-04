@@ -243,6 +243,33 @@ export const Function = ({
                     <label style={{ fontSize: '11px', color: 'GrayText' }}>
                       {`Arg ${key}`}
                     </label>
+                    {getInterfaceType(item) === 'string' && (
+                      <>
+                        <VSCodeTextField
+                          style={{ width: '100%' }}
+                          placeholder={getTypeName(item)}
+                          value={inputValues[key] as string}
+                          onInput={(e) =>
+                            handleInputChange(
+                              key,
+                              (e.target as HTMLInputElement).value,
+                            )
+                          }
+                        />
+                        {inputErrors[key] && (
+                          <span
+                            style={{
+                              color: 'red',
+                              fontSize: '11px',
+                              wordWrap: 'break-word',
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            Invalid value for type {getTypeName(item)}
+                          </span>
+                        )}
+                      </>
+                    )}
                     {getInterfaceType(item) === 'vector' && (
                       <>
                         <VSCodeTextArea

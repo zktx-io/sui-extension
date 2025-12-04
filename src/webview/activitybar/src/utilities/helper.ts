@@ -1,11 +1,66 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
+import type {
+  PureTypeName,
+  ShapeFromPureTypeName,
+} from '@mysten/sui/bcs';
 import { Transaction } from '@mysten/sui/transactions';
 import { getObjectType } from './getObjectType';
 import { IAccount } from '../recoil';
 
+type MoveCallArgument = NonNullable<
+  Parameters<Transaction['moveCall']>[0]['arguments']
+>[number];
+
+const toPureLiteralType = (
+  paramType: SuiMoveNormalizedType,
+): PureTypeName => {
+  if (typeof paramType === 'string') {
+    switch (paramType) {
+      case 'U8':
+        return 'u8';
+      case 'U16':
+        return 'u16';
+      case 'U32':
+        return 'u32';
+      case 'U64':
+        return 'u64';
+      case 'U128':
+        return 'u128';
+      case 'U256':
+        return 'u256';
+      case 'Bool':
+        return 'bool';
+      case 'Address':
+        return 'address';
+      default:
+        throw new Error(`Unsupported pure type literal: ${paramType}`);
+    }
+  }
+
+  if (isMoveStringStruct(paramType)) {
+    return 'string';
+  }
+
+  if (typeof paramType === 'object' && 'Vector' in paramType) {
+    return `vector<${toPureLiteralType(paramType.Vector)}>` as PureTypeName;
+  }
+
+  throw new Error('Unable to derive pure literal for provided type');
+};
+
+const isMoveStringStruct = (paramType: SuiMoveNormalizedType): boolean => {
+  return (
+    typeof paramType === 'object' &&
+    'Struct' in paramType &&
+    paramType.Struct.address === '0x1' &&
+    paramType.Struct.module === 'string' &&
+    paramType.Struct.name === 'String'
+  );
+};
+
 export const getInterfaceType = (
   paramType: SuiMoveNormalizedType,
-): 'vector' | 'complex' | 'other' => {
+): 'vector' | 'complex' | 'other' | 'string' => {
   if (typeof paramType === 'object' && 'Vector' in paramType) {
     return 'vector';
   }
@@ -14,6 +69,9 @@ export const getInterfaceType = (
   }
   if (typeof paramType === 'object' && 'MutableReference' in paramType) {
     return getInterfaceType(paramType.MutableReference);
+  }
+  if (isMoveStringStruct(paramType)) {
+    return 'string';
   }
   if (typeof paramType === 'object' && 'Struct' in paramType) {
     return 'complex';
@@ -62,7 +120,7 @@ const validateVectors = (input: string, type: string): boolean => {
     }
 
     const validateVector = (
-      data: any,
+      data: unknown,
       type: string,
       depth: number,
     ): boolean => {
@@ -87,7 +145,7 @@ const validateVectors = (input: string, type: string): boolean => {
           return typeof data === 'string' && /^[0-9]+$/.test(data);
         }
         if (type === 'Address') {
-          return /^0x[a-fA-F0-9]{64}$/.test(data);
+          return typeof data === 'string' && /^0x[a-fA-F0-9]{64}$/.test(data);
         }
         if (type === 'Bool') {
           return typeof data === 'boolean';
@@ -107,6 +165,9 @@ export const validateInput = async (
   value: string,
 ): Promise<boolean> => {
   try {
+    if (isMoveStringStruct(paramType)) {
+      return typeof value === 'string';
+    }
     if (typeof value === 'string' && typeof paramType === 'string') {
       switch (paramType) {
         case 'U8':
@@ -161,38 +222,55 @@ export const getVecterType = (paramType: SuiMoveNormalizedType): string => {
   return '';
 };
 
-const processAndConvertVectors = (data: any, paramType: string): any => {
-  const vectorMatch = paramType.match(/^Vector<(.+)>$/);
-  if (vectorMatch) {
-    const innerType = vectorMatch[1];
+const processVectorValue = (
+  paramType: SuiMoveNormalizedType,
+  data: unknown,
+): unknown => {
+  if (typeof paramType === 'object' && 'Vector' in paramType) {
     if (!Array.isArray(data)) {
-      throw new Error(`Invalid data: expected array for ${paramType}`);
+      throw new Error('Invalid data: expected array for vector argument');
     }
-    return data.map((item) => processAndConvertVectors(item, innerType));
-  } else {
+    return data.map((item) => processVectorValue(paramType.Vector, item));
+  }
+
+  if (typeof paramType === 'string') {
     switch (paramType) {
       case 'U8':
       case 'U16':
       case 'U32':
-        return parseInt(data);
+        return typeof data === 'number' ? data : Number(data);
       case 'U64':
       case 'U128':
       case 'U256':
-        return BigInt(data);
+        return typeof data === 'bigint'
+          ? data
+          : BigInt(typeof data === 'number' ? data : String(data));
       case 'Bool':
+        if (typeof data === 'boolean') {
+          return data;
+        }
+        if (typeof data === 'string') {
+          return data.toLowerCase() === 'true';
+        }
+        throw new Error('Invalid bool literal inside vector');
       case 'Address':
-        return data;
+        if (typeof data === 'string') {
+          return data;
+        }
+        throw new Error('Invalid address literal inside vector');
       default:
-        throw new Error(`Unsupported type: ${paramType}`);
+        break;
     }
   }
+
+  throw new Error('Unsupported vector element type');
 };
 
 export const makeParams = (
   transaction: Transaction,
   paramType: SuiMoveNormalizedType,
   value: string,
-): any => {
+): MoveCallArgument => {
   if (typeof paramType === 'string' && typeof value === 'string') {
     switch (paramType) {
       case 'U8':
@@ -215,10 +293,15 @@ export const makeParams = (
         break;
     }
   } else if (typeof paramType === 'object' && 'Vector' in paramType) {
+    const typeLiteral = toPureLiteralType(paramType);
+    const processed = processVectorValue(paramType, JSON.parse(value));
+
     return transaction.pure(
-      getTypeName(paramType).toLowerCase() as any,
-      processAndConvertVectors(JSON.parse(value), getTypeName(paramType)),
+      typeLiteral,
+      processed as ShapeFromPureTypeName<typeof typeLiteral>,
     );
+  } else if (isMoveStringStruct(paramType) && typeof value === 'string') {
+    return transaction.pure.string(value);
   } else if (
     typeof paramType === 'object' &&
     ('Struct' in paramType ||
@@ -228,7 +311,7 @@ export const makeParams = (
   ) {
     return transaction.object(value);
   } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
-    // TODO
+    throw new Error('Type parameter arguments are not supported yet');
   }
-  return;
+  throw new Error('Unsupported parameter type for Move call arguments');
 };
