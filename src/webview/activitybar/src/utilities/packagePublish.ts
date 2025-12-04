@@ -1,4 +1,4 @@
-import { SuiClient } from '@mysten/sui/client';
+import { SuiClient, SuiObjectChangePublished } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { vscode } from './vscode';
 import { COMMANDS } from './commands';
@@ -31,7 +31,7 @@ export const packagePublish = async (
       );
       const res = await signAndExcute(account, client, transaction);
       const published = (res.objectChanges || []).filter(
-        (item) => item.type === 'published',
+        (item): item is SuiObjectChangePublished => item.type === 'published',
       );
       if (!published[0]) {
         vscode.postMessage({
@@ -42,7 +42,7 @@ export const packagePublish = async (
       }
       return {
         digest: res.digest,
-        packageId: (published[0] as any).packageId,
+        packageId: published[0].packageId,
       };
     } catch (error) {
       throw new Error(`${error}`);

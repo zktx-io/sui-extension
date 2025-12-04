@@ -1,16 +1,21 @@
+import type { SuiMoveNormalizedModules } from '@mysten/sui/client';
 import { vscode } from './vscode';
+import type { PackageMap } from '../recoil';
 
-interface IPackage {
+interface StoredPackageState {
   path?: string;
-  packages: { [x: string]: any };
+  packages: PackageMap;
 }
 
-const setState = (state: IPackage) => {
+const setState = (state: StoredPackageState) => {
   vscode.setState(state);
 };
 
-export const packageAdd = (objectId: string, modules: any): IPackage => {
-  const state: IPackage = dataGet();
+export const packageAdd = (
+  objectId: string,
+  modules: SuiMoveNormalizedModules,
+): StoredPackageState => {
+  const state = dataGet();
   const index = Date.now();
   setState({
     ...state,
@@ -26,28 +31,30 @@ export const packageAdd = (objectId: string, modules: any): IPackage => {
   return dataGet();
 };
 
-export const packageDelete = (objectId: string): IPackage => {
+export const packageDelete = (objectId: string): StoredPackageState => {
   const state = dataGet();
-  state.packages && delete state.packages[objectId];
+  const { [objectId]: deletedEntry, ...rest } = state.packages;
+  if (!deletedEntry) {
+    return state;
+  }
   setState({
     ...state,
+    packages: rest,
   });
   return dataGet();
 };
 
-export const packageSelect = (path?: string): IPackage => {
+export const packageSelect = (path?: string): StoredPackageState => {
   const state = dataGet();
   setState({
     ...state,
     path,
   });
-  const temp: IPackage = dataGet();
+  const temp = dataGet();
   return temp;
 };
 
-export const dataGet = (): IPackage => {
-  const temp: IPackage = (vscode.getState() as any) || {
-    packages: {},
-  };
-  return temp;
+export const dataGet = (): StoredPackageState => {
+  const persisted = vscode.getState() as StoredPackageState | undefined;
+  return persisted ?? { packages: {} };
 };

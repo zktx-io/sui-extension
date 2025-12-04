@@ -1,4 +1,4 @@
-import { SuiClient } from '@mysten/sui/client';
+import { SuiClient, SuiObjectChangePublished } from '@mysten/sui/client';
 import { Transaction, UpgradePolicy } from '@mysten/sui/transactions';
 import { parse } from 'smol-toml';
 import { vscode } from './vscode';
@@ -23,11 +23,16 @@ export const packageUpgrade = async (
         dependencies: string[];
         digest: number[];
       };
-      const parsed = parse(upgradeToml);
+      const parsed = parse(upgradeToml) as {
+        upgrade: {
+          upgrade_cap: string;
+          package_id: string;
+        };
+      };
       const address = account.zkAddress.address;
       const transaction = new Transaction();
       transaction.setSender(address);
-      const cap = transaction.object((parsed.upgrade as any).upgrade_cap);
+      const cap = transaction.object(parsed.upgrade.upgrade_cap);
       const ticket = transaction.moveCall({
         target: '0x2::package::authorize_upgrade',
         arguments: [
@@ -39,7 +44,7 @@ export const packageUpgrade = async (
       const receipt = transaction.upgrade({
         modules,
         dependencies,
-        package: (parsed.upgrade as any).package_id,
+        package: parsed.upgrade.package_id,
         ticket,
       });
       transaction.moveCall({
@@ -52,7 +57,7 @@ export const packageUpgrade = async (
       transaction.setGasBudget(parseInt(input.gasData.budget));
       const res = await signAndExcute(account, client, transaction);
       const published = (res.objectChanges || []).filter(
-        (item) => item.type === 'published',
+        (item): item is SuiObjectChangePublished => item.type === 'published',
       );
       if (!published[0]) {
         vscode.postMessage({
@@ -63,7 +68,7 @@ export const packageUpgrade = async (
       }
       return {
         digest: res.digest,
-        packageId: (published[0] as any).packageId,
+        packageId: published[0].packageId,
       };
     } catch (error) {
       throw new Error(`${error}`);

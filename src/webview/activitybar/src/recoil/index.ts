@@ -1,4 +1,5 @@
 import { atom } from 'recoil';
+import type { SuiMoveNormalizedModules } from '@mysten/sui/client';
 
 export enum NETWORK {
   MainNet = 'mainnet',
@@ -30,11 +31,18 @@ export interface IAccount {
   };
 }
 
+export interface IPackageEntry {
+  index: number;
+  data: SuiMoveNormalizedModules;
+}
+
+export type PackageMap = Record<string, IPackageEntry>;
+
 export interface IState {
   account?: IAccount;
   balance?: string;
   path?: string;
-  packages: { [x: string]: any };
+  packages: PackageMap;
 }
 
 export const STATE = atom<IState>({

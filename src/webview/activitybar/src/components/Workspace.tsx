@@ -23,6 +23,24 @@ import { getBalance } from '../utilities/getBalance';
 import { loadPackageData } from '../utilities/loadPackageData';
 import { runBuild, runTest } from '../utilities/cli';
 
+type PackageListEntry = { path: string; content: string };
+type PackageListMessage = {
+  command: COMMANDS.PackageList;
+  data: PackageListEntry[];
+};
+type DeployMessage = {
+  command: COMMANDS.Deploy;
+  data: string;
+};
+type WorkspaceMessage = PackageListMessage | DeployMessage;
+
+type SuiPackageManifest = {
+  package?: {
+    name?: string;
+    version?: string;
+  };
+};
+
 export const Workspace = ({
   hasTerminal,
   client,
@@ -38,19 +56,20 @@ export const Workspace = ({
   const [upgradeToml, setUpgradeToml] = useState<string>('');
 
   useEffect(() => {
-    const handleMessage = async (event: any) => {
+    const handleMessage = async (
+      event: MessageEvent<WorkspaceMessage>,
+    ) => {
       const message = event.data;
       switch (message.command) {
         case COMMANDS.PackageList:
           {
-            const temp = (
-              message.data as { path: string; content: string }[]
-            ).map(({ path, content }) => {
-              const parsed = parse(content);
+            const temp = message.data.map(({ path, content }) => {
+              const parsed = parse(content) as SuiPackageManifest;
+              const manifestPackage = parsed.package ?? {};
               return {
                 path,
-                name: (parsed.package as any).name,
-                version: (parsed.package as any).version,
+                name: manifestPackage.name ?? '',
+                version: manifestPackage.version ?? '',
               };
             });
             setFileList(temp);
