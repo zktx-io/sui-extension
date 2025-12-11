@@ -193,7 +193,11 @@ export const validateInput = async (
         'Reference' in paramType) &&
       typeof value === 'string'
     ) {
+      // Special case for 0x2::object::ID: only regex validation
       const typeName = getTypeName(paramType);
+      if (typeName === '0x2::object::ID') {
+        return /^0x[a-fA-F0-9]{64}$/.test(value);
+      }
       const objectType = await getObjectType(account, value);
       return typeName === objectType;
     } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
@@ -309,6 +313,7 @@ export const makeParams = (
       'Reference' in paramType) &&
     typeof value === 'string'
   ) {
+    // Special case for 0x2::object::ID: just pass as object
     return transaction.object(value);
   } else if (typeof paramType === 'object' && 'TypeParameter' in paramType) {
     throw new Error('Type parameter arguments are not supported yet');
