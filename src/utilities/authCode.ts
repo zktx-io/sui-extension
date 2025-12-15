@@ -6,6 +6,19 @@ import {
   UrlCallback,
 } from '../webview/activitybar/src/utilities/commands';
 
+interface GoogleTokenResponse {
+  id_token?: string;
+  access_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  refresh_token?: string;
+}
+
+interface AuthCodeResponse {
+  authCode?: string;
+}
+
 const exchangeAuthCodeForJwt = async (
   authCode: string,
   codeVerifier: string,
@@ -27,13 +40,14 @@ const exchangeAuthCodeForJwt = async (
     });
 
     if (tokenResponse.ok) {
-      const tokenData: any = await tokenResponse.json();
-      return tokenData.id_token;
+      const tokenData: GoogleTokenResponse = await tokenResponse.json();
+      return tokenData.id_token || null;
     } else {
       vscode.window.showErrorMessage('Failed to exchange auth code for token.');
       return null;
     }
-  } catch {
+  } catch (error) {
+    console.error('Failed to exchange auth code for JWT:', error);
     return null;
   }
 };
@@ -50,7 +64,7 @@ export const exchangeToken = (
   const intervalId = setInterval(async () => {
     try {
       const tokenResponse = await fetch(`${UrlAuthCode}?state=${state}`);
-      const { authCode }: any = await tokenResponse.json();
+      const { authCode }: AuthCodeResponse = await tokenResponse.json();
 
       if (authCode) {
         clearInterval(intervalId);
@@ -64,6 +78,7 @@ export const exchangeToken = (
         }
       }
     } catch (error) {
+      console.error('Failed to fetch auth code:', error);
       retryCount++;
       if (retryCount >= maxRetries) {
         clearInterval(intervalId);

@@ -11,6 +11,7 @@ import {
 } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
+import type { IAccount } from './activitybar/src/recoil';
 import {
   COMPILER,
   COMPILER_URL,
@@ -65,7 +66,7 @@ fi`;
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
+    _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
@@ -80,7 +81,7 @@ fi`;
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(
-      async ({ command, data }: { command: COMMANDS; data: any }) => {
+      async ({ command, data }: { command: COMMANDS; data: unknown }) => {
         switch (command) {
           case COMMANDS.Env:
             {
@@ -96,15 +97,11 @@ fi`;
             break;
           case COMMANDS.Login:
             {
-              const {
-                url,
-                state,
-                codeVerifier,
-              }: {
+              const { url, state, codeVerifier } = data as {
                 url: string;
                 state: string;
                 codeVerifier: string;
-              } = data;
+              };
               const result = await vscode.env.openExternal(
                 vscode.Uri.parse(url),
               );
@@ -134,7 +131,7 @@ fi`;
             }
             break;
           case COMMANDS.StoreAccount:
-            await accountStore(this._context, data);
+            await accountStore(this._context, data as IAccount | undefined);
             vscode.commands.executeCommand(AccountStateUpdate);
             break;
           case COMMANDS.CLI:
@@ -143,12 +140,14 @@ fi`;
                 'This environment does not support terminal operations.',
               );
             } else {
-              this.runTerminal(data);
+              this.runTerminal(data as string);
             }
             break;
           case COMMANDS.Deploy:
             {
-              const dumpByte = await this._fileWatcher?.getByteCodeDump(data);
+              const dumpByte = await this._fileWatcher?.getByteCodeDump(
+                data as string,
+              );
               this._view?.webview.postMessage({
                 command: COMMANDS.Deploy,
                 data: dumpByte || '',
@@ -156,16 +155,16 @@ fi`;
             }
             break;
           case COMMANDS.MsgInfo:
-            vscode.window.showInformationMessage(data);
+            vscode.window.showInformationMessage(data as string);
             break;
           case COMMANDS.MsgError:
-            vscode.window.showErrorMessage(data);
+            vscode.window.showErrorMessage(data as string);
             break;
           case COMMANDS.OutputInfo:
-            printOutputChannel(data);
+            printOutputChannel(data as string);
             break;
           case COMMANDS.OutputError:
-            printOutputChannel(`[ERROR]\n${data}`);
+            printOutputChannel(`[ERROR]\n${data as string}`);
             break;
           case COMMANDS.FMT:
           default:

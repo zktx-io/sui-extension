@@ -100,18 +100,17 @@ export class FileWatcher {
   private async handleFileChange(uri: vscode.Uri) {
     if (uri.fsPath.endsWith(MoveToml)) {
       const newContent = await this.readFileContent(uri);
-      const changedPath = this.normalizeRelativePath(
-        this.getRelativePath(uri),
-      );
-      this._packages = this._packages.map(({ uri: storedUri, path, filePath, content }) =>
-        filePath !== changedPath
-          ? { uri: storedUri, path, filePath, content }
-          : {
-              uri: storedUri,
-              path,
-              filePath,
-              content: new TextDecoder().decode(newContent),
-            },
+      const changedPath = this.normalizeRelativePath(this.getRelativePath(uri));
+      this._packages = this._packages.map(
+        ({ uri: storedUri, path, filePath, content }) =>
+          filePath !== changedPath
+            ? { uri: storedUri, path, filePath, content }
+            : {
+                uri: storedUri,
+                path,
+                filePath,
+                content: new TextDecoder().decode(newContent),
+              },
       );
       this.updateWebview();
     }
@@ -119,9 +118,7 @@ export class FileWatcher {
 
   private handleFileDelete(uri: vscode.Uri) {
     if (uri.fsPath.endsWith(MoveToml)) {
-      const deletedPath = this.normalizeRelativePath(
-        this.getRelativePath(uri),
-      );
+      const deletedPath = this.normalizeRelativePath(this.getRelativePath(uri));
       this._packages = this._packages.filter(
         ({ filePath }) => filePath !== deletedPath,
       );

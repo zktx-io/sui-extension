@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-
 export type FileMap = Record<string, string>;
 
 export interface MoveTemplate {

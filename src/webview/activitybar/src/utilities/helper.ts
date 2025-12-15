@@ -1,8 +1,5 @@
 import { SuiMoveNormalizedType } from '@mysten/sui/client';
-import type {
-  PureTypeName,
-  ShapeFromPureTypeName,
-} from '@mysten/sui/bcs';
+import type { PureTypeName, ShapeFromPureTypeName } from '@mysten/sui/bcs';
 import { Transaction } from '@mysten/sui/transactions';
 import { getObjectType } from './getObjectType';
 import { IAccount } from '../recoil';
@@ -11,9 +8,7 @@ type MoveCallArgument = NonNullable<
   Parameters<Transaction['moveCall']>[0]['arguments']
 >[number];
 
-const toPureLiteralType = (
-  paramType: SuiMoveNormalizedType,
-): PureTypeName => {
+const toPureLiteralType = (paramType: SuiMoveNormalizedType): PureTypeName => {
   if (typeof paramType === 'string') {
     switch (paramType) {
       case 'U8':
@@ -154,7 +149,8 @@ const validateVectors = (input: string, type: string): boolean => {
       }
     };
     return validateVector(parsed, type, 0);
-  } catch {
+  } catch (error) {
+    console.error('Vector validation failed:', error);
     return false;
   }
 };
@@ -204,7 +200,8 @@ export const validateInput = async (
       // TODO
     }
     return false;
-  } catch {
+  } catch (error) {
+    console.error('Input validation failed:', error);
     return false;
   }
 };

@@ -1,7 +1,4 @@
-import {
-  getFaucetHost,
-  requestSuiFromFaucetV2,
-} from '@mysten/sui/faucet';
+import { getFaucetHost, requestSuiFromFaucetV2 } from '@mysten/sui/faucet';
 import { IAccount } from '../recoil';
 
 export const faucet = async (account: IAccount): Promise<boolean> => {
@@ -12,7 +9,8 @@ export const faucet = async (account: IAccount): Promise<boolean> => {
         recipient: account.zkAddress.address,
       });
       return res.status === 'Success';
-    } catch {
+    } catch (error) {
+      console.error('Faucet request failed:', error);
       return false;
     }
   }

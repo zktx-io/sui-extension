@@ -56,9 +56,7 @@ export const Workspace = ({
   const [upgradeToml, setUpgradeToml] = useState<string>('');
 
   useEffect(() => {
-    const handleMessage = async (
-      event: MessageEvent<WorkspaceMessage>,
-    ) => {
+    const handleMessage = async (event: MessageEvent<WorkspaceMessage>) => {
       const message = event.data;
       switch (message.command) {
         case COMMANDS.PackageList:

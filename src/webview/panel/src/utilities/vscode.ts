@@ -32,6 +32,7 @@ class VSCodeAPIWrapper {
     if (this.vsCodeApi) {
       this.vsCodeApi.postMessage(message);
     } else {
+      // eslint-disable-next-line no-console
       console.log(message);
     }
   }

@@ -1,6 +1,13 @@
 import * as vscode from 'vscode';
 import { RequestData } from '../webview/panel/src/utilities/commands';
 
+interface ThreadResponse {
+  thread: {
+    _id: string;
+    uuid: string;
+  };
+}
+
 const generateThreadId = async (): Promise<void> => {
   try {
     const response = await fetch('https://playgr.app/chefgpt/thread/new', {
@@ -13,7 +20,7 @@ const generateThreadId = async (): Promise<void> => {
     if (!response.ok) {
       vscode.window.showErrorMessage(`HTTP error! status: ${response.status}`);
     }
-    const data: any = await response.json();
+    const data: ThreadResponse = await response.json();
     threadId = data.thread._id;
     threadUUID = data.thread.uuid;
   } catch (error) {

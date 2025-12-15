@@ -5,9 +5,7 @@ import {
 
 type StructType = Extract<SuiMoveNormalizedType, { Struct: unknown }>['Struct'];
 
-const extractStruct = (
-  type: SuiMoveNormalizedType,
-): StructType | undefined => {
+const extractStruct = (type: SuiMoveNormalizedType): StructType | undefined => {
   if (typeof type !== 'object' || type === null) {
     return undefined;
   }

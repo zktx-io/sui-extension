@@ -18,7 +18,11 @@ type InboundMsg =
   | { command: COMMANDS.OutputError; data?: unknown }
   | { command?: string; data?: unknown };
 
+// Type for messages sent to webview
+type WebviewMessage = { command: string; data?: unknown };
+
 // Create a .ptb file from a template object and open it with our custom editor.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createPTBFileFromTemplate(
   uri: vscode.Uri | undefined,
   defaultName: string,
@@ -161,7 +165,7 @@ export class PTBBuilderProvider
   }
 
   // Broadcast to all panels (all docs)
-  private _broadcastToAllPanels(message: any) {
+  private _broadcastToAllPanels(message: WebviewMessage) {
     for (const set of this._panelsByDoc.values()) {
       for (const panel of set) {
         panel.webview.postMessage(message);
@@ -172,7 +176,7 @@ export class PTBBuilderProvider
   // Broadcast to all panels of a specific document (optionally skip one)
   private _broadcastDoc(
     document: PTBDocument,
-    message: any,
+    message: WebviewMessage,
     except?: vscode.WebviewPanel,
   ) {
     const key = document.uri.toString();
@@ -218,10 +222,7 @@ export class PTBBuilderProvider
     options?: { suppressSave?: boolean },
   ) {
     document.setText(text);
-    this._broadcastDoc(
-      document,
-      this._buildLoadPayload(document, options),
-    );
+    this._broadcastDoc(document, this._buildLoadPayload(document, options));
   }
 
   // Normalize PTB JSON strings so semantically identical docs compare equal.

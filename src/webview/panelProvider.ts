@@ -23,8 +23,8 @@ class PanelProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
-    token: vscode.CancellationToken,
+    _context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
 
@@ -40,7 +40,7 @@ class PanelProvider implements vscode.WebviewViewProvider {
     );
 
     webviewView.webview.onDidReceiveMessage(
-      async ({ command, data }: { command: COMMANDS; data: any }) => {
+      async ({ command, data }: { command: COMMANDS; data: unknown }) => {
         switch (command) {
           case COMMANDS.Env:
             this._view?.webview.postMessage({
@@ -50,7 +50,7 @@ class PanelProvider implements vscode.WebviewViewProvider {
             break;
           case COMMANDS.AiQuestion:
             suiAI(
-              { code: false, content: data },
+              { code: false, content: data as string },
               (stream) => {
                 this._view?.webview.postMessage({
                   command: COMMANDS.AiStream,
@@ -65,16 +65,16 @@ class PanelProvider implements vscode.WebviewViewProvider {
             );
             break;
           case COMMANDS.MsgInfo:
-            vscode.window.showInformationMessage(data);
+            vscode.window.showInformationMessage(data as string);
             break;
           case COMMANDS.MsgError:
-            vscode.window.showErrorMessage(data);
+            vscode.window.showErrorMessage(data as string);
             break;
           case COMMANDS.OutputInfo:
-            printOutputChannel(data);
+            printOutputChannel(data as string);
             break;
           case COMMANDS.OutputError:
-            printOutputChannel(`[ERROR]\n${data}`);
+            printOutputChannel(`[ERROR]\n${data as string}`);
             break;
           default:
             vscode.window.showErrorMessage(
@@ -86,7 +86,7 @@ class PanelProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  public sendMessage(message: any) {
+  public sendMessage(message: { command: string; data: string }) {
     switch (message.command) {
       case 'sui-extension.ask-sui.file':
       case 'sui-extension.ask-sui.folder':
@@ -166,11 +166,10 @@ export function initPanel(context: vscode.ExtensionContext) {
         let code = '';
         const document = await vscode.workspace.openTextDocument(uri);
         code += `// ${vscode.workspace.asRelativePath(uri, false)}\n${document.getText()}`;
-        (provider as any).sendMessage &&
-          (provider as any).sendMessage({
-            command: 'sui-extension.ask-sui.file',
-            data: `${AuditPrompt}\n${code}`,
-          });
+        provider.sendMessage({
+          command: 'sui-extension.ask-sui.file',
+          data: `${AuditPrompt}\n${code}`,
+        });
       },
     ),
   );
@@ -185,11 +184,10 @@ export function initPanel(context: vscode.ExtensionContext) {
             const document = await vscode.workspace.openTextDocument(file);
             code += `// ${vscode.workspace.asRelativePath(file, false)}\n${document.getText()}\n\n`;
           }
-          (provider as any).sendMessage &&
-            (provider as any).sendMessage({
-              command: 'sui-extension.ask-sui.folder',
-              data: `${AuditPrompt}\n${code}`,
-            });
+          provider.sendMessage({
+            command: 'sui-extension.ask-sui.folder',
+            data: `${AuditPrompt}\n${code}`,
+          });
         } else {
           vscode.window.showErrorMessage('No move file found!');
         }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
+import DOMPurify from 'dompurify';
 import 'highlight.js/styles/github-dark.css';
 
 export const Bot = ({ data }: { data: string }) => {
@@ -15,7 +16,8 @@ export const Bot = ({ data }: { data: string }) => {
     };
     marked.use({ renderer });
     const renderedHtml = marked.parse(data, { async: false, gfm: true });
-    setHtml(() => renderedHtml);
+    const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+    setHtml(() => sanitizedHtml);
   }, [data]);
   return (
     <div
