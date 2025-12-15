@@ -5,10 +5,19 @@ export const COMPILER_URL =
 export const MoveToml = 'Move.toml';
 export const ByteDump = 'bytecode.dump.json';
 
+// Shell escape function to prevent command injection
+const shellEscape = (arg: string): string => {
+  // Replace single quotes with '\'' and wrap in single quotes
+  // This works for both bash/zsh and PowerShell
+  return `'${arg.replace(/'/g, "'\\''")}'`;
+};
+
 export const runBuild = (path: string) => {
-  return `${COMPILER} move build --dump-bytecode-as-base64 --ignore-chain --path ${path} > ${path}/${ByteDump}`;
+  const escapedPath = shellEscape(path);
+  return `${COMPILER} move build --dump-bytecode-as-base64 --ignore-chain --path ${escapedPath} > ${escapedPath}/${ByteDump}`;
 };
 
 export const runTest = (path: string) => {
-  return `${COMPILER} move test --path ${path}`;
+  const escapedPath = shellEscape(path);
+  return `${COMPILER} move test --path ${escapedPath}`;
 };
