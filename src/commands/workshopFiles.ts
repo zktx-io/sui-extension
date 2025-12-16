@@ -4,6 +4,20 @@ import * as vscode from 'vscode';
 import { unzip } from 'fflate';
 import { WorkshopTemplate } from './workshop';
 
+function validateProjectName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return 'Folder name cannot be empty';
+  }
+  if (trimmed.includes('/') || trimmed.includes('\\')) {
+    return 'Folder name must not include path separators';
+  }
+  if (trimmed === '.' || trimmed === '..' || trimmed.includes('..')) {
+    return 'Folder name must not include ".."';
+  }
+  return null;
+}
+
 /** Detect if running in VS Code Web (sandbox) */
 const isWeb = () => vscode.env.uiKind === vscode.UIKind.Web;
 
@@ -237,13 +251,13 @@ export function registerWorkshopTemplatePicker(
         title: 'Project name',
         prompt: `Folder name for "${tpl.label}"`,
         value: tpl.defaultProjectName,
-        validateInput: (v) =>
-          !v?.trim() ? 'Folder name cannot be empty' : null,
+        validateInput: (v) => validateProjectName(v ?? ''),
         ignoreFocusOut: true,
       });
       if (!projectName) {
         return;
       }
+      const safeProjectName = projectName.trim();
 
       // 3) Determine target dir
       const baseDir = getTargetDirectory(uri);
@@ -253,12 +267,12 @@ export function registerWorkshopTemplatePicker(
         );
         return;
       }
-      const targetDir = vscode.Uri.joinPath(baseDir, projectName);
+      const targetDir = vscode.Uri.joinPath(baseDir, safeProjectName);
 
       // 4) Overwrite policy
       if (await exists(targetDir)) {
         const choice = await vscode.window.showWarningMessage(
-          `Folder "${projectName}" already exists. Continue and overwrite files?`,
+          `Folder "${safeProjectName}" already exists. Continue and overwrite files?`,
           { modal: true },
           'Continue',
           'Cancel',

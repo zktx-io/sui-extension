@@ -1,6 +1,20 @@
 import * as vscode from 'vscode';
 import { FileMap, MoveTemplate } from './templates/types';
 
+function validateProjectName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return 'Folder name cannot be empty';
+  }
+  if (trimmed.includes('/') || trimmed.includes('\\')) {
+    return 'Folder name must not include path separators';
+  }
+  if (trimmed === '.' || trimmed === '..' || trimmed.includes('..')) {
+    return 'Folder name must not include ".."';
+  }
+  return null;
+}
+
 // fs helpers (same as before)
 async function exists(uri: vscode.Uri) {
   try {
@@ -27,6 +41,12 @@ export async function scaffoldMoveProject(
   projectName: string,
   files: FileMap,
 ) {
+  const validationError = validateProjectName(projectName);
+  if (validationError) {
+    vscode.window.showErrorMessage(validationError);
+    return;
+  }
+
   const base = getTargetDirectory(uri);
   if (!base) {
     vscode.window.showErrorMessage(
@@ -111,15 +131,15 @@ export function registerMoveTemplatePicker(
         title: 'Project name',
         prompt: `Project name for "${t.label}"`,
         value: t.defaultName,
-        validateInput: (v) =>
-          !v?.trim() ? 'Folder name cannot be empty' : null,
+        validateInput: (v) => validateProjectName(v ?? ''),
         ignoreFocusOut: true,
       });
       if (!name) {
         return;
       }
 
-      await scaffoldMoveProject(uri, name, t.files(name));
+      const safeName = name.trim();
+      await scaffoldMoveProject(uri, safeName, t.files(safeName));
     }),
   );
 }

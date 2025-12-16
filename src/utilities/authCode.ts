@@ -69,12 +69,17 @@ export const exchangeToken = (
       if (authCode) {
         clearInterval(intervalId);
         const jwt = await exchangeAuthCodeForJwt(authCode, codeVerifier);
-        jwt && getJwt(jwt);
+        if (jwt) {
+          getJwt(jwt);
+        } else {
+          done();
+        }
       } else {
         retryCount++;
         if (retryCount >= maxRetries) {
           clearInterval(intervalId);
           vscode.window.showErrorMessage('Maximum retry attempts reached');
+          done();
         }
       }
     } catch (error) {
