@@ -2,7 +2,7 @@
   "name": "sui-extension",
   "displayName": "Sui Extension",
   "description": "Supports the compilation, deployment, and testing of Sui smart contracts, boosting development productivity in GitHub Codespaces. Enables unified management of frontend and backend development within a single repository.",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "license": "MIT",
   "keywords": [
     "sui",
