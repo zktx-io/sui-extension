@@ -142,6 +142,15 @@ class PanelProvider implements vscode.WebviewViewProvider {
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
                 <meta name="theme-color" content="#000000">
+                <meta http-equiv="Content-Security-Policy"
+                      content="
+                        default-src 'none';
+                        img-src ${webview.cspSource} https: data:;
+                        font-src ${webview.cspSource};
+                        style-src ${webview.cspSource} 'unsafe-inline';
+                        script-src ${webview.cspSource} 'nonce-${nonce}';
+                        connect-src ${webview.cspSource} https:;
+                      ">
                 <link nonce="${nonce}" rel="stylesheet" type="text/css" href="${stylesUri}">
               </head>
               <body>

@@ -8,20 +8,48 @@ export const accountStore = async (
   account: IAccount | undefined,
 ) => {
   try {
-    await context.globalState.update('account', account);
     if (account) {
-      vscode.window.showInformationMessage('Data has been securely stored.');
+      // Store in secure Secrets API
+      await context.secrets.store('account', JSON.stringify(account));
+      // Remove legacy plaintext storage
+      await context.globalState.update('account', undefined);
+      vscode.window.showInformationMessage('Account data has been stored.');
     } else {
-      vscode.window.showInformationMessage('Data has been securely removed.');
+      // Clear both secure and legacy storage
+      await context.secrets.delete('account');
+      await context.globalState.update('account', undefined);
+      vscode.window.showInformationMessage('Account data has been removed.');
     }
   } catch (error) {
-    vscode.window.showErrorMessage('Failed to store data securely.');
-    console.error('Error storing data:', error);
+    vscode.window.showErrorMessage('Failed to store account data.');
+    console.error('Error storing account data:', error);
   }
 };
 
-export const accountLoad = (
+export const accountLoad = async (
   context: vscode.ExtensionContext,
-): IAccount | undefined => {
-  return context.globalState.get<IAccount>('account');
+): Promise<IAccount | undefined> => {
+  try {
+    // Try to load from Secrets API first
+    const accountData = await context.secrets.get('account');
+
+    if (accountData) {
+      return JSON.parse(accountData) as IAccount;
+    }
+
+    // Check for legacy plaintext storage and delete it (force logout)
+    const legacyAccount = context.globalState.get<IAccount>('account');
+    if (legacyAccount) {
+      // Found legacy data - delete it and force user to re-login
+      await context.globalState.update('account', undefined);
+      console.warn(
+        'Removed legacy plaintext account data. Please login again.',
+      );
+    }
+
+    return undefined;
+  } catch (error) {
+    console.error('Error loading account data:', error);
+    return undefined;
+  }
 };

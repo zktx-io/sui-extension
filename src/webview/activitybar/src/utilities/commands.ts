@@ -7,6 +7,7 @@ export enum COMMANDS {
   CLI = 'package:cli',
   FMT = 'package:format',
   Deploy = 'package:deploy',
+  OpenExternal = 'open:external',
   MsgInfo = 'message:info',
   MsgError = 'message:error',
   OutputInfo = 'output:info',

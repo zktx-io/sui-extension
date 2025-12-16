@@ -193,14 +193,14 @@ export class PTBBuilderProvider
   }
 
   // Build a unified payload for LoadData messages
-  private _buildLoadPayload(
+  private async _buildLoadPayload(
     document: PTBDocument,
     options?: { suppressSave?: boolean },
   ) {
     return {
       command: COMMANDS.LoadData,
       data: {
-        account: accountLoad(this._context),
+        account: await accountLoad(this._context),
         ptb: document.getText(),
         suppressSave: options?.suppressSave || undefined,
       },
@@ -212,17 +212,18 @@ export class PTBBuilderProvider
     document: PTBDocument,
     panel: vscode.WebviewPanel,
   ) {
-    panel.webview.postMessage(this._buildLoadPayload(document));
+    panel.webview.postMessage(await this._buildLoadPayload(document));
   }
 
   // Apply text and broadcast to all panels of the document
-  private _applyAndBroadcast(
+  private async _applyAndBroadcast(
     document: PTBDocument,
     text: string,
     options?: { suppressSave?: boolean },
   ) {
     document.setText(text);
-    this._broadcastDoc(document, this._buildLoadPayload(document, options));
+    const payload = await this._buildLoadPayload(document, options);
+    this._broadcastDoc(document, payload);
   }
 
   // Normalize PTB JSON strings so semantically identical docs compare equal.
@@ -239,7 +240,7 @@ export class PTBBuilderProvider
     const payload = {
       command: COMMANDS.UpdateState,
       data: {
-        account: accountLoad(this._context),
+        account: await accountLoad(this._context),
       },
     };
     this._broadcastToAllPanels(payload);
@@ -297,11 +298,8 @@ export class PTBBuilderProvider
           this._updateTextDocument(document, text);
 
           // Sync latest content to other panels for this doc (skip sender)
-          this._broadcastDoc(
-            document,
-            this._buildLoadPayload(document),
-            webviewPanel,
-          );
+          const payload = await this._buildLoadPayload(document);
+          this._broadcastDoc(document, payload, webviewPanel);
           break;
         }
         case COMMANDS.RequestUndo: {
@@ -372,9 +370,13 @@ export class PTBBuilderProvider
       document,
       label: 'PTB Edit',
       undo: async () =>
-        this._applyAndBroadcast(document, oldText, { suppressSave: true }),
+        await this._applyAndBroadcast(document, oldText, {
+          suppressSave: true,
+        }),
       redo: async () =>
-        this._applyAndBroadcast(document, newText, { suppressSave: true }),
+        await this._applyAndBroadcast(document, newText, {
+          suppressSave: true,
+        }),
     });
   }
 
@@ -399,10 +401,10 @@ export class PTBBuilderProvider
   ): Promise<void> {
     await document.revert();
     // After revert, sync to all panels for this doc.
-    this._broadcastDoc(
-      document,
-      this._buildLoadPayload(document, { suppressSave: true }),
-    );
+    const payload = await this._buildLoadPayload(document, {
+      suppressSave: true,
+    });
+    this._broadcastDoc(document, payload);
   }
 
   public async backupCustomDocument(

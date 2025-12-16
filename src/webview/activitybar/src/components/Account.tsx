@@ -61,11 +61,28 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
     try {
       setIsLogin(true);
       setIsFaucet(true);
-      const result = state.account && (await faucet(state.account));
-      if (result) {
-        const balance =
-          state.account && (await getBalance(client, state.account));
-        setState((oldState) => ({ ...oldState, balance }));
+
+      // For testnet, open web faucet instead of API call
+      if (state.account?.nonce.network === 'testnet') {
+        const faucetUrl = `https://faucet.sui.io/?network=testnet`;
+        vscode.postMessage({
+          command: COMMANDS.OpenExternal,
+          data: faucetUrl,
+        });
+        // Wait a bit for user to request tokens, then refresh balance
+        setTimeout(async () => {
+          const balance =
+            state.account && (await getBalance(client, state.account));
+          setState((oldState) => ({ ...oldState, balance }));
+        }, 3000);
+      } else {
+        // For devnet, use API
+        const result = state.account && (await faucet(state.account));
+        if (result) {
+          const balance =
+            state.account && (await getBalance(client, state.account));
+          setState((oldState) => ({ ...oldState, balance }));
+        }
       }
     } catch (error) {
       vscode.postMessage({

@@ -1,8 +1,9 @@
 import { getFaucetHost, requestSuiFromFaucetV2 } from '@mysten/sui/faucet';
 import { IAccount } from '../recoil';
 
+// Faucet API for devnet only (testnet uses web faucet)
 export const faucet = async (account: IAccount): Promise<boolean> => {
-  if (account.nonce.network !== 'mainnet' && account.zkAddress) {
+  if (account.nonce.network === 'devnet' && account.zkAddress) {
     try {
       const res = await requestSuiFromFaucetV2({
         host: getFaucetHost(account.nonce.network),
