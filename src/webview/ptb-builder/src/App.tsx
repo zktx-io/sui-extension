@@ -160,12 +160,20 @@ function App() {
           const ptbRaw = message.data?.ptb as string | undefined;
           suppressNextSaveRef.current = Boolean(message.data?.suppressSave);
           setAccount(acc);
-          if (acc) {
-            const docKey = ptbRaw ?? `sui:${acc.nonce.network}`;
+
+          // Load PTB document even without account
+          if (ptbRaw) {
+            // Load existing PTB file
+            if (ptbRaw !== lastDocKeyRef.current) {
+              const doc = JSON.parse(ptbRaw) as PTBDoc;
+              lastDocKeyRef.current = ptbRaw;
+              setIncomingDoc(doc);
+            }
+          } else if (acc) {
+            // Create new PTB for network only if account exists
+            const docKey = `sui:${acc.nonce.network}`;
             if (docKey !== lastDocKeyRef.current) {
-              const doc = !ptbRaw
-                ? (`sui:${acc.nonce.network}` as Chain)
-                : (JSON.parse(ptbRaw) as PTBDoc);
+              const doc = docKey as Chain;
               lastDocKeyRef.current = docKey;
               setIncomingDoc(doc);
             }
