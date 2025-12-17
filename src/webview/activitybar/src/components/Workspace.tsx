@@ -17,6 +17,7 @@ import { packagePublish } from '../utilities/packagePublish';
 import {
   dataGet,
   packageAdd,
+  packageUpdate,
   packageSelect,
 } from '../utilities/stateController';
 import { getBalance } from '../utilities/getBalance';
@@ -30,9 +31,13 @@ type PackageListMessage = {
 };
 type DeployMessage = {
   command: COMMANDS.Deploy;
-  data: string;
+  data: { dumpByte: string; upgradeToml: string };
 };
-type WorkspaceMessage = PackageListMessage | DeployMessage;
+type UpgradeMessage = {
+  command: COMMANDS.Upgrade;
+  data: { path: string; content: string };
+};
+type WorkspaceMessage = PackageListMessage | DeployMessage | UpgradeMessage;
 
 type SuiPackageManifest = {
   package?: {
@@ -54,6 +59,37 @@ export const Workspace = ({
     { path: string; name: string; version: string }[]
   >([]);
   const [upgradeToml, setUpgradeToml] = useState<string>('');
+
+  const buildUpgradeToml = (
+    packageId: string,
+    upgradeCapId: string | undefined,
+    policy?: unknown,
+  ) => {
+    const lines = [
+      '[upgrade]',
+      `package_id = "${packageId}"`,
+      `upgrade_cap = "${upgradeCapId ?? 'YOUR_UPGRADE_CAP_OBJECT_ID'}"`,
+    ];
+
+    if (typeof policy === 'string' && policy.trim()) {
+      lines.push(`policy = "${policy.trim()}"`);
+    } else if (typeof policy === 'number' && Number.isFinite(policy)) {
+      lines.push(`policy = ${policy}`);
+    } else {
+      lines.push(
+        '# policy = "compatible" # optional: compatible|additive|dep_only',
+      );
+    }
+    return `${lines.join('\n')}\n`;
+  };
+
+  useEffect(() => {
+    if (!state.path) {
+      setUpgradeToml('');
+      return;
+    }
+    vscode.postMessage({ command: COMMANDS.Upgrade, data: state.path });
+  }, [state.path]);
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent<WorkspaceMessage>) => {
@@ -87,14 +123,28 @@ export const Workspace = ({
             }
           }
           break;
+        case COMMANDS.Upgrade:
+          if (message.data.path === state.path) {
+            setUpgradeToml(message.data.content);
+          }
+          break;
         case COMMANDS.Deploy:
           try {
             if (!!state.account?.zkAddress && !!client) {
-              if (!upgradeToml) {
-                const { packageId } = await packagePublish(
+              const toml = message.data.upgradeToml;
+              if (!message.data.dumpByte?.trim()) {
+                vscode.postMessage({
+                  command: COMMANDS.MsgError,
+                  data: `Missing bytecode dump. Run "Build" first to generate bytecode.dump.json.`,
+                });
+                break;
+              }
+              setUpgradeToml(toml);
+              if (!toml) {
+                const { packageId, upgradeCap } = await packagePublish(
                   state.account,
                   client,
-                  message.data,
+                  message.data.dumpByte,
                 );
                 const balance = await getBalance(client, state.account);
                 const modules = await loadPackageData(client, packageId);
@@ -103,17 +153,34 @@ export const Workspace = ({
                     ? {
                         ...oldState,
                         balance,
-                        ...packageAdd(packageId, modules),
+                        ...packageAdd(packageId, modules, {
+                          upgradeCap,
+                          upgradeCapChecked: Boolean(upgradeCap),
+                          upgradeCapValidated: false,
+                          path: state.path,
+                        }),
                       }
                     : { ...oldState, balance },
                 );
+                if (state.path) {
+                  vscode.postMessage({
+                    command: COMMANDS.UpgradeSave,
+                    data: {
+                      path: state.path,
+                      content: buildUpgradeToml(packageId, upgradeCap),
+                      overwrite: false,
+                      notify: true,
+                    },
+                  });
+                }
               } else {
-                const { packageId } = await packageUpgrade(
-                  state.account,
-                  client,
-                  message.data,
-                  upgradeToml,
-                );
+                const { packageId, fromPackageId, upgradeCap } =
+                  await packageUpgrade(
+                    state.account,
+                    client,
+                    message.data.dumpByte,
+                    toml,
+                  );
                 const balance = await getBalance(client, state.account);
                 const modules = await loadPackageData(client, packageId);
                 setState((oldState) =>
@@ -121,10 +188,43 @@ export const Workspace = ({
                     ? {
                         ...oldState,
                         balance,
-                        ...packageAdd(packageId, modules),
+                        ...packageAdd(packageId, modules, {
+                          upgradeCap,
+                          upgradeCapChecked: true,
+                          upgradeCapValidated: false,
+                          path: state.path,
+                        }),
                       }
                     : { ...oldState, balance },
                 );
+                setState((oldState) => ({
+                  ...oldState,
+                  ...packageUpdate(fromPackageId, {
+                    upgradeCap: undefined,
+                    upgradeCapChecked: true,
+                    upgradeCapValidated: true,
+                  }),
+                }));
+                let policy: unknown = undefined;
+                try {
+                  const parsed = parse(toml) as {
+                    upgrade?: { policy?: unknown };
+                  };
+                  policy = parsed.upgrade?.policy;
+                } catch {
+                  policy = undefined;
+                }
+                if (state.path) {
+                  vscode.postMessage({
+                    command: COMMANDS.UpgradeSave,
+                    data: {
+                      path: state.path,
+                      content: buildUpgradeToml(packageId, upgradeCap, policy),
+                      overwrite: true,
+                      notify: true,
+                    },
+                  });
+                }
               }
             }
           } catch (e) {
@@ -144,7 +244,7 @@ export const Workspace = ({
       window.removeEventListener('message', handleMessage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, state.account, upgradeToml]);
+  }, [client, state.account, state.path]);
 
   return (
     <>
@@ -226,7 +326,7 @@ export const Workspace = ({
       </div>
 
       <SpinButton
-        title={!upgradeToml ? 'Deploy' : 'Upgrade'}
+        title={upgradeToml ? 'Upgrade' : 'Deploy'}
         spin={isLoading}
         disabled={
           !client ||

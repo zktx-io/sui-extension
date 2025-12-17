@@ -9,7 +9,7 @@ export const packagePublish = async (
   account: IAccount,
   client: SuiClient,
   dumpByte: string,
-): Promise<{ digest: string; packageId: string }> => {
+): Promise<{ digest: string; packageId: string; upgradeCap?: string }> => {
   if (account.nonce.privateKey && account.zkAddress) {
     try {
       const { modules, dependencies } = JSON.parse(dumpByte) as {
@@ -40,9 +40,21 @@ export const packagePublish = async (
         });
         throw new Error('publish error');
       }
+      const upgradeCap = (res.objectChanges || []).find((change) => {
+        if (!change || typeof change !== 'object') {
+          return false;
+        }
+        const created = change as { type?: string; objectType?: string };
+        return (
+          created.type === 'created' &&
+          typeof created.objectType === 'string' &&
+          created.objectType.includes('::package::UpgradeCap')
+        );
+      }) as unknown as { objectId?: string } | undefined;
       return {
         digest: res.digest,
         packageId: published[0].packageId,
+        upgradeCap: upgradeCap?.objectId,
       };
     } catch (error) {
       throw new Error(`${error}`);

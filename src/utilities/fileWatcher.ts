@@ -4,6 +4,7 @@ import { ByteDump } from '../webview/activitybar/src/utilities/cli';
 
 const MoveToml = 'Move.toml';
 const UpgradeToml = 'Upgrade.toml';
+const UpgradeTomlLower = 'upgrade.toml';
 
 type WatchedPackage = {
   uri: vscode.Uri;
@@ -73,10 +74,19 @@ export class FileWatcher {
 
   public async getUpgradeToml(path: string): Promise<string> {
     try {
-      const uri = this.getUriFromRelativePath(`${path}/${UpgradeToml}`);
-      if (uri) {
-        const content = await this.readFileContent(uri);
-        return new TextDecoder().decode(content);
+      const candidates = [
+        `${path}/${UpgradeToml}`,
+        `${path}/${UpgradeTomlLower}`,
+      ];
+      for (const relativePath of candidates) {
+        const uri = this.getUriFromRelativePath(relativePath);
+        if (uri) {
+          const content = await this.readFileContent(uri, { silent: true });
+          const decoded = new TextDecoder().decode(content);
+          if (decoded.trim()) {
+            return decoded;
+          }
+        }
       }
       return '';
     } catch (error) {
@@ -88,7 +98,7 @@ export class FileWatcher {
     try {
       const uri = this.getUriFromRelativePath(`${path}/${ByteDump}`);
       if (uri) {
-        const content = await this.readFileContent(uri);
+        const content = await this.readFileContent(uri, { silent: true });
         return new TextDecoder().decode(content);
       }
       return '';
@@ -150,12 +160,17 @@ export class FileWatcher {
     return path.replace('static/extensions/fs', '');
   }
 
-  private async readFileContent(uri: vscode.Uri): Promise<Uint8Array> {
+  private async readFileContent(
+    uri: vscode.Uri,
+    options?: { silent?: boolean },
+  ): Promise<Uint8Array> {
     try {
       const fileContent = await vscode.workspace.fs.readFile(uri);
       return fileContent;
     } catch (error) {
-      vscode.window.showErrorMessage(`Error reading file: ${error}`);
+      if (!options?.silent) {
+        vscode.window.showErrorMessage(`Error reading file: ${error}`);
+      }
       return new Uint8Array();
     }
   }

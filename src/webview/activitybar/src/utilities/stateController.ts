@@ -14,6 +14,12 @@ const setState = (state: StoredPackageState) => {
 export const packageAdd = (
   objectId: string,
   modules: SuiMoveNormalizedModules,
+  options?: {
+    upgradeCap?: string;
+    upgradeCapChecked?: boolean;
+    upgradeCapValidated?: boolean;
+    path?: string;
+  },
 ): StoredPackageState => {
   const state = dataGet();
   const index = Date.now();
@@ -22,10 +28,10 @@ export const packageAdd = (
     packages: state.packages
       ? {
           ...state.packages,
-          [objectId]: { index, data: modules },
+          [objectId]: { index, data: modules, ...options },
         }
       : {
-          [objectId]: { index, data: modules },
+          [objectId]: { index, data: modules, ...options },
         },
   });
   return dataGet();
@@ -40,6 +46,26 @@ export const packageDelete = (objectId: string): StoredPackageState => {
   setState({
     ...state,
     packages: rest,
+  });
+  return dataGet();
+};
+
+export const packageUpdate = (
+  objectId: string,
+  patch: Partial<PackageMap[string]>,
+): StoredPackageState => {
+  const state = dataGet();
+  const existing = state.packages?.[objectId];
+  if (!existing) {
+    return state;
+  }
+
+  setState({
+    ...state,
+    packages: {
+      ...state.packages,
+      [objectId]: { ...existing, ...patch },
+    },
   });
   return dataGet();
 };

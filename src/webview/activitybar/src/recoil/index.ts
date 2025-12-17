@@ -34,6 +34,10 @@ export interface IAccount {
 export interface IPackageEntry {
   index: number;
   data: SuiMoveNormalizedModules;
+  upgradeCap?: string;
+  upgradeCapChecked?: boolean;
+  upgradeCapValidated?: boolean;
+  path?: string;
 }
 
 export type PackageMap = Record<string, IPackageEntry>;

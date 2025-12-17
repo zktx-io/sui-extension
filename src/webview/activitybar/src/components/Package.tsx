@@ -15,7 +15,13 @@ import {
 import { Function } from './Function';
 import { STATE } from '../recoil';
 import { moveCall } from '../utilities/moveCall';
-import { packageDelete } from '../utilities/stateController';
+import { packageDelete, packageUpdate } from '../utilities/stateController';
+import { vscode } from '../utilities/vscode';
+import { COMMANDS } from '../utilities/commands';
+import {
+  findOwnedUpgradeCap,
+  getUpgradeCapPackageId,
+} from '../utilities/upgradeCap';
 
 const cardStyles = {
   card: {
@@ -72,8 +78,123 @@ export const Package = ({
   const [isExcute, setIsExcute] = useState<boolean>(false);
   const [funcWrite, setFuncWrite] = useState<IFunctions | undefined>(undefined);
 
+  const entry = state.packages?.[packageId];
+  const upgradeCapId = entry?.upgradeCap;
+  const isUpgradable = Boolean(upgradeCapId);
+
   const onDelete = () => {
     setState((oldState) => ({ ...oldState, ...packageDelete(packageId) }));
+  };
+
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isDetectingCap, setIsDetectingCap] = useState(false);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!entry) return;
+      if (!client || !state.account?.zkAddress?.address) return;
+
+      setIsDetectingCap(true);
+      try {
+        if (entry.upgradeCap) {
+          if (entry.upgradeCapValidated) return;
+          const capPackageId = await getUpgradeCapPackageId(
+            client,
+            entry.upgradeCap,
+          );
+          if (capPackageId === packageId) {
+            setState((oldState) => ({
+              ...oldState,
+              ...packageUpdate(packageId, {
+                upgradeCapChecked: true,
+                upgradeCapValidated: true,
+              }),
+            }));
+            return;
+          }
+        } else if (entry.upgradeCapChecked) {
+          return;
+        }
+
+        const found = await findOwnedUpgradeCap(
+          client,
+          state.account.zkAddress.address,
+          packageId,
+        );
+        setState((oldState) => ({
+          ...oldState,
+          ...packageUpdate(packageId, {
+            upgradeCap: found?.upgradeCapId,
+            upgradeCapChecked: true,
+            upgradeCapValidated: true,
+          }),
+        }));
+      } catch {
+        setState((oldState) => ({
+          ...oldState,
+          ...packageUpdate(packageId, {
+            upgradeCapChecked: true,
+            upgradeCapValidated: true,
+          }),
+        }));
+      } finally {
+        setIsDetectingCap(false);
+      }
+    };
+    void run();
+  }, [client, entry, packageId, setState, state.account?.zkAddress?.address]);
+
+  const onCopyUpgradeToml = async () => {
+    if (isUpgrading) return;
+    setIsUpgrading(true);
+    try {
+      let upgradeCap = state.packages?.[packageId]?.upgradeCap;
+
+      if (!upgradeCap && client && state.account?.zkAddress?.address) {
+        try {
+          const found = await findOwnedUpgradeCap(
+            client,
+            state.account.zkAddress.address,
+            packageId,
+          );
+          if (found?.upgradeCapId) {
+            upgradeCap = found.upgradeCapId;
+            setState((oldState) => ({
+              ...oldState,
+              ...packageUpdate(packageId, { upgradeCap }),
+            }));
+          }
+        } catch {
+          // ignore lookup failures; fall back to placeholder
+        }
+      }
+
+      const upgradable = Boolean(upgradeCap);
+      if (!upgradable) {
+        vscode.postMessage({
+          command: COMMANDS.MsgError,
+          data: `Upgrade is not available for this package in the current wallet (no UpgradeCap found for ${packageId}).`,
+        });
+      }
+
+      const toml = `[upgrade]
+package_id = "${packageId}"
+upgrade_cap = "${upgradeCap ?? 'YOUR_UPGRADE_CAP_OBJECT_ID'}"
+# policy = "compatible" # optional: compatible|additive|dep_only
+`;
+
+      const path = state.packages?.[packageId]?.path;
+      if (path) {
+        vscode.postMessage({
+          command: COMMANDS.UpgradeSave,
+          data: { path, content: toml },
+        });
+      } else {
+        vscode.postMessage({ command: COMMANDS.ClipboardWrite, data: toml });
+      }
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   const onExcute = async (
@@ -162,6 +283,47 @@ export const Package = ({
           readOnly
           value={packageId}
         />
+        <label style={{ fontSize: '11px', color: 'GrayText' }}>
+          Upgrade Cap Id
+        </label>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'stretch',
+            width: '100%',
+            marginBottom: '4px',
+          }}
+        >
+          <VSCodeTextField
+            style={{ flex: '1 1 auto' }}
+            readOnly
+            value={upgradeCapId ?? ''}
+            placeholder={
+              isDetectingCap
+                ? 'Detecting…'
+                : isUpgradable
+                  ? 'Upgradable'
+                  : 'Not upgradable (no UpgradeCap in the current wallet)'
+            }
+          />
+          <VSCodeButton
+            appearance="icon"
+            onClick={onCopyUpgradeToml}
+            disabled={isUpgrading || isDetectingCap || !isUpgradable}
+            title="Create or copy Upgrade.toml"
+            style={{ marginLeft: '6px', flex: '0 0 auto' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+            >
+              <path d="M0 0h48v48h-48z" fill="none" />
+              <path d="M38.86 25.95c.08-.64.14-1.29.14-1.95s-.06-1.31-.14-1.95l4.23-3.31c.38-.3.49-.84.24-1.28l-4-6.93c-.25-.43-.77-.61-1.22-.43l-4.98 2.01c-1.03-.79-2.16-1.46-3.38-1.97l-.75-5.3c-.09-.47-.5-.84-1-.84h-8c-.5 0-.91.37-.99.84l-.75 5.3c-1.22.51-2.35 1.17-3.38 1.97l-4.98-2.01c-.45-.17-.97 0-1.22.43l-4 6.93c-.25.43-.14.97.24 1.28l4.22 3.31c-.08.64-.14 1.29-.14 1.95s.06 1.31.14 1.95l-4.22 3.31c-.38.3-.49.84-.24 1.28l4 6.93c.25.43.77.61 1.22.43l4.98-2.01c1.03.79 2.16 1.46 3.38 1.97l.75 5.3c.08.47.49.84.99.84h8c.5 0 .91-.37.99-.84l.75-5.3c1.22-.51 2.35-1.17 3.38-1.97l4.98 2.01c.45.17.97 0 1.22-.43l4-6.93c.25-.43.14-.97-.24-1.28l-4.22-3.31zm-14.86 5.05c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+            </svg>
+          </VSCodeButton>
+        </div>
         <label style={{ fontSize: '11px', color: 'GrayText' }}>Modules</label>
         <VSCodeDropdown
           style={{ width: '100%' }}

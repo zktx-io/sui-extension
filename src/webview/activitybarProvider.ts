@@ -145,17 +145,105 @@ fi`;
             break;
           case COMMANDS.Deploy:
             {
-              const dumpByte = await this._fileWatcher?.getByteCodeDump(
-                data as string,
-              );
+              const path = data as string;
+              const [dumpByte, upgradeToml] = await Promise.all([
+                this._fileWatcher?.getByteCodeDump(path),
+                this._fileWatcher?.getUpgradeToml(path),
+              ]);
               this._view?.webview.postMessage({
                 command: COMMANDS.Deploy,
-                data: dumpByte || '',
+                data: {
+                  dumpByte: dumpByte || '',
+                  upgradeToml: upgradeToml || '',
+                },
+              });
+            }
+            break;
+          case COMMANDS.Upgrade:
+            {
+              const path = data as string;
+              const upgradeToml = await this._fileWatcher?.getUpgradeToml(path);
+              this._view?.webview.postMessage({
+                command: COMMANDS.Upgrade,
+                data: { path, content: upgradeToml || '' },
               });
             }
             break;
           case COMMANDS.OpenExternal:
             await vscode.env.openExternal(vscode.Uri.parse(data as string));
+            break;
+          case COMMANDS.ClipboardWrite:
+            try {
+              await vscode.env.clipboard.writeText(data as string);
+              vscode.window.showInformationMessage(
+                'Upgrade.toml has been copied to the clipboard.',
+              );
+            } catch (error) {
+              vscode.window.showErrorMessage(
+                `Failed to copy to clipboard: ${String(error)}`,
+              );
+            }
+            break;
+          case COMMANDS.UpgradeSave:
+            try {
+              const { path, content, overwrite, notify } = data as {
+                path: string;
+                content: string;
+                overwrite?: boolean;
+                notify?: boolean;
+              };
+              const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+              if (!workspaceFolder) {
+                throw new Error('No workspace folder found.');
+              }
+              const fileUri = vscode.Uri.joinPath(
+                workspaceFolder.uri,
+                path,
+                'Upgrade.toml',
+              );
+
+              let exists = false;
+              try {
+                await vscode.workspace.fs.stat(fileUri);
+                exists = true;
+              } catch {
+                exists = false;
+              }
+
+              if (exists) {
+                if (!overwrite) {
+                  if (notify !== false) {
+                    vscode.window.showInformationMessage(
+                      `Upgrade.toml already exists at "${path}/Upgrade.toml".`,
+                    );
+                  }
+                  break;
+                }
+                const choice = await vscode.window.showWarningMessage(
+                  `Upgrade.toml already exists in "${path}". Overwrite it?`,
+                  { modal: true },
+                  'Overwrite',
+                  'Cancel',
+                );
+                if (choice !== 'Overwrite') {
+                  break;
+                }
+              }
+
+              await vscode.workspace.fs.writeFile(
+                fileUri,
+                Buffer.from(content, 'utf8'),
+              );
+              if (notify !== false) {
+                vscode.window.showInformationMessage(
+                  `Upgrade.toml has been saved to "${path}/Upgrade.toml".`,
+                );
+              }
+            } catch (error) {
+              vscode.window.showErrorMessage(
+                `Failed to save Upgrade.toml: ${String(error)}`,
+              );
+            }
             break;
           case COMMANDS.MsgInfo:
             vscode.window.showInformationMessage(data as string);

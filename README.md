@@ -10,13 +10,30 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 - **Unified Development**: Manage both front-end and back-end code in a single repository for streamlined development.
 - **Upgrade Smart Contracts**: Seamlessly upgrade and test your smart contracts.
 
-  > Note: To upgrade, add an `upgrade.toml` file in the same directory as your `move.toml` file. The format is as follows:
+  **Upgrade.toml**
+
+  To upgrade a package, place an `Upgrade.toml` (or `upgrade.toml`) file in the same directory as your `Move.toml`:
 
   ```toml
   [upgrade]
   package_id = "The address of the deployed package"
   upgrade_cap = "The UpgradeCap is the central type responsible for coordinating package upgrades."
+  # policy = "compatible" # optional: compatible|additive|dep_only
   ```
+
+  **UI helpers**
+
+  In **Package Explorer**, each package card shows an **Upgrade Cap Id** field. The extension auto-detects the `UpgradeCap` from the currently logged-in wallet:
+  - If an `UpgradeCap` for that `package_id` is found, the package is upgradeable from that wallet.
+  - If not, upgrading is not available from that wallet.
+
+  The package card’s **Upgrade** (gear + up arrow) button helps you create/update `Upgrade.toml`:
+  - If the package was deployed from the **Workspace** (local folder path is known), it saves `Upgrade.toml` into that folder (prompts before overwriting).
+  - If the package was loaded by address (no local folder path), it copies the template to your clipboard.
+
+  After a successful **publish** from the **Workspace**, the extension automatically creates `Upgrade.toml` in that package folder (if it does not already exist). After a successful **upgrade**, it updates `Upgrade.toml` to point to the newly published `package_id`.
+
+  ![Sui Extension upgrade](https://docs.zktx.io/images/sui-extension-upgrade.png)
 
 ## Requirements
 
@@ -40,7 +57,7 @@ The Sui extension provides seamless support for compiling, deploying, and testin
 1. **Workspace**: This section of the interface allows you to compile or deploy Smart Contracts. If you have multiple smart contracts in your repository, you can select the specific smart contract (`Move.toml`) and proceed with compilation or deployment. If there is an `Upgrade.toml` file in the same folder as the `Move.toml` file, the contract will be upgraded rather than published. Use the `Format` button. This ensures your code adheres to a consistent style, improving readability and maintainability.
 1. **Owner Objects Explorer**: This section of the interface allows you to load and inspect owner objects, one of the key features of Sui. By loading objects, you can check its `type` to verify that it contains the appropriate information required for the function arguments of a deployed smart contract.
 1. **Object Explorer**: This section of the interface allows you to load and inspect objects, one of the key features of Sui. By loading an object, you can check its `type` to verify that it contains the appropriate information required for the function arguments of a deployed smart contract.
-1. **Package Explorer**: This section of the user interface allows you to test smart contracts. When you deploy a Smart Contract, it is automatically registered here. You can also manually enter the address of a previously deployed Smart Contract to register it. If the smart contract is loaded correctly, you will see a list of functions available to interact with the contract.
+1. **Package Explorer**: This section of the user interface allows you to test smart contracts. When you deploy a Smart Contract, it is automatically registered here. You can also manually enter the address of a previously deployed Smart Contract to register it. If the smart contract is loaded correctly, you will see a list of functions available to interact with the contract. Each package card also includes an **Upgrade Cap Id** field and an **Upgrade** button to help you prepare `Upgrade.toml`.
 1. **Move Call**: Input Format for Multi-Vectors Using JSON Strings. When working with multi-vectors, the input must be provided in JSON string format. JSON is ideal for representing nested structures and allows handling multi-dimensional arrays effectively.
 
    | Type                           | JSON                                       |
