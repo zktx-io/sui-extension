@@ -27,9 +27,10 @@ The Sui extension provides seamless support for compiling, deploying, and testin
   - If an `UpgradeCap` for that `package_id` is found, the package is upgradeable from that wallet.
   - If not, upgrading is not available from that wallet.
 
-  The package card’s **Upgrade** (gear + up arrow) button helps you create/update `Upgrade.toml`:
-  - If the package was deployed from the **Workspace** (local folder path is known), it saves `Upgrade.toml` into that folder (prompts before overwriting).
-  - If the package was loaded by address (no local folder path), it copies the template to your clipboard.
+  The package card’s **Upgrade.toml** button helps you create/update `Upgrade.toml`:
+  - If the package was deployed from the **Workspace** (local folder path is known), it shows a save/document icon (📄) and saves `Upgrade.toml` into that folder (prompts before overwriting).
+  - If the package was loaded by address (no local folder path), it shows a copy icon (📋) and copies the template to your clipboard.
+  - If the package is not upgradeable from the current wallet (no matching `UpgradeCap`), the button is disabled.
 
   After a successful **publish** from the **Workspace**, the extension automatically creates `Upgrade.toml` in that package folder (if it does not already exist). After a successful **upgrade**, it updates `Upgrade.toml` to point to the newly published `package_id`.
 
