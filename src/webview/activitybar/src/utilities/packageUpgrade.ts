@@ -52,7 +52,7 @@ export const packageUpgrade = async (
   fromPackageId: string;
   upgradeCap: string;
 }> => {
-  if (account.nonce.privateKey && account.zkAddress) {
+  if (account.zkAddress?.address) {
     try {
       const {
         modules,

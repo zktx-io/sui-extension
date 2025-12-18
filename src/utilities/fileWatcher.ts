@@ -26,6 +26,9 @@ export class FileWatcher {
   ) {
     this._view = view;
     const watcher = vscode.workspace.createFileSystemWatcher(`**/${fileName}`);
+    const upgradeWatcher = vscode.workspace.createFileSystemWatcher(
+      `**/{${UpgradeToml},${UpgradeTomlLower}}`,
+    );
 
     watcher.onDidChange(async (uri) => {
       await this.handleFileChange(uri);
@@ -40,6 +43,17 @@ export class FileWatcher {
     });
 
     context.subscriptions.push(watcher);
+
+    upgradeWatcher.onDidChange(async (uri) => {
+      await this.handleUpgradeTomlChange(uri);
+    });
+    upgradeWatcher.onDidCreate(async (uri) => {
+      await this.handleUpgradeTomlChange(uri);
+    });
+    upgradeWatcher.onDidDelete((uri) => {
+      this.handleUpgradeTomlDelete(uri);
+    });
+    context.subscriptions.push(upgradeWatcher);
   }
 
   public async initializePackageList() {
@@ -104,6 +118,37 @@ export class FileWatcher {
       );
       this.updateWebview();
     }
+  }
+
+  private toPackageDirFromTomlPath(tomlPath: string): string {
+    const normalized = this.normalizeRelativePath(tomlPath);
+    const match = normalized.match(
+      /^(.*?)(?:\/(?:Upgrade\.toml|upgrade\.toml|Move\.toml))$/,
+    );
+    const dir = match?.[1] ?? '';
+    return dir === '' ? '.' : dir;
+  }
+
+  private async handleUpgradeTomlChange(uri: vscode.Uri) {
+    const relativePath = this.getRelativePath(uri);
+    const packageDir = this.toPackageDirFromTomlPath(relativePath);
+    const content = await this.readFileContent(uri, { silent: true });
+    this._view.webview.postMessage({
+      command: COMMANDS.Upgrade,
+      data: {
+        path: packageDir,
+        content: new TextDecoder().decode(content),
+      },
+    });
+  }
+
+  private handleUpgradeTomlDelete(uri: vscode.Uri) {
+    const relativePath = this.getRelativePath(uri);
+    const packageDir = this.toPackageDirFromTomlPath(relativePath);
+    this._view.webview.postMessage({
+      command: COMMANDS.Upgrade,
+      data: { path: packageDir, content: '' },
+    });
   }
 
   private handleFileDelete(uri: vscode.Uri) {

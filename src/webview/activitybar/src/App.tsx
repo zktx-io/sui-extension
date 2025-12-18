@@ -26,6 +26,7 @@ function App() {
         data: {
           hasTerminal: boolean;
           account?: IAccount;
+          canSign?: boolean;
         };
       }>,
     ) => {
@@ -33,14 +34,17 @@ function App() {
       switch (message.command) {
         case COMMANDS.Env:
           {
-            const { hasTerminal: terminal, account: loaddedAccount } =
-              message.data;
+            const {
+              hasTerminal: terminal,
+              account: loaddedAccount,
+              canSign,
+            } = message.data;
             setHasTerminal(terminal);
-            loaddedAccount &&
-              setState((oldState) => ({
-                ...oldState,
-                account: { ...oldState.account, ...loaddedAccount },
-              }));
+            setState((oldState) => ({
+              ...oldState,
+              account: loaddedAccount ? loaddedAccount : undefined,
+              canSign: Boolean(canSign),
+            }));
           }
           break;
         default:

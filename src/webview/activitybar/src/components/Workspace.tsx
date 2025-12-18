@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { parse } from 'smol-toml';
 import {
@@ -54,10 +54,15 @@ export const Workspace = ({
 }) => {
   const [state, setState] = useRecoilState(STATE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [deployUiState, setDeployUiState] = useState<
+    'idle' | 'requesting' | 'timeout' | 'needBuild'
+  >('idle');
   const [fileList, setFileList] = useState<
     { path: string; name: string; version: string }[]
   >([]);
   const [upgradeToml, setUpgradeToml] = useState<string>('');
+  const deployResponseTimeoutRef = useRef<number | undefined>(undefined);
+  const awaitingDeployResponseRef = useRef<boolean>(false);
 
   const buildUpgradeToml = (
     packageId: string,
@@ -85,10 +90,11 @@ export const Workspace = ({
   useEffect(() => {
     if (!state.path) {
       setUpgradeToml('');
+      setDeployUiState('idle');
       return;
     }
     vscode.postMessage({ command: COMMANDS.Upgrade, data: state.path });
-  }, [state.path]);
+  }, [state.path, state.account?.zkAddress?.address]);
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent<WorkspaceMessage>) => {
@@ -129,13 +135,16 @@ export const Workspace = ({
           break;
         case COMMANDS.Deploy:
           try {
+            awaitingDeployResponseRef.current = false;
+            if (deployResponseTimeoutRef.current) {
+              window.clearTimeout(deployResponseTimeoutRef.current);
+              deployResponseTimeoutRef.current = undefined;
+            }
+            setDeployUiState('idle');
             if (!!state.account?.zkAddress && !!client) {
               const toml = message.data.upgradeToml;
               if (!message.data.dumpByte?.trim()) {
-                vscode.postMessage({
-                  command: COMMANDS.MsgError,
-                  data: `Missing bytecode dump. Run "Build" first to generate bytecode.dump.json.`,
-                });
+                setDeployUiState('needBuild');
                 break;
               }
               setUpgradeToml(toml);
@@ -241,6 +250,11 @@ export const Workspace = ({
 
     return () => {
       window.removeEventListener('message', handleMessage);
+      if (deployResponseTimeoutRef.current) {
+        window.clearTimeout(deployResponseTimeoutRef.current);
+        deployResponseTimeoutRef.current = undefined;
+      }
+      awaitingDeployResponseRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, state.account, state.path]);
@@ -325,13 +339,28 @@ export const Workspace = ({
       </div>
 
       <SpinButton
-        title={upgradeToml ? 'Upgrade' : 'Deploy'}
+        title={(() => {
+          const base = upgradeToml ? 'Upgrade' : 'Deploy';
+          if (deployUiState === 'timeout') return `Retry ${base}`;
+          if (deployUiState === 'needBuild') return 'Build first';
+          if (isLoading || deployUiState === 'requesting') {
+            return base === 'Deploy' ? 'Deploying…' : 'Upgrading…';
+          }
+          if (!fileList.some((item) => item.path === state.path))
+            return 'Select a package';
+          if (!hasTerminal) return `${base} (No terminal)`;
+          if (!state.account?.zkAddress?.address) return `Login to ${base}`;
+          if (!state.canSign) return `Re-login to ${base}`;
+          return base;
+        })()}
         spin={isLoading}
         disabled={
           !client ||
           !hasTerminal ||
           !state.path ||
+          !fileList.some((item) => item.path === state.path) ||
           !state.account?.zkAddress?.address ||
+          !state.canSign ||
           isLoading
         }
         width="100%"
@@ -340,6 +369,19 @@ export const Workspace = ({
           const selected = fileList.find((item) => item.path === state.path);
           if (selected) {
             setIsLoading(true);
+            setDeployUiState('requesting');
+            awaitingDeployResponseRef.current = true;
+            if (deployResponseTimeoutRef.current) {
+              window.clearTimeout(deployResponseTimeoutRef.current);
+            }
+            deployResponseTimeoutRef.current = window.setTimeout(() => {
+              if (!awaitingDeployResponseRef.current) {
+                return;
+              }
+              awaitingDeployResponseRef.current = false;
+              setIsLoading(false);
+              setDeployUiState('timeout');
+            }, 5000);
             vscode.postMessage({
               command: COMMANDS.Deploy,
               data: selected.path,

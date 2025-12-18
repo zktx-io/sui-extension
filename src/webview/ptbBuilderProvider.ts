@@ -6,12 +6,11 @@ import { printOutputChannel } from '../utilities/printOutputChannel';
 import {
   accountLoad,
   AccountStateUpdate,
+  canSignAccount,
   getSafeAccount,
 } from '../utilities/account';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { fromBase64 } from '@mysten/sui/utils';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
-import { decodeJwt } from 'jose';
+import { handleSignTransaction } from '../utilities/signing';
+// Imports removed
 
 // Minimal inbound message shape from the webview
 type InboundMsg =
@@ -210,6 +209,7 @@ export class PTBBuilderProvider
       command: COMMANDS.LoadData,
       data: {
         account: account ? getSafeAccount(account) : undefined,
+        canSign: canSignAccount(account),
         ptb: document.getText(),
         suppressSave: options?.suppressSave || undefined,
       },
@@ -251,6 +251,7 @@ export class PTBBuilderProvider
       command: COMMANDS.UpdateState,
       data: {
         account: account ? getSafeAccount(account) : undefined,
+        canSign: canSignAccount(account),
       },
     };
     this._broadcastToAllPanels(payload);
@@ -333,57 +334,12 @@ export class PTBBuilderProvider
           printOutputChannel(`[ERROR]\n${String(data ?? '')}`);
           break;
         case COMMANDS.SignTransaction: {
-          try {
-            const { transactionBytes } = data as { transactionBytes: string };
-            const account = await accountLoad(this._context);
-            if (!account || !account.nonce.privateKey || !account.zkAddress) {
-              throw new Error(
-                'Account not loaded or missing private key/zkAddress',
-              );
-            }
-            if (
-              !account.zkAddress.jwt ||
-              !account.zkAddress.salt ||
-              !account.zkAddress.proof
-            ) {
-              throw new Error(
-                'Account is missing zkLogin secrets (jwt/salt/proof). Please login again.',
-              );
-            }
-
-            const decodedJwt = decodeJwt(account.zkAddress.jwt);
-            const addressSeed = genAddressSeed(
-              BigInt(account.zkAddress.salt),
-              'sub',
-              decodedJwt.sub!,
-              decodedJwt.aud as string,
-            ).toString();
-
-            const keypair = Ed25519Keypair.fromSecretKey(
-              fromBase64(account.nonce.privateKey),
-            );
-            const { signature: userSignature } = await keypair.signTransaction(
-              fromBase64(transactionBytes),
-            );
-
-            const zkLoginSignature = getZkLoginSignature({
-              inputs: {
-                ...JSON.parse(account.zkAddress.proof),
-                addressSeed,
-              },
-              maxEpoch: account.nonce.expiration,
-              userSignature,
-            });
-
-            webviewPanel.webview.postMessage({
-              command: COMMANDS.SignTransaction,
-              data: {
-                signature: zkLoginSignature,
-              },
-            });
-          } catch (error) {
-            vscode.window.showErrorMessage(`Signing failed: ${error}`);
-          }
+          await handleSignTransaction(
+            this._context,
+            data as { transactionBytes: string },
+            (msg) => webviewPanel.webview.postMessage(msg),
+            COMMANDS.SignTransaction,
+          );
           break;
         }
         default:

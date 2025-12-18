@@ -10,7 +10,7 @@ export const packagePublish = async (
   client: SuiClient,
   dumpByte: string,
 ): Promise<{ digest: string; packageId: string; upgradeCap?: string }> => {
-  if (account.nonce.privateKey && account.zkAddress) {
+  if (account.zkAddress?.address) {
     try {
       const { modules, dependencies } = JSON.parse(dumpByte) as {
         modules: string[];

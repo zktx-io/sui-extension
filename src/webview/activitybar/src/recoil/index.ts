@@ -44,6 +44,7 @@ export type PackageMap = Record<string, IPackageEntry>;
 
 export interface IState {
   account?: IAccount;
+  canSign?: boolean;
   balance?: string;
   path?: string;
   packages: PackageMap;
@@ -53,5 +54,6 @@ export const STATE = atom<IState>({
   key: 'State',
   default: {
     packages: {},
+    canSign: false,
   },
 });

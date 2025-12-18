@@ -19,7 +19,9 @@ export const signAndExcute = async (
           const msg = event.data;
           if (msg.command === COMMANDS.SignTransaction) {
             window.removeEventListener('message', handler);
-            if (msg.data.signature) {
+            if (msg.data.error) {
+              reject(new Error(msg.data.error));
+            } else if (msg.data.signature) {
               resolve(msg.data.signature);
             } else {
               reject(new Error('No signature returned'));

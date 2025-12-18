@@ -8,8 +8,10 @@ import {
   accountLoad,
   AccountStateUpdate,
   accountStore,
+  canSignAccount,
   getSafeAccount,
 } from '../utilities/account';
+import { handleSignTransaction } from '../utilities/signing';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
 import type { IAccount } from './activitybar/src/recoil';
@@ -20,7 +22,6 @@ import {
   runBuild,
   runTest,
 } from './activitybar/src/utilities/cli';
-import * as path from 'path';
 
 type CliRequest = { kind: 'build' | 'test'; path: string };
 
@@ -56,23 +57,22 @@ const sanitizeRelativePath = (value: string): string | null => {
     return null;
   }
 
-  const normalized = path.posix.normalize(trimmed);
-  if (normalized === '.') {
-    return '.';
+  // Normalize a POSIX-like relative path without relying on node's `path` module
+  // (avoids bundler/polyfill issues).
+  const segments = trimmed.split('/');
+  const out: string[] = [];
+  for (const segment of segments) {
+    if (!segment || segment === '.') {
+      continue;
+    }
+    if (segment === '..') {
+      return null;
+    }
+    out.push(segment);
   }
-  if (normalized === '..') {
-    return null;
-  }
-  if (normalized.startsWith('../') || normalized.includes('/../')) {
-    return null;
-  }
-
-  return normalized;
+  return out.length === 0 ? '.' : out.join('/');
 };
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { fromBase64 } from '@mysten/sui/utils';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
-import { decodeJwt } from 'jose';
+// Imports removed
 
 class ActivitybarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'activitybarProviderSui';
@@ -85,6 +85,18 @@ class ActivitybarProvider implements vscode.WebviewViewProvider {
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
     this._extensionUri = context.extensionUri;
+  }
+
+  private async postEnv() {
+    const account = await accountLoad(this._context);
+    this._view?.webview.postMessage({
+      command: COMMANDS.Env,
+      data: {
+        hasTerminal: hasTerminal(),
+        account: account ? getSafeAccount(account) : undefined,
+        canSign: canSignAccount(account),
+      },
+    });
   }
 
   /** Launch compiler command in a terminal (cross-platform) */
@@ -141,14 +153,7 @@ fi`;
         switch (command) {
           case COMMANDS.Env:
             {
-              const account = await accountLoad(this._context);
-              this._view?.webview.postMessage({
-                command,
-                data: {
-                  hasTerminal: hasTerminal(),
-                  account: account ? getSafeAccount(account) : undefined,
-                },
-              });
+              await this.postEnv();
               await this._fileWatcher?.initializePackageList();
             }
             break;
@@ -189,67 +194,16 @@ fi`;
             break;
           case COMMANDS.StoreAccount:
             await accountStore(this._context, data as IAccount | undefined);
+            await this.postEnv();
             vscode.commands.executeCommand(AccountStateUpdate);
             break;
           case COMMANDS.SignTransaction:
-            {
-              try {
-                const { transactionBytes } = data as {
-                  transactionBytes: string;
-                };
-                const account = await accountLoad(this._context);
-                if (
-                  !account ||
-                  !account.nonce.privateKey ||
-                  !account.zkAddress
-                ) {
-                  throw new Error(
-                    'Account not loaded or missing private key/zkAddress',
-                  );
-                }
-                if (
-                  !account.zkAddress.jwt ||
-                  !account.zkAddress.salt ||
-                  !account.zkAddress.proof
-                ) {
-                  throw new Error(
-                    'Account is missing zkLogin secrets (jwt/salt/proof). Please login again.',
-                  );
-                }
-
-                const decodedJwt = decodeJwt(account.zkAddress.jwt);
-                const addressSeed = genAddressSeed(
-                  BigInt(account.zkAddress.salt),
-                  'sub',
-                  decodedJwt.sub!,
-                  decodedJwt.aud as string,
-                ).toString();
-
-                const keypair = Ed25519Keypair.fromSecretKey(
-                  fromBase64(account.nonce.privateKey),
-                );
-                const { signature: userSignature } =
-                  await keypair.signTransaction(fromBase64(transactionBytes));
-
-                const zkLoginSignature = getZkLoginSignature({
-                  inputs: {
-                    ...JSON.parse(account.zkAddress.proof),
-                    addressSeed,
-                  },
-                  maxEpoch: account.nonce.expiration,
-                  userSignature,
-                });
-
-                this._view?.webview.postMessage({
-                  command: COMMANDS.SignTransaction,
-                  data: {
-                    signature: zkLoginSignature,
-                  },
-                });
-              } catch (error) {
-                vscode.window.showErrorMessage(`Signing failed: ${error}`);
-              }
-            }
+            await handleSignTransaction(
+              this._context,
+              data as { transactionBytes: string },
+              (msg) => this._view?.webview.postMessage(msg),
+              COMMANDS.SignTransaction,
+            );
             break;
           case COMMANDS.CLI:
             if (!hasTerminal()) {

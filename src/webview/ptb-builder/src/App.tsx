@@ -16,10 +16,11 @@ import { postMessage } from './utilities/postMessage';
 // Typed payloads for inbound messages.
 type LoadDataPayload = {
   account?: IAccount;
+  canSign?: boolean;
   ptb?: string;
   suppressSave?: boolean;
 };
-type UpdateStatePayload = { account?: IAccount };
+type UpdateStatePayload = { account?: IAccount; canSign?: boolean };
 
 // Union for inbound webview messages we handle.
 type InboundMessage =
@@ -61,6 +62,7 @@ function App() {
   const lastDocKeyRef = useRef<string | undefined>(undefined);
   const suppressNextSaveRef = useRef<boolean>(false);
   const [account, setAccount] = useState<IAccount | undefined>(undefined);
+  const [canSign, setCanSign] = useState<boolean>(false);
   const [incomingDoc, setIncomingDoc] = useState<PTBDoc | Chain | undefined>(
     undefined,
   );
@@ -87,6 +89,12 @@ function App() {
         postMessage('account empty or missing secrets', { variant: 'error' });
         return { error: 'account empty' };
       }
+      if (!canSign) {
+        postMessage('please re-login to sign transactions', {
+          variant: 'error',
+        });
+        return { error: 'cannot sign' };
+      }
 
       const client = new SuiClient({ url: getFullnodeUrl(net) });
       const bytes = await transaction.build({ client });
@@ -96,7 +104,9 @@ function App() {
           const msg = event.data;
           if (msg.command === COMMANDS.SignTransaction) {
             window.removeEventListener('message', handler);
-            if (msg.data.signature) {
+            if (msg.data.error) {
+              reject(new Error(msg.data.error));
+            } else if (msg.data.signature) {
               resolve(msg.data.signature);
             } else {
               reject(new Error('No signature returned'));
@@ -161,6 +171,7 @@ function App() {
           const ptbRaw = message.data?.ptb as string | undefined;
           suppressNextSaveRef.current = Boolean(message.data?.suppressSave);
           setAccount(acc);
+          setCanSign(Boolean(message.data?.canSign));
 
           // Load PTB document even without account
           if (ptbRaw) {
@@ -189,6 +200,7 @@ function App() {
       if (isUpdateState(message)) {
         const acc = message.data?.account as IAccount | undefined;
         setAccount(acc);
+        setCanSign(Boolean(message.data?.canSign));
         return;
       }
 

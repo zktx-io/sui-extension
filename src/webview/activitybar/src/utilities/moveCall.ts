@@ -12,7 +12,7 @@ export const moveCall = async (
   inputValues: Array<string>,
   typeArguments: string[],
 ): Promise<void> => {
-  if (account.nonce.privateKey && account.zkAddress) {
+  if (account.zkAddress?.address) {
     try {
       const address = account.zkAddress.address;
       const transaction = new Transaction();

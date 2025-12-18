@@ -54,7 +54,13 @@ export const Account = ({ client }: { client: SuiClient | undefined }) => {
       command: COMMANDS.StoreAccount,
       data: undefined,
     });
-    setState(() => ({ packages: {} }));
+    setState((oldState) => ({
+      ...oldState,
+      account: undefined,
+      balance: undefined,
+      canSign: false,
+      packages: {},
+    }));
   };
 
   const handleFaucet = async () => {

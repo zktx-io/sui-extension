@@ -7,13 +7,7 @@ export const getBalance = async (
   client: SuiClient | undefined,
   account: IAccount | undefined,
 ): Promise<string | undefined> => {
-  if (
-    !!client &&
-    account &&
-    account.zkAddress &&
-    account.zkAddress.address &&
-    account.nonce.privateKey
-  ) {
+  if (!!client && account?.zkAddress?.address) {
     try {
       const balance = await client.getBalance({
         owner: account.zkAddress.address,
