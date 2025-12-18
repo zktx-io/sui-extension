@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
 import { initActivityBar } from './webview/activitybarProvider';
-// import { initPanel } from './webview/panelProvider';
 import { initPTBBuilderProvider } from './webview/ptbBuilderProvider';
 import { initContextMenus } from './commands/contextMenus';
 
 export function activate(context: vscode.ExtensionContext) {
   initActivityBar(context);
-  // initPanel(context);
   initPTBBuilderProvider(context);
   initContextMenus(context);
 
