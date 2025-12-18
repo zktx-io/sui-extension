@@ -22,7 +22,6 @@ import {
 } from '../utilities/stateController';
 import { getBalance } from '../utilities/getBalance';
 import { loadPackageData } from '../utilities/loadPackageData';
-import { runBuild, runTest } from '../utilities/cli';
 
 type PackageListEntry = { path: string; content: string };
 type PackageListMessage = {
@@ -299,7 +298,7 @@ export const Workspace = ({
             state.path &&
               vscode.postMessage({
                 command: COMMANDS.CLI,
-                data: runBuild(state.path),
+                data: { kind: 'build', path: state.path },
               });
           }}
         >
@@ -317,7 +316,7 @@ export const Workspace = ({
             state.path &&
               vscode.postMessage({
                 command: COMMANDS.CLI,
-                data: runTest(state.path),
+                data: { kind: 'test', path: state.path },
               });
           }}
         >

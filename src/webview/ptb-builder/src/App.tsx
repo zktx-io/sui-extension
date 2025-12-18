@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { fromBase64 } from '@mysten/sui/utils';
+import { toBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
-import { decodeJwt } from 'jose';
 import { Chain, PTBBuilder, PTBDoc, usePTB } from '@zktx.io/ptb-builder';
 
 import '@zktx.io/ptb-builder/index.css';
@@ -86,36 +83,40 @@ function App() {
           { variant: 'warning' },
         );
       }
-      if (!account?.nonce?.privateKey || !account.zkAddress) {
+      if (!account?.zkAddress) {
         postMessage('account empty or missing secrets', { variant: 'error' });
         return { error: 'account empty' };
       }
 
       const client = new SuiClient({ url: getFullnodeUrl(net) });
-      const privateKey = account.nonce.privateKey;
+      const bytes = await transaction.build({ client });
 
-      const decodedJwt = decodeJwt(account.zkAddress.jwt);
-      const addressSeed: string = genAddressSeed(
-        BigInt(account.zkAddress.salt),
-        'sub',
-        decodedJwt.sub!,
-        decodedJwt.aud as string,
-      ).toString();
-
-      const { bytes, signature: userSignature } = await transaction.sign({
-        client,
-        signer: Ed25519Keypair.fromSecretKey(fromBase64(privateKey)),
-      });
-
-      const zkLoginSignature = getZkLoginSignature({
-        inputs: { ...JSON.parse(account.zkAddress.proof), addressSeed },
-        maxEpoch: account.nonce.expiration,
-        userSignature,
+      const signature = await new Promise<string>((resolve, reject) => {
+        const handler = (event: MessageEvent) => {
+          const msg = event.data;
+          if (msg.command === COMMANDS.SignTransaction) {
+            window.removeEventListener('message', handler);
+            if (msg.data.signature) {
+              resolve(msg.data.signature);
+            } else {
+              reject(new Error('No signature returned'));
+            }
+          }
+        };
+        window.addEventListener('message', handler);
+        vscode.postMessage({
+          command: COMMANDS.SignTransaction,
+          data: { transactionBytes: toBase64(bytes) },
+        });
+        setTimeout(() => {
+          window.removeEventListener('message', handler);
+          reject(new Error('Signing timeout'));
+        }, 30000);
       });
 
       const { digest, errors } = await client.executeTransactionBlock({
         transactionBlock: bytes,
-        signature: zkLoginSignature,
+        signature: signature,
       });
 
       if (errors && errors.length > 0) {

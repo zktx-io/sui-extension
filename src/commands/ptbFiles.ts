@@ -34,8 +34,15 @@ async function createPTBFile(
   // Prevent overwrite
   try {
     await vscode.workspace.fs.stat(fileUri);
-    vscode.window.showErrorMessage(`A file named ${complete} already exists.`);
-    return;
+    const choice = await vscode.window.showWarningMessage(
+      `File "${complete}" already exists. Overwrite it?`,
+      { modal: true },
+      'Overwrite',
+      'Cancel',
+    );
+    if (choice !== 'Overwrite') {
+      return;
+    }
   } catch {
     // OK if not found
   }

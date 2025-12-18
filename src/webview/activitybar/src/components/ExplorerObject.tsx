@@ -65,6 +65,20 @@ const styles = {
   },
 };
 
+const ChevronRight = ({ size }: { size: number }) => (
+  <svg
+    fill="currentColor"
+    height={`${size}px`}
+    width={`${size}px`}
+    viewBox="0 0 330 330"
+    aria-hidden="true"
+    focusable="false"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M250.606 154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213.001-5.857 5.858-5.857 15.355.001 21.213l139.393 139.39-139.394 139.407c-5.857 5.858-5.857 15.355.001 21.213C82.322 328.536 86.161 330 90 330s7.678-1.464 10.607-4.394l149.999-150.004c2.814-2.813 4.394-6.628 4.394-10.606 0-3.978-1.58-7.794-4.394-10.607z" />
+  </svg>
+);
+
 export const ExplorerObject = ({
   client,
 }: {
@@ -119,19 +133,9 @@ export const ExplorerObject = ({
             ...styles.arrow,
             transform: isContentVisible ? 'rotate(90deg)' : 'rotate(0deg)',
           }}
-          dangerouslySetInnerHTML={{
-            __html: `
-              <?xml version="1.0" encoding="iso-8859-1"?>
-                <svg fill="currentColor" height="8px" width="8px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-                viewBox="0 0 330 330" xml:space="preserve">
-                <path id="XMLID_222_" d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001
-                c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213
-                C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606
-                C255,161.018,253.42,157.202,250.606,154.389z"/>
-              </svg>
-              `,
-          }}
-        />
+        >
+          <ChevronRight size={8} />
+        </div>
       </div>
 
       <VSCodeDivider />

@@ -4,19 +4,7 @@ import * as vscode from 'vscode';
 import { unzip } from 'fflate';
 import { WorkshopTemplate } from './workshop';
 
-function validateProjectName(name: string): string | null {
-  const trimmed = name.trim();
-  if (!trimmed) {
-    return 'Folder name cannot be empty';
-  }
-  if (trimmed.includes('/') || trimmed.includes('\\')) {
-    return 'Folder name must not include path separators';
-  }
-  if (trimmed === '.' || trimmed === '..' || trimmed.includes('..')) {
-    return 'Folder name must not include ".."';
-  }
-  return null;
-}
+import { validateProjectName } from '../utilities/validator';
 
 /** Detect if running in VS Code Web (sandbox) */
 const isWeb = () => vscode.env.uiKind === vscode.UIKind.Web;

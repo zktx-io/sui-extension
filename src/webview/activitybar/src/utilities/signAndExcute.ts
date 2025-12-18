@@ -1,9 +1,6 @@
 import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { fromBase64 } from '@mysten/sui/utils';
+import { toBase64 } from '@mysten/sui/utils';
 import { Transaction } from '@mysten/sui/transactions';
-import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
-import { decodeJwt } from 'jose';
 import { IAccount } from '../recoil';
 import { vscode } from './vscode';
 import { COMMANDS } from './commands';
@@ -13,31 +10,36 @@ export const signAndExcute = async (
   client: SuiClient,
   transaction: Transaction,
 ): Promise<SuiTransactionBlockResponse> => {
-  if (account.nonce.privateKey && account.zkAddress) {
+  if (account.nonce && account.zkAddress) {
     try {
-      const privateKey = account.nonce.privateKey;
-      const decodedJwt = decodeJwt(account.zkAddress.jwt);
-      const addressSeed: string = genAddressSeed(
-        BigInt(account.zkAddress.salt),
-        'sub',
-        decodedJwt.sub!,
-        decodedJwt.aud as string,
-      ).toString();
-      const { bytes, signature: userSignature } = await transaction.sign({
-        client,
-        signer: Ed25519Keypair.fromSecretKey(fromBase64(privateKey)),
+      const bytes = await transaction.build({ client });
+
+      const signature = await new Promise<string>((resolve, reject) => {
+        const handler = (event: MessageEvent) => {
+          const msg = event.data;
+          if (msg.command === COMMANDS.SignTransaction) {
+            window.removeEventListener('message', handler);
+            if (msg.data.signature) {
+              resolve(msg.data.signature);
+            } else {
+              reject(new Error('No signature returned'));
+            }
+          }
+        };
+        window.addEventListener('message', handler);
+        vscode.postMessage({
+          command: COMMANDS.SignTransaction,
+          data: { transactionBytes: toBase64(bytes) },
+        });
+        setTimeout(() => {
+          window.removeEventListener('message', handler);
+          reject(new Error('Signing timeout'));
+        }, 30000);
       });
-      const zkLoginSignature = getZkLoginSignature({
-        inputs: {
-          ...JSON.parse(account.zkAddress.proof),
-          addressSeed,
-        },
-        maxEpoch: account.nonce.expiration,
-        userSignature,
-      });
+
       const { digest, errors } = await client.executeTransactionBlock({
         transactionBlock: bytes,
-        signature: zkLoginSignature,
+        signature: signature,
       });
       if (errors && errors.length > 0) {
         throw new Error(`${JSON.stringify(errors)}`);

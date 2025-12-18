@@ -53,3 +53,27 @@ export const accountLoad = async (
     return undefined;
   }
 };
+
+/**
+ * Safe version of IAccount without private key or zkLogin secrets.
+ * This is safe to send to Webviews.
+ */
+export interface ISafeAccount extends Omit<IAccount, 'nonce'> {
+  nonce: Omit<IAccount['nonce'], 'privateKey'>;
+  zkAddress?: { address: string };
+}
+
+/**
+ * Strips secrets from account data (private key + zkLogin proof material).
+ */
+export const getSafeAccount = (account: IAccount): ISafeAccount => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { privateKey, ...safeNonce } = account.nonce;
+  return {
+    ...account,
+    nonce: safeNonce,
+    zkAddress: account.zkAddress?.address
+      ? { address: account.zkAddress.address }
+      : undefined,
+  };
+};

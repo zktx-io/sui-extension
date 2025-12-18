@@ -2,8 +2,16 @@ import * as vscode from 'vscode';
 import { getUri } from '../utilities/getUri';
 import { getNonce } from '../utilities/getNonce';
 import { COMMANDS } from './ptb-builder/src/utilities/commands';
-import { accountLoad, AccountStateUpdate } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
+import {
+  accountLoad,
+  AccountStateUpdate,
+  getSafeAccount,
+} from '../utilities/account';
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
+import { fromBase64 } from '@mysten/sui/utils';
+import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
+import { decodeJwt } from 'jose';
 
 // Minimal inbound message shape from the webview
 type InboundMsg =
@@ -197,10 +205,11 @@ export class PTBBuilderProvider
     document: PTBDocument,
     options?: { suppressSave?: boolean },
   ) {
+    const account = await accountLoad(this._context);
     return {
       command: COMMANDS.LoadData,
       data: {
-        account: await accountLoad(this._context),
+        account: account ? getSafeAccount(account) : undefined,
         ptb: document.getText(),
         suppressSave: options?.suppressSave || undefined,
       },
@@ -237,10 +246,11 @@ export class PTBBuilderProvider
   }
 
   public async updateState() {
+    const account = await accountLoad(this._context);
     const payload = {
       command: COMMANDS.UpdateState,
       data: {
-        account: await accountLoad(this._context),
+        account: account ? getSafeAccount(account) : undefined,
       },
     };
     this._broadcastToAllPanels(payload);
@@ -322,6 +332,60 @@ export class PTBBuilderProvider
         case COMMANDS.OutputError:
           printOutputChannel(`[ERROR]\n${String(data ?? '')}`);
           break;
+        case COMMANDS.SignTransaction: {
+          try {
+            const { transactionBytes } = data as { transactionBytes: string };
+            const account = await accountLoad(this._context);
+            if (!account || !account.nonce.privateKey || !account.zkAddress) {
+              throw new Error(
+                'Account not loaded or missing private key/zkAddress',
+              );
+            }
+            if (
+              !account.zkAddress.jwt ||
+              !account.zkAddress.salt ||
+              !account.zkAddress.proof
+            ) {
+              throw new Error(
+                'Account is missing zkLogin secrets (jwt/salt/proof). Please login again.',
+              );
+            }
+
+            const decodedJwt = decodeJwt(account.zkAddress.jwt);
+            const addressSeed = genAddressSeed(
+              BigInt(account.zkAddress.salt),
+              'sub',
+              decodedJwt.sub!,
+              decodedJwt.aud as string,
+            ).toString();
+
+            const keypair = Ed25519Keypair.fromSecretKey(
+              fromBase64(account.nonce.privateKey),
+            );
+            const { signature: userSignature } = await keypair.signTransaction(
+              fromBase64(transactionBytes),
+            );
+
+            const zkLoginSignature = getZkLoginSignature({
+              inputs: {
+                ...JSON.parse(account.zkAddress.proof),
+                addressSeed,
+              },
+              maxEpoch: account.nonce.expiration,
+              userSignature,
+            });
+
+            webviewPanel.webview.postMessage({
+              command: COMMANDS.SignTransaction,
+              data: {
+                signature: zkLoginSignature,
+              },
+            });
+          } catch (error) {
+            vscode.window.showErrorMessage(`Signing failed: ${error}`);
+          }
+          break;
+        }
         default:
           vscode.window.showErrorMessage(`Unknown command: ${String(command)}`);
           break;

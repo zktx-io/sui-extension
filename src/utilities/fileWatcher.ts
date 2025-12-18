@@ -50,14 +50,20 @@ export class FileWatcher {
         const relativePath = this.normalizeRelativePath(
           this.getRelativePath(uri),
         );
-        const temp = this.getUriFromRelativePath(relativePath);
-        if (temp) {
-          const content = await this.readFileContent(temp);
-          const filePath = relativePath;
-          const dirPath = relativePath.replace(
-            new RegExp(`(.*)(/\\b${MoveToml}\\b)(?!.*/\\b${MoveToml}\\b)`),
-            `$1`,
-          );
+        // We already have the correct URI from findFiles, so we don't need to guess it.
+        // But the original logic tried to 'reassemble' it from relative path to verify?
+        // Let's just use the URI we found.
+
+        const content = await this.readFileContent(uri);
+        const filePath = relativePath;
+        const dirPath = relativePath.replace(
+          new RegExp(`(.*)(/\\b${MoveToml}\\b)(?!.*/\\b${MoveToml}\\b)`),
+          `$1`,
+        );
+
+        // If file content is empty/error, readFileContent returns empty array.
+        // We should double check.
+        if (content.byteLength > 0) {
           this._packages.push({
             uri,
             path: dirPath,
@@ -72,39 +78,13 @@ export class FileWatcher {
     }
   }
 
-  public async getUpgradeToml(path: string): Promise<string> {
-    try {
-      const candidates = [
-        `${path}/${UpgradeToml}`,
-        `${path}/${UpgradeTomlLower}`,
-      ];
-      for (const relativePath of candidates) {
-        const uri = this.getUriFromRelativePath(relativePath);
-        if (uri) {
-          const content = await this.readFileContent(uri, { silent: true });
-          const decoded = new TextDecoder().decode(content);
-          if (decoded.trim()) {
-            return decoded;
-          }
-        }
-      }
-      return '';
-    } catch (error) {
-      return '';
-    }
-  }
-
-  public async getByteCodeDump(path: string): Promise<string> {
-    try {
-      const uri = this.getUriFromRelativePath(`${path}/${ByteDump}`);
-      if (uri) {
-        const content = await this.readFileContent(uri, { silent: true });
-        return new TextDecoder().decode(content);
-      }
-      return '';
-    } catch (error) {
-      return '';
-    }
+  /**
+   * Returns true if the given package directory path (relative to workspace)
+   * matches a known Move package (directory that contains a Move.toml).
+   */
+  public hasPackagePath(packagePath: string): boolean {
+    const normalized = this.normalizeRelativePath(packagePath);
+    return this._packages.some(({ path }) => path === normalized);
   }
 
   private async handleFileChange(uri: vscode.Uri) {
@@ -147,14 +127,53 @@ export class FileWatcher {
     return uri.path;
   }
 
-  private getUriFromRelativePath(relativePath: string): vscode.Uri | null {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-      vscode.window.showErrorMessage('No workspace folder found');
-      return null;
+  private async resolveFileConstraints(
+    path: string,
+    files: string[],
+  ): Promise<string> {
+    for (const file of files) {
+      const key = `${path}/${file}`;
+      // Try all workspace folders
+      const uris = this.getAllPotentialUris(key);
+      for (const uri of uris) {
+        const content = await this.readFileContent(uri, { silent: true });
+        const decoded = new TextDecoder().decode(content);
+        if (decoded.trim()) {
+          return decoded;
+        }
+      }
     }
-    return vscode.Uri.joinPath(workspaceFolder.uri, relativePath);
+    return '';
   }
+
+  public async getUpgradeToml(path: string): Promise<string> {
+    return this.resolveFileConstraints(path, [UpgradeToml, UpgradeTomlLower]);
+  }
+
+  public async getByteCodeDump(path: string): Promise<string> {
+    const key = `${path}/${ByteDump}`;
+    const uris = this.getAllPotentialUris(key);
+    for (const uri of uris) {
+      const content = await this.readFileContent(uri, { silent: true });
+      if (content.length > 0) {
+        return new TextDecoder().decode(content);
+      }
+    }
+    return '';
+  }
+
+  // Helper to get all possible URIs for a relative path across all workspace folders
+  private getAllPotentialUris(relativePath: string): vscode.Uri[] {
+    if (!vscode.workspace.workspaceFolders) {
+      return [];
+    }
+    return vscode.workspace.workspaceFolders.map((folder) =>
+      vscode.Uri.joinPath(folder.uri, relativePath),
+    );
+  }
+
+  // Replaced getUriFromRelativePath with logic inside callers or above helper
+  // But initializePackageList needs to be updated too.
 
   private normalizeRelativePath(path: string) {
     return path.replace('static/extensions/fs', '');

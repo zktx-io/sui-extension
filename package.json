@@ -153,13 +153,11 @@
   "scripts": {
     "open-in-browser": "npm run build:all && vscode-test-web --extensionDevelopmentPath=. .",
     "install:activitybar": "cd src/webview/activitybar && npm install",
-    "install:panel": "cd src/webview/panel && npm install",
     "install:ptb-builder": "cd src/webview/ptb-builder && npm install",
-    "install:all": "npm install && npm run install:activitybar && npm run install:panel && npm run install:ptb-builder",
+    "install:all": "npm install && npm run install:activitybar && npm run install:ptb-builder",
     "build:activitybar": "cd src/webview/activitybar && npm run build",
-    "build:panel": "cd src/webview/panel && npm run build",
     "build:ptb-builder": "cd src/webview/ptb-builder && npm run build",
-    "build:webview": "npm run build:activitybar && npm run build:panel && npm run build:ptb-builder",
+    "build:webview": "npm run build:activitybar && npm run build:ptb-builder",
     "build:node": "tsc -p ./tsconfig.node.json && vite build --mode node",
     "build:web": "tsc -p ./tsconfig.web.json && vite build --mode web",
     "build:all": "npm run build:webview && npm run build:node && npm run build:web",
@@ -187,6 +185,8 @@
     "vite": "^6.0.6"
   },
   "dependencies": {
-    "fflate": "^0.8.2"
+    "@mysten/sui": "^1.45.2",
+    "fflate": "^0.8.2",
+    "jose": "^6.1.3"
   }
 }

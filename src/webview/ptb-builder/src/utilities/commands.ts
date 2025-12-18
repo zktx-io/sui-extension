@@ -8,4 +8,5 @@ export enum COMMANDS {
   MsgError = 'message:error',
   OutputInfo = 'output:info',
   OutputError = 'output:error',
+  SignTransaction = 'ptb-builder:sign-transaction',
 }

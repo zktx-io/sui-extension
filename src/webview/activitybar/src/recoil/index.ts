@@ -25,9 +25,9 @@ export interface IAccount {
   nonce: INonce;
   zkAddress?: {
     address: string;
-    proof: string;
-    salt: string;
-    jwt: string;
+    proof?: string;
+    salt?: string;
+    jwt?: string;
   };
 }
 

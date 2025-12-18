@@ -8,6 +8,7 @@ import {
   accountLoad,
   AccountStateUpdate,
   accountStore,
+  getSafeAccount,
 } from '../utilities/account';
 import { printOutputChannel } from '../utilities/printOutputChannel';
 import { exchangeToken } from '../utilities/authCode';
@@ -16,7 +17,62 @@ import {
   COMPILER,
   COMPILER_URL,
   MoveToml,
+  runBuild,
+  runTest,
 } from './activitybar/src/utilities/cli';
+import * as path from 'path';
+
+type CliRequest = { kind: 'build' | 'test'; path: string };
+
+const isCliRequest = (value: unknown): value is CliRequest => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const v = value as Partial<CliRequest>;
+  return (
+    (v.kind === 'build' || v.kind === 'test') && typeof v.path === 'string'
+  );
+};
+
+const sanitizeRelativePath = (value: string): string | null => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  if (
+    trimmed.includes('\0') ||
+    trimmed.includes('\n') ||
+    trimmed.includes('\r')
+  ) {
+    return null;
+  }
+  if (trimmed.startsWith('/') || trimmed.startsWith('\\')) {
+    return null;
+  }
+  if (/^[a-zA-Z]:/.test(trimmed)) {
+    return null;
+  }
+  if (trimmed.includes('\\')) {
+    return null;
+  }
+
+  const normalized = path.posix.normalize(trimmed);
+  if (normalized === '.') {
+    return '.';
+  }
+  if (normalized === '..') {
+    return null;
+  }
+  if (normalized.startsWith('../') || normalized.includes('/../')) {
+    return null;
+  }
+
+  return normalized;
+};
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
+import { fromBase64 } from '@mysten/sui/utils';
+import { genAddressSeed, getZkLoginSignature } from '@mysten/sui/zklogin';
+import { decodeJwt } from 'jose';
 
 class ActivitybarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'activitybarProviderSui';
@@ -75,7 +131,7 @@ fi`;
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
-      enableCommandUris: true,
+      enableCommandUris: false,
     };
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
@@ -85,11 +141,12 @@ fi`;
         switch (command) {
           case COMMANDS.Env:
             {
+              const account = await accountLoad(this._context);
               this._view?.webview.postMessage({
                 command,
                 data: {
                   hasTerminal: hasTerminal(),
-                  account: await accountLoad(this._context),
+                  account: account ? getSafeAccount(account) : undefined,
                 },
               });
               await this._fileWatcher?.initializePackageList();
@@ -134,13 +191,90 @@ fi`;
             await accountStore(this._context, data as IAccount | undefined);
             vscode.commands.executeCommand(AccountStateUpdate);
             break;
+          case COMMANDS.SignTransaction:
+            {
+              try {
+                const { transactionBytes } = data as {
+                  transactionBytes: string;
+                };
+                const account = await accountLoad(this._context);
+                if (
+                  !account ||
+                  !account.nonce.privateKey ||
+                  !account.zkAddress
+                ) {
+                  throw new Error(
+                    'Account not loaded or missing private key/zkAddress',
+                  );
+                }
+                if (
+                  !account.zkAddress.jwt ||
+                  !account.zkAddress.salt ||
+                  !account.zkAddress.proof
+                ) {
+                  throw new Error(
+                    'Account is missing zkLogin secrets (jwt/salt/proof). Please login again.',
+                  );
+                }
+
+                const decodedJwt = decodeJwt(account.zkAddress.jwt);
+                const addressSeed = genAddressSeed(
+                  BigInt(account.zkAddress.salt),
+                  'sub',
+                  decodedJwt.sub!,
+                  decodedJwt.aud as string,
+                ).toString();
+
+                const keypair = Ed25519Keypair.fromSecretKey(
+                  fromBase64(account.nonce.privateKey),
+                );
+                const { signature: userSignature } =
+                  await keypair.signTransaction(fromBase64(transactionBytes));
+
+                const zkLoginSignature = getZkLoginSignature({
+                  inputs: {
+                    ...JSON.parse(account.zkAddress.proof),
+                    addressSeed,
+                  },
+                  maxEpoch: account.nonce.expiration,
+                  userSignature,
+                });
+
+                this._view?.webview.postMessage({
+                  command: COMMANDS.SignTransaction,
+                  data: {
+                    signature: zkLoginSignature,
+                  },
+                });
+              } catch (error) {
+                vscode.window.showErrorMessage(`Signing failed: ${error}`);
+              }
+            }
+            break;
           case COMMANDS.CLI:
             if (!hasTerminal()) {
               vscode.window.showErrorMessage(
                 'This environment does not support terminal operations.',
               );
             } else {
-              this.runTerminal(data as string);
+              if (!isCliRequest(data)) {
+                vscode.window.showErrorMessage('Invalid CLI request.');
+                break;
+              }
+              const safePath = sanitizeRelativePath(data.path);
+              if (!safePath) {
+                vscode.window.showErrorMessage('Invalid package path.');
+                break;
+              }
+              if (!this._fileWatcher?.hasPackagePath(safePath)) {
+                vscode.window.showErrorMessage(
+                  'Unknown package path. Select a valid Move package from the Workspace list.',
+                );
+                break;
+              }
+              const cmd =
+                data.kind === 'build' ? runBuild(safePath) : runTest(safePath);
+              this.runTerminal(cmd);
             }
             break;
           case COMMANDS.Deploy:

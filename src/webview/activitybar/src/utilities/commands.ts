@@ -15,6 +15,7 @@ export enum COMMANDS {
   MsgError = 'message:error',
   OutputInfo = 'output:info',
   OutputError = 'output:error',
+  SignTransaction = 'package:signTransaction',
 }
 
 export const UrlCallback = 'https://callback-b2sh2eqjia-uc.a.run.app';
