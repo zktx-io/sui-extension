@@ -132,7 +132,19 @@ export const packageUpgrade = async (
         upgradeCap: upgrade.upgrade_cap,
       };
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : String(error));
+      const message = error instanceof Error ? error.message : String(error);
+      // Errors can happen before signAndExcute() (e.g. dryRun failures), so surface them to the user here.
+      if (message !== 'upgrade error') {
+        vscode.postMessage({
+          command: COMMANDS.MsgError,
+          data: `Upgrade failed: ${message}`,
+        });
+        vscode.postMessage({
+          command: COMMANDS.OutputError,
+          data: `Upgrade failed: ${message}`,
+        });
+      }
+      throw new Error(message);
     }
   } else {
     throw new Error('account empty');
