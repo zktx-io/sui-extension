@@ -14,7 +14,7 @@ const shellEscape = (arg: string): string => {
 
 export const runBuild = (path: string) => {
   const escapedPath = shellEscape(path);
-  return `${COMPILER} move build --dump-bytecode-as-base64 --ignore-chain --path ${escapedPath} > ${escapedPath}/${ByteDump}`;
+  return `${COMPILER} move build --dump-bytecode-as-base64 --path ${escapedPath} > ${escapedPath}/${ByteDump}`;
 };
 
 export const runTest = (path: string) => {
